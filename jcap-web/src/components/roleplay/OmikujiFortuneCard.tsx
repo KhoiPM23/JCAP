@@ -117,13 +117,13 @@ export interface OmikujiFortune {
   luckyNumber: number;
 }
 
-export const COIN_REWARDS: Record<OmikujiRank, { coins: number; labelVi: string; kanjiTitle: string }> = {
-  大吉: { coins: 15, labelVi: 'Đại Cát Phúc Lộc', kanjiTitle: '大吉福禄' },
-  中吉: { coins: 10, labelVi: 'Trung Cát Hưng Vượng', kanjiTitle: '中吉興旺' },
-  小吉: { coins: 5, labelVi: 'Tiểu Cát Tiến Bộ', kanjiTitle: '小吉進歩' },
-  吉: { coins: 5, labelVi: 'Cát Tường Bình An', kanjiTitle: '吉事円満' },
-  末吉: { coins: 3, labelVi: 'Mạt Cát Hậu Vận', kanjiTitle: '大器晩成' },
-  凶: { coins: 3, labelVi: 'Hóa Hung Thành Cát', kanjiTitle: '厄災消除' },
+export const COIN_REWARDS: Record<OmikujiRank, { coins: number; labelVi: string; shortLabelVi: string; kanjiTitle: string }> = {
+  大吉: { coins: 15, labelVi: 'Đại Cát Phúc Lộc', shortLabelVi: 'Đại Cát', kanjiTitle: '大吉福禄' },
+  中吉: { coins: 10, labelVi: 'Trung Cát Hưng Vượng', shortLabelVi: 'Trung Cát', kanjiTitle: '中吉興旺' },
+  小吉: { coins: 5, labelVi: 'Tiểu Cát Tiến Bộ', shortLabelVi: 'Tiểu Cát', kanjiTitle: '小吉進歩' },
+  吉: { coins: 5, labelVi: 'Cát Tường Bình An', shortLabelVi: 'Cát Tường', kanjiTitle: '吉事円満' },
+  末吉: { coins: 3, labelVi: 'Mạt Cát Hậu Vận', shortLabelVi: 'Mạt Cát', kanjiTitle: '大器晩成' },
+  凶: { coins: 3, labelVi: 'Hóa Hung Thành Cát', shortLabelVi: 'Khởi sắc', kanjiTitle: '厄災消除' },
 };
 
 const OMIKUJI_DATABASE: Record<OmikujiRank, OmikujiFortune[]> = {
@@ -379,7 +379,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
         }
       `}</style>
 
-      {/* 1. THẺ BENTO NGOÀI (SHINTO TALISMAN CARD - ALIGNED TOP, COMPACT, NO WRAP CHAOS) */}
+      {/* 1. THẺ BENTO NGOÀI */}
       <div
         className={`relative flex flex-col justify-between overflow-hidden rounded-3xl border transition-all duration-300 p-5 shadow-xs hover:shadow-sm ${
           hasClaimedCoins
@@ -387,12 +387,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
             : 'border-amber-200/90 bg-gradient-to-br from-[#FFF9EF] via-[#FFFDF9] to-[#FEF4DF] hover:border-amber-300'
         } ${className}`}
       >
-        <div className="absolute -right-2 -bottom-4 text-5xl font-serif font-black text-amber-900/[0.04] select-none pointer-events-none">
-          御神籤
-        </div>
-
         <div>
-          {/* Header 1 dòng gọn tắp giống Tile 1, không bao giờ cắt chữ Quẻ Vận Đ... */}
           <div className="flex items-center justify-between gap-2 mb-2.5">
             <div className="flex items-center gap-2 min-w-0">
               <div
@@ -410,18 +405,19 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
             </div>
 
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-black font-serif tracking-wider shrink-0 whitespace-nowrap ${getRankBadgeClasses(
-                activeFortune.rank
-              )}`}
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold shrink-0 whitespace-nowrap ${
+                hasClaimedCoins
+                  ? getRankBadgeClasses(activeFortune.rank)
+                  : 'bg-amber-100 text-amber-900 border border-amber-300 font-sans'
+              }`}
             >
-              {activeFortune.rank}
+              {hasClaimedCoins ? reward.shortLabelVi : 'Chưa khai mở'}
             </span>
           </div>
 
-          {/* Dòng trạng thái Phúc Lộc & Số quẻ */}
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="text-[10px] font-medium text-stone-500 font-serif whitespace-nowrap">
-              御神籤 · Thẻ #{activeFortune.luckyNumber}
+            <span className="text-[10px] font-medium text-stone-500 whitespace-nowrap">
+              {hasClaimedCoins ? `Thẻ số #${activeFortune.luckyNumber}` : 'Ống xăm đang chờ mở'}
             </span>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono whitespace-nowrap ${
@@ -430,18 +426,30 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
                   : 'bg-amber-100 text-amber-900 border border-amber-300'
               }`}
             >
-              {hasClaimedCoins ? `✓ Đã nhận +${reward.coins} Xu` : `+${reward.coins} Xu phúc lộc`}
+              {hasClaimedCoins ? `✓ Đã nhận +${reward.coins} Xu` : 'Lộc Xu may mắn'}
             </span>
           </div>
 
-          {/* 1 câu thơ sấm cô đọng nghệ thuật */}
           <div className="border-l-2 border-[#c23a2b]/50 pl-3 py-0.5">
-            <p className="text-[11px] font-serif text-stone-400 tracking-wide truncate">
-              {activeFortune.wakaJapanese}
-            </p>
-            <p className="text-xs text-stone-700 font-medium leading-relaxed mt-0.5 line-clamp-2 italic">
-              "{activeFortune.teachingSummary}"
-            </p>
+            {hasClaimedCoins ? (
+              <>
+                <p className="text-[11px] font-serif text-stone-500 tracking-wide truncate">
+                  {activeFortune.wakaJapanese}
+                </p>
+                <p className="text-xs text-stone-700 font-medium leading-relaxed mt-0.5 line-clamp-2 italic">
+                  "{activeFortune.teachingSummary}"
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-[11px] font-semibold text-stone-500">
+                  Quẻ vận đang chờ khai mở
+                </p>
+                <p className="text-xs text-stone-700 font-medium leading-relaxed mt-0.5">
+                  Hãy lắc ống xăm để rút quẻ may mắn và nhận thưởng Xu sau phiên hội thoại.
+                </p>
+              </>
+            )}
           </div>
         </div>
 
@@ -453,7 +461,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
               className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-xs font-bold text-emerald-900 shadow-2xs hover:bg-emerald-50/70 transition active:scale-[0.98] cursor-pointer"
             >
               <ScrollIcon className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Xem lại sớ đã thỉnh ({activeFortune.rank})</span>
+              <span>Xem lại sớ đã thỉnh ({reward.shortLabelVi})</span>
             </button>
           ) : (
             <button
@@ -462,7 +470,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#991B1B] to-[#B91C1C] px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-110 transition active:scale-[0.98] cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-              <span>Gieo quẻ nhận +{reward.coins} Xu</span>
+              <span>Gieo quẻ Đền Thờ ngay</span>
             </button>
           )}
         </div>
@@ -487,7 +495,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-sm font-serif font-bold text-amber-50 tracking-wide truncate">
-                      Nghi thức Khai quẻ · 神社御神籤
+                      Rút quẻ may mắn
                     </h2>
                     <p className="text-[11px] text-amber-200/75 truncate font-sans">
                       {scenarioTitle || 'Chiêm nghiệm tiến trình ngôn ngữ'}
@@ -555,7 +563,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#991B1B] to-[#B91C1C] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:brightness-110 transition active:scale-[0.98] cursor-pointer"
                     >
                       <ScrollIcon className="w-4 h-4 text-amber-200" />
-                      <span>Mở sớ quẻ Washi</span>
+                      <span>Mở sớ quẻ</span>
                     </button>
                   </div>
                 )}
@@ -566,7 +574,7 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
                     <div className="flex items-center justify-between gap-3 pb-3 border-b border-stone-200/80">
                       <div className="min-w-0">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 font-mono block">
-                          第 {activeFortune.luckyNumber} 番 · {reward.kanjiTitle}
+                          Thẻ số {activeFortune.luckyNumber} · {reward.shortLabelVi}
                         </span>
                         <h3 className="text-sm font-bold text-stone-900 font-sans mt-0.5 truncate">
                           {activeFortune.rankTitleVi}
@@ -579,22 +587,19 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
                         </span>
                       </div>
 
-                      {/* Con dấu triện nghệ thuật Đỏ Chu Sa (tách lớp SVG filter chỉ lên dấu mực) */}
                       <div className="shrink-0 bg-[#FFFDF7] rounded-xl p-1 border border-stone-200/80 shadow-2xs">
                         <div
                           className="w-16 h-16 rounded-lg border-2 border-[#b91c1c] p-1 flex flex-col items-center justify-center text-[#b91c1c] rotate-[-3deg] select-none"
                           style={{ filter: 'url(#jc-inkfx)', mixBlendMode: 'multiply' }}
-                          title={`Triện Thần Điện: ${activeFortune.shrineSealText}`}
+                          title={`Quẻ ${reward.shortLabelVi}`}
                         >
                           <div className="w-full h-full rounded border border-[#b91c1c]/70 flex flex-col items-center justify-center leading-none">
-                            <span className="text-[7px] font-serif font-bold tracking-widest">神社之印</span>
-                            <span className="text-xl font-serif font-black my-0.5 leading-none">{activeFortune.rank}</span>
+                            <span className="text-[11px] font-serif font-black">{activeFortune.rank}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Bài thơ Waka & Tinh hoa đạo lý (Cô đọng 1 khối duy nhất) */}
                     <div className="rounded-xl border border-amber-200/70 bg-amber-50/45 px-3.5 py-2.5 text-center space-y-1">
                       <p className="font-serif font-bold text-sm text-stone-900 tracking-wide">
                         「 {activeFortune.wakaJapanese} 」
@@ -604,13 +609,12 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
                       </p>
                     </div>
 
-                    {/* 4 Trụ Khẩu Quyết Cô Đọng (Tối đa 5-7 chữ mỗi ô, không lệch hàng) */}
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { tag: '【学問】Học vấn', text: activeFortune.aspects.gakumon },
-                        { tag: '【対話】Đối đáp', text: activeFortune.aspects.taiwa },
-                        { tag: '【好機】Vận hội', text: activeFortune.aspects.machibito },
-                        { tag: '【心構】Tâm thế', text: activeFortune.aspects.kokorogamae },
+                        { tag: 'Học vấn', text: activeFortune.aspects.gakumon },
+                        { tag: 'Đối đáp', text: activeFortune.aspects.taiwa },
+                        { tag: 'Vận hội', text: activeFortune.aspects.machibito },
+                        { tag: 'Tâm thế', text: activeFortune.aspects.kokorogamae },
                       ].map((item) => (
                         <div
                           key={item.tag}

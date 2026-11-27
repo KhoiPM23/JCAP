@@ -8,8 +8,9 @@ import type {
   PlacementTestHistoryItemDto,
   PlacementTestHistoryDetailDto,
 } from '../types/placementTest';
+import { resolveApiUrl } from '../utils/apiBase';
 
-const BASE_URL = '/api/placement-test';
+const BASE_URL = resolveApiUrl('/api/placement-test');
 
 class PlacementTestService {
   private inFlightStart: {

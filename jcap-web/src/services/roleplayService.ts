@@ -6,8 +6,9 @@ import type {
   RoleplayHintDto,
   LearnerIntelligenceProfileDto,
 } from '../types/roleplay';
+import { resolveApiUrl } from '../utils/apiBase.ts';
 
-const BASE_URL = '/api/roleplay';
+const BASE_URL = resolveApiUrl('/api/roleplay');
 
 class RoleplayService {
   private getHeaders(): HeadersInit {
@@ -128,8 +129,9 @@ class RoleplayService {
       bargeInInterrupted?: boolean;
       moraRate?: number;
       pauseRatio?: number;
+      hintSampleText?: string;
     }
-  ): Promise<ApiResponse<RoleplayTurnResponseDto>> {
+  ): Promise<ApiResponse<RoleplayTurnResponseDto> & { status?: number }> {
     try {
       const response = await fetch(`${BASE_URL}/sessions/${sessionId}/messages`, {
         method: 'POST',
@@ -147,6 +149,7 @@ class RoleplayService {
           bargeInInterrupted: delivery?.bargeInInterrupted ?? false,
           moraRate: delivery?.moraRate,
           pauseRatio: delivery?.pauseRatio,
+          hintSampleText: delivery?.hintSampleText,
         }),
       });
 
@@ -157,6 +160,7 @@ class RoleplayService {
       const errData = await response.json().catch(() => null);
       return {
         success: false,
+        status: response.status,
         message: errData?.message || `Lỗi gửi tin nhắn (${response.status})`,
       };
     } catch {

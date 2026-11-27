@@ -9,4 +9,9 @@ public interface IRoleplayEvaluationService
         int completedMissionCount,
         int totalMissionCount,
         bool isNaturallyConcluded);
+
+    RoleplayEvaluationResult BuildEarlyTerminationResult(
+        int completedMissionCount,
+        int totalMissionCount,
+        bool isNaturallyConcluded);
 }

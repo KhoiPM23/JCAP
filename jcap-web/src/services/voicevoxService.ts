@@ -1,3 +1,5 @@
+import { resolveApiUrl } from '../utils/apiBase';
+
 export interface VoiceOption {
   id: number;
   speakerName: string;
@@ -146,7 +148,7 @@ class VoiceVoxService {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
     try {
-      const res = await fetch('/api/tts/voices', { signal: controller.signal });
+      const res = await fetch(resolveApiUrl('/api/tts/voices'), { signal: controller.signal });
       clearTimeout(timeoutId);
       if (!res.ok) {
         this.isVoiceVoxAvailable = false;
@@ -219,7 +221,7 @@ class VoiceVoxService {
       const timeoutId = setTimeout(() => controller.abort(), resolvedTimeoutMs);
 
       try {
-        const res = await fetch('/api/tts/synthesize', {
+        const res = await fetch(resolveApiUrl('/api/tts/synthesize'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -309,6 +311,7 @@ class VoiceVoxService {
   public async prefetchCommonPhrases(speakerId: number = 2): Promise<void> {
     if (typeof window === 'undefined') return;
 
+    // Chỉ nạp từ IndexedDB lên RAM Cache (0ms, KHÔNG gửi 12 request mạng gây nghẽn hàng đợi CPU VOICEVOX)
     for (const phrase of VoiceVoxService.COMMON_PHRASES) {
       const key = `${speakerId}_${phrase}`;
       if (this.blobCache.has(key)) continue;
@@ -318,14 +321,9 @@ class VoiceVoxService {
         if (cachedBlob) {
           const url = URL.createObjectURL(cachedBlob);
           this.blobCache.set(key, url);
-          continue;
         }
-
-        // Tải tuần tự với khoảng nghỉ nhỏ để không làm nghẽn băng thông
-        await this.prefetchAudio(phrase, speakerId);
-        await new Promise((r) => setTimeout(r, 60));
       } catch {
-        // Bỏ qua lỗi mạng
+        // Bỏ qua lỗi đọc IndexedDB
       }
     }
   }

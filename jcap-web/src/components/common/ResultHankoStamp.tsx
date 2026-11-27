@@ -28,8 +28,8 @@ export const ResultHankoStamp: React.FC<ResultHankoStampProps> = ({
       : 'w-12 h-12 sm:w-14 sm:h-14';
 
   const titleText = passed
-    ? 'Dấu triện hội thoại: Đạt chuẩn (合格)'
-    : 'Dấu triện tu luyện: Cần rèn thêm (未達)';
+    ? 'Kết quả hội thoại: Đạt chuẩn'
+    : 'Kết quả hội thoại: Chưa đạt';
 
   const outerBorderClass = passed
     ? 'border-[#c23a2b] text-[#c23a2b] rotate-[-4deg]'
@@ -39,18 +39,18 @@ export const ResultHankoStamp: React.FC<ResultHankoStampProps> = ({
     ? 'border-[#c23a2b]/80 bg-[#c23a2b]/[0.03]'
     : 'border-stone-400/90 bg-stone-500/[0.03]';
 
-  const kanjiColorClass = passed ? 'text-[#c23a2b]' : 'text-stone-800';
-  const subColorClass = passed ? 'text-[#c23a2b]' : 'text-stone-600';
+  const mainLabelClass = passed ? 'text-[#c23a2b]' : 'text-stone-800';
+  const subLabelClass = passed ? 'text-[#c23a2b]/90' : 'text-stone-700';
 
-  const kanjiSizeClass =
+  const primarySizeClass =
     size === 'lg'
-      ? 'text-sm sm:text-lg tracking-[0.14em]'
-      : 'text-[10px] sm:text-[11px] tracking-widest';
+      ? 'text-base sm:text-xl tracking-wide'
+      : 'text-[10px] sm:text-xs tracking-normal';
 
   const subSizeClass =
     size === 'lg'
-      ? 'text-[8px] sm:text-[10px] tracking-wider'
-      : 'text-[7px] sm:text-[8px] tracking-tight';
+      ? 'text-[9px] sm:text-[10px] tracking-wider'
+      : 'text-[8px] sm:text-[9px] tracking-tight';
 
   const inkStamp = (
     <div
@@ -65,14 +65,29 @@ export const ResultHankoStamp: React.FC<ResultHankoStampProps> = ({
       title={titleText}
     >
       <div
-        className={`w-full h-full rounded-full border flex flex-col items-center justify-center leading-none ${innerBorderClass}`}
+        className={`w-full h-full rounded-full border flex flex-col items-center justify-center leading-none text-center ${innerBorderClass}`}
       >
-        <span className={`font-serif font-black leading-none ${kanjiSizeClass} ${kanjiColorClass}`}>
-          {passed ? '合格' : '未達'}
-        </span>
-        <span className={`font-sans font-black uppercase mt-0.5 leading-none ${subSizeClass} ${subColorClass}`}>
-          {passed ? 'ĐẠT' : 'CẦN RÈN'}
-        </span>
+        {passed ? (
+          <>
+            <span className={`font-sans font-black leading-none ${primarySizeClass} ${mainLabelClass}`}>
+              ĐẠT
+            </span>
+            {size === 'lg' && (
+              <span className={`font-sans font-bold uppercase mt-1 leading-none ${subSizeClass} ${subLabelClass}`}>
+                CHUẨN
+              </span>
+            )}
+          </>
+        ) : (
+          <>
+            <span className={`font-sans font-black uppercase leading-none ${subSizeClass} ${mainLabelClass}`}>
+              CHƯA
+            </span>
+            <span className={`font-sans font-black uppercase mt-0.5 leading-none ${size === 'lg' ? 'text-sm sm:text-base' : 'text-[10px] sm:text-[11px]'} ${mainLabelClass}`}>
+              ĐẠT
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

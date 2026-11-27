@@ -1,7 +1,8 @@
 import type { ApiResponse } from '../types/auth';
 import type { LearnerProfile, UpdateLearnerProfileRequest, JLPTLevel } from '../types/profile';
+import { resolveApiUrl } from '../utils/apiBase';
 
-const API_BASE_URL = '/api/profile';
+const API_BASE_URL = resolveApiUrl('/api/profile');
 const ALLOWED_JLPT_LEVELS: JLPTLevel[] = ['N5', 'N4', 'N3'];
 
 class ProfileService {

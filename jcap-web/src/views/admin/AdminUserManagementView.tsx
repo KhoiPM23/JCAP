@@ -4,6 +4,7 @@ import {
   type AdminUserItem,
   type AdminUserSearchParams,
 } from '../../services/adminUserService';
+import { resolveMediaUrl } from '../../utils/apiBase';
 
 export const AdminUserManagementView: React.FC = () => {
   // Danh sách & thống kê
@@ -349,7 +350,7 @@ export const AdminUserManagementView: React.FC = () => {
                           <div className="flex items-center gap-3">
                             {item.profilePictureUrl ? (
                               <img
-                                src={item.profilePictureUrl}
+                                src={resolveMediaUrl(item.profilePictureUrl)}
                                 alt={item.fullName}
                                 className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
                               />
@@ -525,7 +526,7 @@ export const AdminUserManagementView: React.FC = () => {
             <div className="flex items-center gap-4">
               {detailUser.profilePictureUrl ? (
                 <img
-                  src={detailUser.profilePictureUrl}
+                  src={resolveMediaUrl(detailUser.profilePictureUrl)}
                   alt={detailUser.fullName}
                   className="w-16 h-16 rounded-full object-cover border border-slate-200"
                 />

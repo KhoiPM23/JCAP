@@ -1,0 +1,102 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: jcap-sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:-ChangeMe_StrongPassword123!}
+    volumes:
+      - jcap_sql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  whisper:
+    build:
+      context: ./tools/whisper_engine
+      dockerfile: Dockerfile
+    container_name: jcap-whisper
+    restart: unless-stopped
+    environment:
+      WHISPER_HOST: 0.0.0.0
+      WHISPER_PORT: ${WHISPER_PORT:-50022}
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      WHISPER_DEVICE: ${WHISPER_DEVICE:-cpu}
+      WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
+      WHISPER_MODEL_DIR: /models
+      WHISPER_PERSIST_AUDIO: ${WHISPER_PERSIST_AUDIO:-false}
+      WHISPER_CORS_ORIGINS: ${WHISPER_CORS_ORIGINS:-*}
+      WHISPER_TOKEN: ${WHISPER_TOKEN:-}
+    volumes:
+      - jcap_whisper_models:/models
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:50022/health').read()\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  voicevox:
+    image: voicevox/voicevox_engine:cpu-latest
+    container_name: jcap-voicevox
+    restart: unless-stopped
+    environment:
+      VV_OUTPUT_LOG_UTF8: "1"
+
+  jcap-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jcap-api
+    restart: unless-stopped
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    ports:
+      - "${JCAP_API_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:-Server=sqlserver,1433;Database=JCAP_DB;User Id=sa;Password=ChangeMe_StrongPassword123!;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;}
+      Jwt__Key: ${Jwt__Key:-REPLACE_WITH_AT_LEAST_32_CHAR_RANDOM_JWT_SECRET}
+      Jwt__Issuer: ${Jwt__Issuer:-http://localhost:8080}
+      Jwt__Audience: ${Jwt__Audience:-http://localhost:8080}
+      BackendUrl: ${BackendUrl:-http://localhost:8080}
+      FrontendUrl: ${FrontendUrl:-http://localhost:3000}
+      Hosting__ForceHttpsRedirection: ${Hosting__ForceHttpsRedirection:-false}
+      Hosting__TrustAllProxies: ${Hosting__TrustAllProxies:-true}
+      Cors__AllowedOrigins: ${Cors__AllowedOrigins:-}
+      Authentication__Google__ClientId: ${Authentication__Google__ClientId:-}
+      Authentication__Google__ClientSecret: ${Authentication__Google__ClientSecret:-}
+      Authentication__Google__RedirectUri: ${Authentication__Google__RedirectUri:-http://localhost:8080/api/auth/google/callback}
+      Gemini__ApiKey: ${Gemini__ApiKey:-}
+      Gemini__Model: ${Gemini__Model:-gemini-3.5-flash-lite}
+      Email__Host: ${Email__Host:-}
+      Email__Port: ${Email__Port:-587}
+      Email__Username: ${Email__Username:-}
+      Email__Password: ${Email__Password:-}
+      Email__From: ${Email__From:-}
+      Email__DisplayName: ${Email__DisplayName:-JCAP Japanese Learning}
+      Email__EnableSsl: ${Email__EnableSsl:-true}
+      VoiceVox__BaseUrl: ${VoiceVox__BaseUrl:-http://voicevox:50021}
+      Whisper__BaseUrl: ${Whisper__BaseUrl:-http://whisper:50022}
+      Whisper__AutoStart: "false"
+      Whisper__Token: ${Whisper__Token:-}
+      Shadowing__Asr__BaseUrl: ${Shadowing__Asr__BaseUrl:-http://127.0.0.1:50023}
+      Shadowing__Asr__AutoStart: "false"
+      Shadowing__Asr__Token: ${Shadowing__Asr__Token:-}
+    volumes:
+      - jcap_wwwroot_audio:/app/wwwroot/audio
+      - jcap_wwwroot_audio_cache:/app/wwwroot/audio-cache
+      - jcap_wwwroot_uploads:/app/wwwroot/uploads
+
+volumes:
+  jcap_sql_data:
+  jcap_whisper_models:
+  jcap_wwwroot_audio:
+  jcap_wwwroot_audio_cache:
+  jcap_wwwroot_uploads:

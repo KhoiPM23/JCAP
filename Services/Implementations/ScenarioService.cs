@@ -30,31 +30,64 @@ public class ScenarioService : IScenarioService
         _configuration = configuration;
     }
 
+    private static bool ContainsWholeVietnameseCue(string text, params string[] cues)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        foreach (var cue in cues)
+        {
+            if (string.IsNullOrWhiteSpace(cue)) continue;
+            if (cue.Contains(' '))
+            {
+                if (text.Contains(cue, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            else if (System.Text.RegularExpressions.Regex.IsMatch(
+                text,
+                $@"(?<![\p{{L}}\p{{N}}]){System.Text.RegularExpressions.Regex.Escape(cue)}(?![\p{{L}}\p{{N}}])",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static string ResolveScenarioTopicCode(Scenario s)
     {
         var code = (s.ScenarioCode ?? string.Empty).ToUpperInvariant();
         var title = (s.Title ?? string.Empty).ToLowerInvariant();
         var desc = (s.Description ?? string.Empty).ToLowerInvariant();
 
-        if (code.Contains("RAMEN") || code.Contains("CAFE") || code.Contains("DINING") || code.Contains("RESTAURANT")
-            || title.Contains("mì") || title.Contains("cà phê") || title.Contains("quán") || title.Contains("ăn") || title.Contains("uống")
-            || desc.Contains("ramen") || desc.Contains("cà phê") || desc.Contains("món"))
+        // 1. Ưu tiên mã kịch bản tường minh (ScenarioCode) trước mô tả để tránh match nhầm từ khóa bối cảnh phụ
+        if (code.Contains("BAITO") || code.Contains("OFFICE") || code.Contains("WORK") || code.Contains("JOB"))
+            return "STUDY_WORK";
+        if (code.Contains("RAMEN") || code.Contains("CAFE") || code.Contains("DINING") || code.Contains("RESTAURANT"))
             return "DINING";
-
-        if (code.Contains("SHINJUKU") || code.Contains("TRAIN") || code.Contains("TRANSPORT") || code.Contains("STATION")
-            || title.Contains("vé tàu") || title.Contains("ga") || title.Contains("hỏi đường") || title.Contains("xe buýt")
-            || desc.Contains("tàu") || desc.Contains("ga"))
+        if (code.Contains("SHINJUKU") || code.Contains("TRAIN") || code.Contains("TRANSIT") || code.Contains("TRANSPORT") || code.Contains("STATION"))
             return "TRANSPORT";
-
-        if (code.Contains("7ELEVEN") || code.Contains("SHOPPING") || code.Contains("KONBINI")
-            || title.Contains("mua sắm") || title.Contains("tiện lợi") || title.Contains("siêu thị")
-            || desc.Contains("thanh toán") || desc.Contains("cửa hàng tiện lợi"))
+        if (code.Contains("7ELEVEN") || code.Contains("SHOPPING") || code.Contains("KONBINI"))
             return "SHOPPING";
 
-        if (code.Contains("BAITO") || code.Contains("OFFICE") || code.Contains("WORK") || code.Contains("JOB")
-            || title.Contains("phỏng vấn") || title.Contains("công sở") || title.Contains("xin việc") || title.Contains("làm thêm")
-            || desc.Contains("phỏng vấn") || desc.Contains("công việc"))
+        // 2. Xét tiêu đề (Title) theo ranh giới từ chuẩn tiếng Việt (tránh "ăn" khớp nhầm với "băng qua đường")
+        if (ContainsWholeVietnameseCue(title, "phỏng vấn", "công sở", "xin việc", "làm thêm", "baito"))
             return "STUDY_WORK";
+        if (ContainsWholeVietnameseCue(title, "băng qua đường", "cụ già", "giúp đỡ", "bệnh viện", "hàng xóm", "khách sạn"))
+            return "DAILY_LIFE";
+        if (ContainsWholeVietnameseCue(title, "ramen", "cà phê", "cafe", "quán ăn", "gọi món", "đặt món", "trà chiều", "nhà hàng", "quán mì", "mì", "uống"))
+            return "DINING";
+        if (ContainsWholeVietnameseCue(title, "vé tàu", "nhà ga", "ga", "tàu", "hỏi đường", "xe buýt", "sân bay"))
+            return "TRANSPORT";
+        if (ContainsWholeVietnameseCue(title, "mua sắm", "cửa hàng tiện lợi", "siêu thị", "konbini", "7-eleven"))
+            return "SHOPPING";
+
+        // 3. Fallback cuối cùng mới xét mô tả (Description)
+        if (ContainsWholeVietnameseCue(desc, "phỏng vấn", "công sở", "xin việc", "làm thêm", "công việc", "danh thiếp"))
+            return "STUDY_WORK";
+        if (ContainsWholeVietnameseCue(desc, "ramen", "cà phê", "món ăn", "quán ăn", "đồ uống", "trà chiều"))
+            return "DINING";
+        if (ContainsWholeVietnameseCue(desc, "tàu điện", "ga tàu", "mua vé", "lối đi"))
+            return "TRANSPORT";
+        if (ContainsWholeVietnameseCue(desc, "mua sắm", "thanh toán", "cửa hàng tiện lợi", "siêu thị"))
+            return "SHOPPING";
 
         return "DAILY_LIFE";
     }
