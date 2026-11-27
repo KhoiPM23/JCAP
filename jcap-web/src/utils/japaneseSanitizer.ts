@@ -269,6 +269,52 @@ export function cleanJapaneseForTts(text?: string | null): string {
   return clean;
 }
 
+const JAPANESE_SENTENCE_CHUNK_REGEX = /[^。！？!?]+(?:[。！？!?]+[」』）\)]*)?/g;
+const MIN_TTS_SENTENCE_CHUNK_LENGTH = 12;
+const MAX_MERGED_TTS_SENTENCE_CHUNK_LENGTH = 70;
+
+/**
+ * Tách đoạn thoại tiếng Nhật dài thành các câu ngắn đồng bộ 1:1 với Backend
+ * (PlacementTestService.SplitJapaneseSentencesForTts) để tổng hợp & phát cuốn chiếu
+ * từng câu trên CPU VOICEVOX (giảm độ trễ tiếng đầu tiên từ ~20s xuống ~3-6s).
+ */
+export function splitJapaneseSentencesForTts(text?: string | null): string[] {
+  if (!text) return [];
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+
+  const matches = trimmed.match(JAPANESE_SENTENCE_CHUNK_REGEX) || [];
+  const raw = matches.map((s) => s.trim()).filter(Boolean);
+  if (raw.length === 0) return [trimmed];
+
+  const merged: string[] = [];
+  let i = 0;
+  while (i < raw.length) {
+    let current = raw[i];
+    while (
+      current.length < MIN_TTS_SENTENCE_CHUNK_LENGTH &&
+      i + 1 < raw.length &&
+      current.length + raw[i + 1].length <= MAX_MERGED_TTS_SENTENCE_CHUNK_LENGTH
+    ) {
+      i += 1;
+      current += raw[i];
+    }
+    merged.push(current);
+    i += 1;
+  }
+
+  if (
+    merged.length >= 2 &&
+    merged[merged.length - 1].length < MIN_TTS_SENTENCE_CHUNK_LENGTH &&
+    merged[merged.length - 2].length + merged[merged.length - 1].length <= MAX_MERGED_TTS_SENTENCE_CHUNK_LENGTH
+  ) {
+    merged[merged.length - 2] += merged[merged.length - 1];
+    merged.pop();
+  }
+
+  return merged;
+}
+
 /**
  * Tự động tạo thẻ <ruby><rt> cho các từ tiếng Nhật thông dụng nếu backend chưa kịp gắn furigana.
  * Đảm bảo 100% người học N5/N4 luôn đọc được cách phát âm trên giàn giáo gợi ý và phòng luyện.

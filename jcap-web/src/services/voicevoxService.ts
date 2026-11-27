@@ -215,7 +215,7 @@ class VoiceVoxService {
       }
 
       // 3. Network Fetch
-      // Mặc định 12000ms (Shadowing), Roleplay/Placement có thể truyền timeout dài hơn (25000ms) cho câu dài trên CPU
+      // Mặc định 12000ms (Shadowing), Roleplay/Placement truyền timeout dài hơn (20000-40000ms) cho câu dài trên CPU
       const controller = new AbortController();
       const resolvedTimeoutMs = Math.max(3000, timeoutMs);
       const timeoutId = setTimeout(() => controller.abort(), resolvedTimeoutMs);

@@ -18,7 +18,7 @@ namespace JCAP.Services.Implementations
         private static readonly ConcurrentDictionary<string, byte[]> _audioCache = new(StringComparer.Ordinal);
         // Hàng đợi gộp request đang tổng hợp theo cacheKey để tránh gửi trùng request tới VOICEVOX Engine
         private static readonly ConcurrentDictionary<string, Lazy<Task<byte[]>>> _inFlightSyntheses = new(StringComparer.Ordinal);
-        private static readonly TimeSpan SynthesisInternalTimeout = TimeSpan.FromSeconds(35);
+        private static readonly TimeSpan SynthesisInternalTimeout = TimeSpan.FromSeconds(45);
 
         private static readonly Dictionary<string, (string Romaji, string Gender, string Region, string Description)> CharacterMetadata = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -80,7 +80,7 @@ namespace JCAP.Services.Implementations
                 .TrimEnd('/');
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.BaseAddress = new Uri(_baseUrl);
-            _httpClient.Timeout = TimeSpan.FromSeconds(40);
+            _httpClient.Timeout = TimeSpan.FromSeconds(50);
 
             var webRoot = !string.IsNullOrEmpty(environment.WebRootPath)
                 ? environment.WebRootPath
