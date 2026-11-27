@@ -1,11 +1,12 @@
 import type { ContentDetail, ContentKind, ContentRow, LearningFilters, LearningKind, LearningPage, SaveContent, SaveTopic, TopicDetail, TopicOption, TopicRow } from '../types/adminLearning';
+import { resolveApiUrl } from '../utils/apiBase';
 
 export class LearningApiError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
 async function request<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
   const token = localStorage.getItem('jcap_token');
-  const response = await fetch(`/api/admin/learning/${path}`, {
+  const response = await fetch(resolveApiUrl(`/api/admin/learning/${path}`), {
     method, signal, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: body === undefined ? undefined : JSON.stringify(body),
   });

@@ -74,7 +74,10 @@ namespace JCAP.Services.Implementations
             ILogger<VoiceVoxService> logger)
         {
             _logger = logger;
-            _baseUrl = configuration["VoiceVox:BaseUrl"] ?? "http://127.0.0.1:50021";
+            var configuredBaseUrl = configuration["VoiceVox:BaseUrl"];
+            _baseUrl = (string.IsNullOrWhiteSpace(configuredBaseUrl) ? "http://127.0.0.1:50021" : configuredBaseUrl)
+                .Trim()
+                .TrimEnd('/');
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.BaseAddress = new Uri(_baseUrl);
             _httpClient.Timeout = TimeSpan.FromSeconds(40);
@@ -142,7 +145,9 @@ namespace JCAP.Services.Implementations
             catch (HttpRequestException ex)
             {
                 _logger.LogWarning("Không thể kết nối đến VOICEVOX Engine tại {BaseUrl}: {Message}", _baseUrl, ex.Message);
-                throw new InvalidOperationException("VOICEVOX Engine is not running. Vui lòng đảm bảo VOICEVOX đang chạy ở port 50021.", ex);
+                throw new InvalidOperationException(
+                    $"VOICEVOX Engine is not running at {_baseUrl}. Vui lòng đảm bảo VOICEVOX đang chạy và có thể truy cập được.",
+                    ex);
             }
         }
 
@@ -351,7 +356,9 @@ namespace JCAP.Services.Implementations
             catch (HttpRequestException ex)
             {
                 _logger.LogWarning("Mất kết nối tới VOICEVOX Engine tại {BaseUrl}: {Message}", _baseUrl, ex.Message);
-                throw new InvalidOperationException("VOICEVOX Engine is not running. Vui lòng đảm bảo VOICEVOX đang chạy ở port 50021.", ex);
+                throw new InvalidOperationException(
+                    $"VOICEVOX Engine is not running at {_baseUrl}. Vui lòng đảm bảo VOICEVOX đang chạy và có thể truy cập được.",
+                    ex);
             }
         }
 

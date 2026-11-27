@@ -16,4 +16,5 @@ public class SendRoleplayMessageRequestDto
     public bool BargeInInterrupted { get; set; } = false;
     public double? MoraRate { get; set; }
     public double? PauseRatio { get; set; }
+    public string? HintSampleText { get; set; }
 }

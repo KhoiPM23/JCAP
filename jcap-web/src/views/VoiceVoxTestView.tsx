@@ -182,8 +182,8 @@ export const VoiceVoxTestView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-xs font-semibold text-[#005ab6] mb-2">
-            <span>🇯🇵</span>
-            <span>VOICEVOX TTS Engine (Local POC)</span>
+            <span>JP</span>
+            <span>VOICEVOX TTS Engine</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
             <span className="material-symbols-outlined text-[28px] text-[#005ab6]">graphic_eq</span>
@@ -207,9 +207,9 @@ export const VoiceVoxTestView: React.FC = () => {
           />
           <span className="text-xs font-bold text-slate-700">
             {isEngineReady === true
-              ? 'Engine đang chạy (Port 50021)'
+              ? 'Dịch vụ TTS đang hoạt động'
               : isEngineReady === false
-              ? 'Engine chưa kết nối'
+              ? 'Dịch vụ TTS chưa kết nối'
               : 'Đang kiểm tra...'}
           </span>
           <button
@@ -227,10 +227,10 @@ export const VoiceVoxTestView: React.FC = () => {
         <div className="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2">
           <div className="flex items-center gap-2 font-bold text-sm text-amber-800">
             <span className="material-symbols-outlined text-[20px] text-amber-600">warning</span>
-            <span>VOICEVOX Engine chưa chạy ở cổng 50021</span>
+            <span>VOICEVOX TTS Engine chưa sẵn sàng</span>
           </div>
           <p className="text-xs text-amber-700 leading-relaxed">
-            Vui lòng mở ứng dụng VOICEVOX trên máy để Engine tự động lắng nghe ở cổng 50021.
+            Backend không thể kết nối đến dịch vụ VOICEVOX TTS đã cấu hình. Vui lòng kiểm tra trạng thái dịch vụ TTS trên máy chủ.
           </p>
         </div>
       )}
@@ -260,7 +260,7 @@ export const VoiceVoxTestView: React.FC = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              🌟 Tất cả ({counts.all})
+              Tất cả ({counts.all})
             </button>
             <button
               type="button"
@@ -271,7 +271,7 @@ export const VoiceVoxTestView: React.FC = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-pink-50 hover:text-pink-700'
               }`}
             >
-              🌸 Giọng Nữ ({counts.female})
+              Giọng Nữ ({counts.female})
             </button>
             <button
               type="button"
@@ -282,7 +282,7 @@ export const VoiceVoxTestView: React.FC = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700'
               }`}
             >
-              👔 Giọng Nam ({counts.male})
+              Giọng Nam ({counts.male})
             </button>
             <button
               type="button"
@@ -293,7 +293,7 @@ export const VoiceVoxTestView: React.FC = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
               }`}
             >
-              ✨ Mascot & Anime ({counts.mascot})
+              Mascot & Anime ({counts.mascot})
             </button>
           </div>
         </div>
@@ -312,19 +312,19 @@ export const VoiceVoxTestView: React.FC = () => {
             >
               {filteredCharacters.map((c) => (
                 <option key={c.speakerName} value={c.speakerName}>
-                  {c.gender === 'Female' ? '🌸' : c.gender === 'Male' ? '👔' : '✨'} {c.speakerName} ({c.romajiName}) — {c.region}
+                  [{c.gender === 'Female' ? 'Nữ' : c.gender === 'Male' ? 'Nam' : 'Mascot'}] {c.speakerName} ({c.romajiName}) — {c.region}
                 </option>
               ))}
             </select>
             {activeCharacter && (
               <div className="space-y-1 mt-1.5">
                 <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                  <span>📍 Vùng:</span>
+                  <span>Vùng:</span>
                   <span>{activeCharacter.region}</span>
                 </div>
                 {activeCharacter.description && (
                   <p className="text-[11px] text-[#005ab6] font-medium italic">
-                    💡 {activeCharacter.description}
+                    {activeCharacter.description}
                   </p>
                 )}
               </div>

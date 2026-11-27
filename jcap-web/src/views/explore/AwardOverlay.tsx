@@ -12,8 +12,8 @@ const TOAST_MS = 4500;
 /**
  * Báo những gì vừa đạt, mỗi sự kiện đúng một lần (server chỉ báo "vừa đạt" ở lần đồng bộ cấp nó):
  * - Con dấu tỉnh, dấu son tỉnh, chương mới mở: hộp thoại giữa màn hình, con dấu tỉnh "đóng cộp".
- * - Chỉ con dấu mốc: thông báo nhỏ ở góc. Nếu đang mở bài học của chính mốc đó thì bỏ qua,
- *   vì con dấu trong ngăn bài học đã tự "đóng cộp".
+ * - Chỉ con dấu mốc: thông báo nhỏ ở góc. Mốc đang luyện ở khung bên cạnh thì bỏ qua (lessonSpotId),
+ *   vì con dấu trong thẻ tổng kết đã tự "đóng cộp".
  */
 export const AwardOverlay: React.FC<{ lessonSpotId: number | null; journey: JourneyState; isWide: boolean }> = ({ lessonSpotId, journey, isWide }) => {
   const queue = useAwardQueue();

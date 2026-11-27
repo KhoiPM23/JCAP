@@ -467,4 +467,24 @@ public class ScenarioServiceTests
         Assert.Contains(result.Data, t => t.Code == "TRANSPORT" && t.IsPrimary);
         Assert.Contains(result.Data, t => t.Code == "DAILY_LIFE" && t.IsPrimary);
     }
+
+    [Fact]
+    public void ResolveScenarioTopicCode_DistinguishesBaitoAndCrossStreetFromFalseKeywordMatches()
+    {
+        var baito = new Scenario
+        {
+            ScenarioCode = "SCN_BAITO_01",
+            Title = "Phỏng vấn xin việc làm thêm (Baito)",
+            Description = "Luyện tập phỏng vấn xin việc làm thêm tại cửa hàng tiện lợi hoặc quán ăn tại Nhật Bản."
+        };
+        var elderly = new Scenario
+        {
+            ScenarioCode = "SCN_HELP_ELDER_01",
+            Title = "Giúp cụ già băng qua đường",
+            Description = "Hỗ trợ người cao tuổi di chuyển an toàn qua ngã tư."
+        };
+
+        Assert.Equal("STUDY_WORK", ScenarioService.ResolveScenarioTopicCode(baito));
+        Assert.Equal("DAILY_LIFE", ScenarioService.ResolveScenarioTopicCode(elderly));
+    }
 }

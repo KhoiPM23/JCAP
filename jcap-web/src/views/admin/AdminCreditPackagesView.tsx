@@ -6,6 +6,7 @@ import {
   type SubscriptionPlanItem,
 } from '../../services/subscriptionPlanService';
 import { AdminRevenueReportSection } from './AdminRevenueReportSection';
+import { resolveApiUrl } from '../../utils/apiBase';
 
 // ============================================================================
 // TypeScript Interfaces
@@ -77,7 +78,7 @@ const initialMonthlyFormData: MonthlyPlanFormData = {
   isActive: true,
 };
 
-const API_BASE_URL = '/api/admin/credits/packages';
+const API_BASE_URL = resolveApiUrl('/api/admin/credits/packages');
 
 export const AdminCreditPackagesView: React.FC = () => {
   const navigate = useNavigate();

@@ -428,11 +428,12 @@ describe('FE-03 Adversarial: LivingAvatar 588-State Matrix Stress Test', () => {
   });
 
   it('Verifies emotion state visual indicators (rings, bowing transform, aizuchi)', () => {
-    // Speaking: ping ring
+    // Speaking: subtle Indigo border highlight without distracting animate-ping water ripple
     const speakingHtml = ReactDOMServer.renderToStaticMarkup(
       React.createElement(LivingAvatar, { avatarState: 'speaking', personaName: 'Tanaka' })
     );
-    assert.ok(speakingHtml.includes('animate-ping'), 'Speaking should have ping animation halo');
+    assert.equal(speakingHtml.includes('animate-ping'), false, 'Speaking must not show distracting ping ripple');
+    assert.ok(speakingHtml.includes('border-[var(--ai)]'), 'Speaking should highlight portrait border');
 
     // Listening: pulse ring and aizuchi
     const listeningHtml = ReactDOMServer.renderToStaticMarkup(

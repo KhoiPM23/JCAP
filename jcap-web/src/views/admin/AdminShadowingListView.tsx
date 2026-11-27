@@ -14,6 +14,7 @@ import type {
   GeneratedShadowingDialogueResult,
 } from '../../types/shadowing';
 import { parseRFC4180CSV } from '../../utils/csvParser';
+import { resolveApiUrl, resolveMediaUrl } from '../../utils/apiBase';
 import {
   normalizeSpeakerRole,
   ensureRolesCoverSentences,
@@ -968,7 +969,8 @@ export const AdminShadowingListView: React.FC = () => {
   const handleDownloadTemplate = async (format: 'csv' | 'json') => {
     const fileName = format === 'csv' ? 'shadowing_dialogue_template.csv' : 'shadowing_full_lesson_template.json';
     try {
-      const res = await fetch(`/api/admin/shadowing/download-template?type=${format}`);
+      const templateUrl = resolveApiUrl(`/api/admin/shadowing/download-template?type=${format}`);
+      const res = await fetch(templateUrl);
       if (!res.ok) throw new Error('Download failed');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -982,7 +984,7 @@ export const AdminShadowingListView: React.FC = () => {
       setTimeout(() => window.URL.revokeObjectURL(url), 60000);
       addToast(`Đang tải file mẫu: ${fileName}`, 'success');
     } catch {
-      window.location.href = `/api/admin/shadowing/download-template?type=${format}`;
+      window.location.href = resolveApiUrl(`/api/admin/shadowing/download-template?type=${format}`);
     }
   };
 
@@ -2176,7 +2178,7 @@ export const AdminShadowingListView: React.FC = () => {
                                   <span>🔊</span>
                                   <audio
                                     controls
-                                    src={s.nativeAudioUrl}
+                                    src={resolveMediaUrl(s.nativeAudioUrl)}
                                     className="h-8 w-64 sm:w-80 min-w-[240px]"
                                     onError={() => {
                                       setBrokenAudioIndexes((prev) => ({ ...prev, [idx]: true }));
@@ -2716,7 +2718,7 @@ export const AdminShadowingListView: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t border-emerald-100">
                     <a
-                      href="/api/admin/shadowing/download-template?type=csv"
+                      href={resolveApiUrl('/api/admin/shadowing/download-template?type=csv')}
                       download="shadowing_dialogue_template.csv"
                       onClick={(e) => {
                         e.preventDefault();
@@ -2751,7 +2753,7 @@ export const AdminShadowingListView: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t border-purple-100">
                     <a
-                      href="/api/admin/shadowing/download-template?type=json"
+                      href={resolveApiUrl('/api/admin/shadowing/download-template?type=json')}
                       download="shadowing_full_lesson_template.json"
                       onClick={(e) => {
                         e.preventDefault();
@@ -3196,7 +3198,7 @@ export const AdminShadowingListView: React.FC = () => {
                         {s.nativeAudioUrl ? (
                           <div className="flex items-center gap-2">
                             <span className="text-[11px] text-emerald-700 font-bold shrink-0">Audio mẫu:</span>
-                            <audio controls src={s.nativeAudioUrl} className="h-8 w-64 sm:w-80 min-w-[240px]" />
+                            <audio controls src={resolveMediaUrl(s.nativeAudioUrl)} className="h-8 w-64 sm:w-80 min-w-[240px]" />
                           </div>
                         ) : (
                           <span className="text-slate-400 text-[11px] italic">Chưa gắn audio mẫu</span>

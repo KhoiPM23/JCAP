@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
-$whisperDir = Join-Path $repoRoot "tools\whisper_engine"
+$whisperDir = $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $venvPython = Join-Path $whisperDir "venv\Scripts\python.exe"
 $serverScript = Join-Path $whisperDir "server.py"
 

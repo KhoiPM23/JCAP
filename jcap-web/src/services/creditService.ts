@@ -6,8 +6,9 @@ import type {
   CreditTransaction,
   UserQuota,
 } from '../types/credit';
+import { resolveApiUrl } from '../utils/apiBase';
 
-const BASE_URL = '/api/credits';
+const BASE_URL = resolveApiUrl('/api/credits');
 
 class CreditService {
   private getHeaders(): HeadersInit {

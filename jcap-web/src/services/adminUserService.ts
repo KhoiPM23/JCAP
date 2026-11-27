@@ -1,4 +1,5 @@
 import type { ApiResponse } from '../types/auth';
+import { resolveApiUrl } from '../utils/apiBase';
 
 export interface AdminUserItem {
   id: string;
@@ -34,7 +35,7 @@ export interface AdminUserSearchParams {
   pageSize?: number;
 }
 
-const API_BASE_URL = '/api/admin/users';
+const API_BASE_URL = resolveApiUrl('/api/admin/users');
 
 export const adminUserService = {
   /**

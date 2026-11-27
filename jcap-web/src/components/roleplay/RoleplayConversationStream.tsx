@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import type { RoleplayMessageDto } from '../../types/roleplay';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 import { SumiInkIndicator } from './SumiInkIndicator';
-import { cleanFuriganaHtml, sanitizeDisplayJapanese } from '../../utils/japaneseSanitizer';
+import { alignFuriganaWithOriginal, sanitizeDisplayJapanese } from '../../utils/japaneseSanitizer';
 
 export interface RoleplayConversationStreamProps {
   messages: RoleplayMessageDto[];
@@ -40,7 +40,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
       return (
         <span
           className={isUser ? 'bubble-user text-base font-sans' : 'bubble-ai text-base font-sans'}
-          dangerouslySetInnerHTML={{ __html: cleanFuriganaHtml(msg.furiganaHtml) }}
+          dangerouslySetInnerHTML={{ __html: alignFuriganaWithOriginal(msg.furiganaHtml, msg.japaneseText) }}
         />
       );
     }

@@ -8,9 +8,9 @@ import { roleplayResultService } from '../services/roleplayResultService';
 import { shadowingService } from '../services/shadowingService';
 import { formatDateFull, formatDateTime } from '../utils/dateUtils';
 import type { PlacementTestCompleteResponseDto, PlacementTestStatusDto } from '../types/placementTest';
+import { resolveMediaUrl } from '../utils/apiBase';
 import type { JLPTLevel, LearnerProfile } from '../types/profile';
 import { useExploreJourney } from './explore/exploreStore';
-import { LearnerIntelligenceRadarCard } from '../components/roleplay/LearnerIntelligenceRadarCard';
 
 /**
  * Hồ sơ học viên (design-handoff mục 5): cột trái thẻ danh tính, cột phải mục tiêu JLPT + số liệu học, thông tin tài khoản,
@@ -70,19 +70,13 @@ export const LearnerProfileView: React.FC = () => {
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
   }, []);
 
-  // Tự động cuộn mượt xuống Bản đồ Năng lực khi truy cập từ trang Kết quả (#radar-map hoặc #radar)
+  // Giữ tương thích ngược nếu người dùng mở liên kết cũ /profile#radar-map
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === '#radar' || hash === '#radar-map') {
-      const timer = setTimeout(() => {
-        const el = document.getElementById('radar-map') || document.getElementById('radar');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 350);
-      return () => clearTimeout(timer);
+      navigate('/profile/competency', { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   /** Đổi mục tiêu JLPT ngay tại trang (cùng API với trang Chỉnh sửa hồ sơ) */
   const changeLevel = async (level: string) => {
@@ -153,7 +147,7 @@ export const LearnerProfileView: React.FC = () => {
           >
             <div className="relative">
               {profile.profilePictureUrl ? (
-                <img src={profile.profilePictureUrl} alt={profile.fullName} className="h-[104px] w-[104px] rounded-full object-cover" />
+                <img src={resolveMediaUrl(profile.profilePictureUrl)} alt={profile.fullName} className="h-[104px] w-[104px] rounded-full object-cover" />
               ) : (
                 <span className="inline-flex h-[104px] w-[104px] items-center justify-center rounded-full bg-sora text-[40px] font-bold text-on-sora">
                   {avatarInitial}
@@ -372,10 +366,30 @@ export const LearnerProfileView: React.FC = () => {
           </div>
         </div>
 
-        {/* Báo cáo Năng lực Hội thoại AI ngầm (TikTok-style Linguistic Radar) */}
-        <section id="radar" aria-label="Năng lực Kaiwa ngầm" className="w-full scroll-mt-20">
-          <div id="radar-map" className="scroll-mt-24" />
-          <LearnerIntelligenceRadarCard />
+        {/* Thẻ liên kết gọn sang trang Năng lực cá nhân chuyên biệt */}
+        <section
+          aria-label="Năng lực cá nhân"
+          className="flex flex-wrap items-center justify-between gap-4 rounded-jc-lg border border-line bg-paper-50 px-6 py-4 shadow-2xs"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ai/25 bg-ai-soft font-serif text-lg font-black text-ai select-none"
+              aria-hidden="true"
+            >
+              総
+            </div>
+            <div className="min-w-0">
+              <h2 className="m-0 text-[16px] font-semibold leading-6 text-sumi">
+                Năng lực cá nhân
+              </h2>
+              <p className="m-0 text-[13px] leading-5 text-sumi-muted">
+                Xem chỉ số phản xạ, độ chuẩn trợ từ, kính ngữ và lộ trình hội thoại thích ứng.
+              </p>
+            </div>
+          </div>
+          <Button variant="secondary" size="sm" icon="psychology" onClick={() => navigate('/profile/competency')}>
+            Mở Năng lực cá nhân
+          </Button>
         </section>
 
         {/* Chân trang tài khoản & Đăng xuất */}

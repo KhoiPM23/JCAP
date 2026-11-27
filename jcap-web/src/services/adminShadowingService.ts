@@ -12,6 +12,8 @@ import type {
   ShadowingGrammarItem,
 } from '../types/shadowing';
 
+import { resolveApiUrl } from '../utils/apiBase';
+
 class AdminShadowingService {
   private getHeaders(): HeadersInit {
     const token = localStorage.getItem('jcap_token');
@@ -26,7 +28,7 @@ class AdminShadowingService {
 
   public async getCatalog(): Promise<ApiResponse<ShadowingDialogueItem[]>> {
     try {
-      const response = await fetch('/api/admin/shadowing', {
+      const response = await fetch(resolveApiUrl('/api/admin/shadowing'), {
         method: 'GET',
         headers: this.getHeaders(),
       });
@@ -50,7 +52,7 @@ class AdminShadowingService {
 
   public async getDetail(id: number): Promise<ApiResponse<ShadowingDialogueDetail>> {
     try {
-      const response = await fetch(`/api/admin/shadowing/${id}`, {
+      const response = await fetch(resolveApiUrl(`/api/admin/shadowing/${id}`), {
         method: 'GET',
         headers: this.getHeaders(),
       });
@@ -74,7 +76,7 @@ class AdminShadowingService {
 
   public async createDialogue(payload: CreateShadowingDialoguePayload): Promise<ApiResponse<ShadowingDialogueDetail>> {
     try {
-      const response = await fetch('/api/admin/shadowing', {
+      const response = await fetch(resolveApiUrl('/api/admin/shadowing'), {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(payload),
@@ -100,7 +102,7 @@ class AdminShadowingService {
 
   public async updateDialogue(id: number, payload: UpdateShadowingDialoguePayload): Promise<ApiResponse<ShadowingDialogueDetail>> {
     try {
-      const response = await fetch(`/api/admin/shadowing/${id}`, {
+      const response = await fetch(resolveApiUrl(`/api/admin/shadowing/${id}`), {
         method: 'PUT',
         headers: this.getHeaders(),
         body: JSON.stringify(payload),
@@ -126,7 +128,7 @@ class AdminShadowingService {
 
   public async softDelete(id: number): Promise<ApiResponse<boolean>> {
     try {
-      const response = await fetch(`/api/admin/shadowing/${id}`, {
+      const response = await fetch(resolveApiUrl(`/api/admin/shadowing/${id}`), {
         method: 'DELETE',
         headers: this.getHeaders(),
       });
@@ -150,7 +152,7 @@ class AdminShadowingService {
 
   public async generateDialogue(payload: GenerateShadowingDialoguePayload): Promise<ApiResponse<GeneratedShadowingDialogueResult>> {
     try {
-      const response = await fetch('/api/admin/shadowing/generate-dialogue', {
+      const response = await fetch(resolveApiUrl('/api/admin/shadowing/generate-dialogue'), {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(payload),
@@ -175,7 +177,7 @@ class AdminShadowingService {
 
   public async translateAssist(payload: TranslateAssistPayload): Promise<ApiResponse<TranslateAssistResult>> {
     try {
-      const response = await fetch('/api/admin/shadowing/translate-assist', {
+      const response = await fetch(resolveApiUrl('/api/admin/shadowing/translate-assist'), {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(payload),
@@ -204,7 +206,7 @@ class AdminShadowingService {
     formData.append('file', file, 'audio_record.webm');
 
     try {
-      const response = await fetch('/api/admin/shadowing/upload-audio', {
+      const response = await fetch(resolveApiUrl('/api/admin/shadowing/upload-audio'), {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
@@ -234,7 +236,7 @@ class AdminShadowingService {
       if (jlptLevel) params.append('jlptLevel', jlptLevel);
       const qs = params.toString() ? `?${params.toString()}` : '';
 
-      const response = await fetch(`/api/admin/vocabularies${qs}`, {
+      const response = await fetch(resolveApiUrl(`/api/admin/vocabularies${qs}`), {
         method: 'GET',
         headers: this.getHeaders(),
       });
@@ -255,7 +257,7 @@ class AdminShadowingService {
       if (jlptLevel) params.append('jlptLevel', jlptLevel);
       const qs = params.toString() ? `?${params.toString()}` : '';
 
-      const response = await fetch(`/api/admin/grammars${qs}`, {
+      const response = await fetch(resolveApiUrl(`/api/admin/grammars${qs}`), {
         method: 'GET',
         headers: this.getHeaders(),
       });

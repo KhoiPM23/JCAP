@@ -16,7 +16,9 @@ import type {
   SaveExploreSpot,
 } from '../types/adminExplore';
 
-const BASE = '/api/admin/explore';
+import { resolveApiUrl } from '../utils/apiBase';
+
+const BASE = resolveApiUrl('/api/admin/explore');
 
 /** Số mốc đang dùng tối thiểu để mở một tỉnh (khớp AdminExploreService.MinSpotsToOpen ở backend) */
 export const MIN_SPOTS_TO_OPEN = 1;

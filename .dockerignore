@@ -1,0 +1,40 @@
+# Git & IDE metadata
+.git/
+.github/
+.vs/
+.vscode/
+.agents/
+.ai-local/
+
+# Build outputs & tests
+bin/
+obj/
+out/
+output/
+JCAP.Tests/
+TestResults/
+*.user
+*.suo
+
+# Secrets & local env overrides
+appsettings.Local.json
+appsettings.*.Local.json
+.env
+.env.*
+!.env.example
+
+# Frontend build dependencies (built separately or via reverse proxy)
+jcap-web/node_modules/
+jcap-web/dist/
+
+# Python virtual environments & caches
+**/venv/
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# Runtime generated media & audio caches
+wwwroot/audio/roleplay/*
+!wwwroot/audio/.gitkeep
+wwwroot/audio-cache/
+wwwroot/uploads/

@@ -1,3 +1,5 @@
+using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using JCAP.DTOs.Roleplay;
 using JCAP.Models;
@@ -366,16 +368,24 @@ public sealed record RoleplaySocialRegister
     public static AiOpeningMessageResult GenerateOpeningMessage(Scenario scenario, ScenarioLevelConfiguration levelConfig)
     {
         var reg = Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
+        var jlpt = (levelConfig.JLPTLevel ?? "N5").Trim().ToUpperInvariant();
 
         switch (reg.RegisterType)
         {
             case SocialRegisterType.Elderly:
+            {
+                string ja = jlpt == "N5"
+                    ? "すみません。向こうまで渡りたいです。手伝ってください。"
+                    : jlpt == "N4"
+                        ? "あのう、すみません。足が悪くて渡りたいのですが、手伝ってくれませんか？"
+                        : "あのう、すみません。足が悪くて、向こう側まで渡りたいのですが、手伝っていただけないでしょうか。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = "あのう、すみません。足が悪くて、向こう側まで渡りたいのですが、手伝っていただけないでしょうか。",
-                    FuriganaHtml = "あのう、すみません。<ruby>足<rt>あし</rt></ruby>が<ruby>悪<rt>わる</rt></ruby>くて、<ruby>向<rt>む</rt></ruby>こう<ruby>側<rt>がわ</rt></ruby>まで<ruby>渡<rt>わた</rt></ruby>りたいのですが、<ruby>手伝<rt>てつだ</rt></ruby>っていただけないでしょうか。",
-                    VietnameseMeaning = $"Xin lỗi, chân {reg.AiSelf} đau và {reg.AiSelf} muốn băng sang bên kia đường, {reg.AiAddressLearner} có thể giúp {reg.AiSelf} được không?"
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
+                    VietnameseMeaning = $"Xin lỗi, {reg.AiSelf} muốn băng sang bên kia đường, {reg.AiAddressLearner} có thể giúp {reg.AiSelf} được không?"
                 };
+            }
 
             case SocialRegisterType.ServiceStaff:
                 return new AiOpeningMessageResult
@@ -386,20 +396,34 @@ public sealed record RoleplaySocialRegister
                 };
 
             case SocialRegisterType.Interviewer:
+            {
+                string ja = jlpt == "N5"
+                    ? "こんにちは。面接を始めます。どうぞ座ってください。"
+                    : jlpt == "N4"
+                        ? "今日はありがとうございます。面接を始めましょう。どうぞお座りください。"
+                        : "ご応募ありがとうございます。本日の面接を担当いたします。どうぞお座りください。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = "ご応募ありがとうございます。本日の面接を担当いたします。どうぞお座りください。",
-                    FuriganaHtml = "ご<ruby>応募<rt>おうぼ</rt></ruby>ありがとうございます。<ruby>本日<rt>ほんじつ</rt></ruby>の<ruby>面接<rt>めんせつ</rt></ruby>を<ruby>担当<rt>たんとう</rt></ruby>いたします。どうぞお<ruby>座<rt>すわ</rt></ruby>りください。",
-                    VietnameseMeaning = $"Cảm ơn {reg.AiAddressLearner} đã ứng tuyển. {reg.AiSelf} phụ trách buổi phỏng vấn hôm nay. Xin mời {reg.AiAddressLearner} ngồi."
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
+                    VietnameseMeaning = jlpt == "N5"
+                        ? $"Xin chào {reg.AiAddressLearner}. Chúng ta bắt đầu buổi phỏng vấn nhé. Mời {reg.AiAddressLearner} ngồi."
+                        : $"Cảm ơn {reg.AiAddressLearner} đã ứng tuyển. {reg.AiSelf} phụ trách buổi phỏng vấn hôm nay. Xin mời {reg.AiAddressLearner} ngồi."
                 };
+            }
 
             case SocialRegisterType.TeacherMentor:
+            {
+                string ja = jlpt == "N5"
+                    ? "こんにちは！今日のレッスンを始めましょう。"
+                    : "こんにちは。本日のレッスンを始めましょう。よろしくお願いします。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = "こんにちは。本日のレッスンを始めましょう。よろしくお願いします。",
-                    FuriganaHtml = "こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>のレッスンを<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
                     VietnameseMeaning = $"Chào {reg.AiAddressLearner}. Chúng ta cùng bắt đầu buổi học hôm nay nhé."
                 };
+            }
 
             case SocialRegisterType.PeerFriend:
                 return new AiOpeningMessageResult
@@ -410,12 +434,17 @@ public sealed record RoleplaySocialRegister
                 };
 
             default:
+            {
+                string ja = jlpt == "N5"
+                    ? "こんにちは！これから練習を始めましょう。"
+                    : $"こんにちは。本日の{scenario.Title}を始めましょう。よろしくお願いします。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = $"こんにちは。本日の{scenario.Title}を始めましょう。よろしくお願いします。",
-                    FuriganaHtml = $"こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>の{scenario.Title}を<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
-                    VietnameseMeaning = $"Xin chào {reg.AiAddressLearner}. Chúng ta hãy bắt đầu bài luyện tập {scenario.Title}. Rất mong được đồng hành cùng {reg.AiAddressLearner}."
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
+                    VietnameseMeaning = $"Xin chào {reg.AiAddressLearner}. Chúng ta hãy bắt đầu bài luyện tập {scenario.Title}."
                 };
+            }
         }
     }
 
@@ -785,55 +814,69 @@ public sealed record RoleplaySocialRegister
                 }
             };
         }
-        var lowerMsg = userMessage.Trim().ToLowerInvariant();
+        var trimmedMsg = userMessage.Trim();
+        var lowerMsg = trimmedMsg.ToLowerInvariant();
         var completedIds = new List<int>();
 
+        bool isGibberishOrRude = Regex.IsMatch(trimmedMsg, @"(.)\1{4,}") ||
+                                 Regex.IsMatch(trimmedMsg, @"(お前|てめえ|持ってこい|しろよ|くれよ|出せよ|おい、)");
+        bool hasJapaneseChars = Regex.IsMatch(trimmedMsg, @"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]");
+        var cleanMsgNoPunct = Regex.Replace(trimmedMsg, @"[\s\.,?!。、？！]", "");
+        bool hasPoliteEnding = Regex.IsMatch(trimmedMsg, @"(です|ます|でした|ました|ません|ください|おねがい|お願い|いただけ|でしょうか|ですか|たいです|ましょう|ありがとう|ごちそう|ご馳走|すみません|こんにちは|こんばんは|おはよう|失礼|どういたしまして)");
+        bool isBareFragment = cleanMsgNoPunct.Length <= 12 && !hasPoliteEnding && !Regex.IsMatch(cleanMsgNoPunct, @"^(はい|いいえ|ええ|うん|ううん)$");
+
         var orderedPending = pendingMissions.OrderBy(m => m.Order).ToList();
-        var nextMission = orderedPending.FirstOrDefault();
 
-        // Semantic matching against active pending mission
-        if (nextMission != null)
+        // Semantic matching against pending missions (only when utterance is valid Japanese and not gibberish/rude)
+        if (!isGibberishOrRude && hasJapaneseChars)
         {
-            var criteria = (nextMission.CompletionCriteriaJson + " " + nextMission.Content).ToLowerInvariant();
-            var isMatched = false;
+            foreach (var candidate in orderedPending)
+            {
+                var criteria = (candidate.CompletionCriteriaJson + " " + candidate.Content).ToLowerInvariant();
+                var isMatched = false;
 
-            if (criteria.Contains("tạm biệt") || criteria.Contains("kết thúc") || criteria.Contains("cảm ơn") || criteria.Contains("bye") || criteria.Contains("goodbye") || criteria.Contains("rời") || criteria.Contains("thanh toán"))
-            {
-                isMatched = lowerMsg.Contains("ありがとう") || lowerMsg.Contains("どういたしまして") || lowerMsg.Contains("お気をつけて") || lowerMsg.Contains("気をつけて") || lowerMsg.Contains("お大事に") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("では");
-            }
-            else if (criteria.Contains("chào") || criteria.Contains("greet") || criteria.Contains("intro") || criteria.Contains("giới thiệu"))
-            {
-                isMatched = lowerMsg.Contains("こんにちは") || lowerMsg.Contains("はじめまして") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("です") || lowerMsg.Contains("申します") || lowerMsg.Contains("手伝") || lowerMsg.Contains("てつだ") || lowerMsg.Contains("大丈夫");
-            }
-            else if (criteria.Contains("giúp") || criteria.Contains("help") || criteria.Contains("hỗ trợ") || criteria.Contains("đề nghị"))
-            {
-                isMatched = lowerMsg.Contains("手伝") || lowerMsg.Contains("てつだ") || lowerMsg.Contains("助け") || lowerMsg.Contains("一緒") || lowerMsg.Contains("渡") || lowerMsg.Contains("大丈夫") || lowerMsg.Contains("喜んで");
-            }
-            else if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction") || criteria.Contains("đâu") || criteria.Contains("hỏi"))
-            {
-                isMatched = lowerMsg.Contains("どちら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("行") || lowerMsg.Contains("向こう") || lowerMsg.Contains("病院") || lowerMsg.Contains("駅") || lowerMsg.Contains("方向") || lowerMsg.Contains("ですか") || lowerMsg.Contains("なん");
-            }
-            else if (criteria.Contains("order") || criteria.Contains("ramen") || criteria.Contains("gọi món") || criteria.Contains("món"))
-            {
-                isMatched = lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("ください") || lowerMsg.Contains("一杯") || lowerMsg.Contains("注文");
-            }
-            else if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("tiền"))
-            {
-                isMatched = lowerMsg.Contains("いくら") || lowerMsg.Contains("円") || lowerMsg.Contains("値段");
-            }
-            else if (criteria.Contains("ngày") || criteria.Contains("tuần") || criteria.Contains("ca") || criteria.Contains("shift") || criteria.Contains("thời gian"))
-            {
-                isMatched = lowerMsg.Contains("日") || lowerMsg.Contains("週") || lowerMsg.Contains("曜日") || lowerMsg.Contains("シフト") || lowerMsg.Contains("午後") || lowerMsg.Contains("午前") || lowerMsg.Contains("時間");
-            }
-            else
-            {
-                // Fallback Japanese utterance check (>= 3 chars)
-                isMatched = Regex.IsMatch(userMessage, @"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]") && userMessage.Trim().Length >= 3;
-            }
+                if (criteria.Contains("tạm biệt") || criteria.Contains("kết thúc") || criteria.Contains("cảm ơn") || criteria.Contains("ra về") || criteria.Contains("bye") || criteria.Contains("goodbye") || criteria.Contains("rời") || criteria.Contains("thanh toán"))
+                {
+                    isMatched = lowerMsg.Contains("ありがとう") || lowerMsg.Contains("どういたしまして") || lowerMsg.Contains("お気をつけて") || lowerMsg.Contains("気をつけて") || lowerMsg.Contains("お大事に") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計") || lowerMsg.Contains("勘定") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("ご馳走") || lowerMsg.Contains("また来ます");
+                }
+                else if (criteria.Contains("chào") || criteria.Contains("số người") || criteria.Contains("chỗ ngồi") || criteria.Contains("greet") || criteria.Contains("intro") || criteria.Contains("giới thiệu"))
+                {
+                    isMatched = lowerMsg.Contains("こんにちは") || lowerMsg.Contains("はじめまして") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("1人") || lowerMsg.Contains("一人") || lowerMsg.Contains("2人") || lowerMsg.Contains("二人") || lowerMsg.Contains("ひとり") || lowerMsg.Contains("名") || lowerMsg.Contains("席") || lowerMsg.Contains("カウンター") || lowerMsg.Contains("申します") || lowerMsg.Contains("手伝") || lowerMsg.Contains("てつだ") || lowerMsg.Contains("大丈夫");
+                }
+                else if (criteria.Contains("giúp") || criteria.Contains("help") || criteria.Contains("hỗ trợ") || criteria.Contains("đề nghị"))
+                {
+                    isMatched = lowerMsg.Contains("手伝") || lowerMsg.Contains("てつだ") || lowerMsg.Contains("助け") || lowerMsg.Contains("一緒") || lowerMsg.Contains("渡") || lowerMsg.Contains("大丈夫") || lowerMsg.Contains("喜んで");
+                }
+                else if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction") || criteria.Contains("đâu") || criteria.Contains("hỏi"))
+                {
+                    isMatched = lowerMsg.Contains("どちら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("行") || lowerMsg.Contains("向こう") || lowerMsg.Contains("病院") || lowerMsg.Contains("駅") || lowerMsg.Contains("方向") || lowerMsg.Contains("ですか") || lowerMsg.Contains("なん");
+                }
+                else if (criteria.Contains("order") || criteria.Contains("ramen") || criteria.Contains("gọi món") || criteria.Contains("món"))
+                {
+                    isMatched = lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("豚骨") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("お願い") || lowerMsg.Contains("ください") || lowerMsg.Contains("一杯") || lowerMsg.Contains("注文");
+                }
+                else if (criteria.Contains("độ cứng") || criteria.Contains("khẩu vị") || criteria.Contains("nước dùng") || criteria.Contains("hardness") || criteria.Contains("flavor"))
+                {
+                    isMatched = lowerMsg.Contains("硬め") || lowerMsg.Contains("かため") || lowerMsg.Contains("固め") || lowerMsg.Contains("濃いめ") || lowerMsg.Contains("こいめ") || lowerMsg.Contains("普通") || lowerMsg.Contains("ふつう") || lowerMsg.Contains("薄め") || lowerMsg.Contains("辛め");
+                }
+                else if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("tiền"))
+                {
+                    isMatched = lowerMsg.Contains("いくら") || lowerMsg.Contains("円") || lowerMsg.Contains("値段");
+                }
+                else if (criteria.Contains("ngày") || criteria.Contains("tuần") || criteria.Contains("ca") || criteria.Contains("shift") || criteria.Contains("thời gian"))
+                {
+                    isMatched = lowerMsg.Contains("日") || lowerMsg.Contains("週") || lowerMsg.Contains("曜日") || lowerMsg.Contains("シフト") || lowerMsg.Contains("午後") || lowerMsg.Contains("午前") || lowerMsg.Contains("時間");
+                }
+                else if (completedIds.Count == 0 && candidate == orderedPending.FirstOrDefault())
+                {
+                    // Fallback: chỉ chấp nhận khi câu tiếng Nhật lịch sự hoàn chỉnh (>= 4 ký tự, có vị ngữ lịch sự)
+                    isMatched = hasPoliteEnding && cleanMsgNoPunct.Length >= 4;
+                }
 
-            if (isMatched)
-            {
-                completedIds.Add(nextMission.Id);
+                if (isMatched && !completedIds.Contains(candidate.Id))
+                {
+                    completedIds.Add(candidate.Id);
+                }
             }
         }
 
@@ -951,20 +994,53 @@ public sealed record RoleplaySocialRegister
             naturalAlt = "いえいえ、どういたしまして。お気をつけてお帰りくださいね。";
         }
 
-        var feedback = new LinguisticFeedbackDto
+        LinguisticFeedbackDto feedback;
+        if (isGibberishOrRude)
         {
-            EvaluationSource = "Simulator",
-            Status = "Good",
-            Summary = "Phản xạ tự nhiên • Đúng ngữ cảnh",
-            Details = new List<LinguisticDetailItemDto>
+            feedback = new LinguisticFeedbackDto
             {
-                new() { Type = "success", Aspect = "Ngữ cảnh", Comment = $"Câu trả lời rất tự nhiên và phù hợp với vai vế giao tiếp cùng {reg.LearnerAddressAi}." },
-                new() { Type = "success", Aspect = "Văn phong", Comment = "Sử dụng thể lịch sự chuẩn mực, thể hiện thái độ chu đáo và lễ phép." },
-                new() { Type = "success", Aspect = "Từ vựng & Trợ từ", Comment = "Sử dụng từ vựng chính xác, cấu trúc câu gãy gọn rõ ràng." }
-            },
-            NaturalAlternative = naturalAlt,
-            CulturalTip = reg.CulturalTip
-        };
+                EvaluationSource = "Simulator",
+                Status = "Warning",
+                Summary = "Nội dung chưa phù hợp • Cần diễn đạt lịch sự, rõ ràng",
+                Details = new List<LinguisticDetailItemDto>
+                {
+                    new() { Type = "warning", Aspect = "Văn phong", Comment = "Vui lòng sử dụng câu tiếng Nhật lịch sự (Desu/Masu/Onegaishimasu) phù hợp với ngữ cảnh." }
+                },
+                NaturalAlternative = "すみません、お願いします。",
+                CulturalTip = reg.CulturalTip
+            };
+        }
+        else if (isBareFragment)
+        {
+            feedback = new LinguisticFeedbackDto
+            {
+                EvaluationSource = "Simulator",
+                Status = "Warning",
+                Summary = "Chưa thành câu hoàn chỉnh • Cần thêm vị ngữ hoặc đuôi câu lịch sự",
+                Details = new List<LinguisticDetailItemDto>
+                {
+                    new() { Type = "warning", Aspect = "Cấu trúc & Văn phong", Comment = "Chỉ nói từ đơn lẻ sẽ cộc lốc trong giao tiếp tiếng Nhật. Nên mở rộng thành câu hoàn chỉnh kèm です / をお願いします." }
+                },
+                NaturalAlternative = $"{trimmedMsg}をお願いします。",
+                CulturalTip = reg.CulturalTip
+            };
+        }
+        else
+        {
+            feedback = new LinguisticFeedbackDto
+            {
+                EvaluationSource = "Simulator",
+                Status = "Good",
+                Summary = "Phản xạ tự nhiên • Đúng ngữ cảnh",
+                Details = new List<LinguisticDetailItemDto>
+                {
+                    new() { Type = "success", Aspect = "Ngữ cảnh", Comment = $"Câu trả lời tự nhiên và phù hợp với vai vế giao tiếp cùng {reg.LearnerAddressAi}." },
+                    new() { Type = "success", Aspect = "Văn phong", Comment = "Sử dụng thể lịch sự chuẩn mực, thể hiện thái độ chu đáo và lễ phép." }
+                },
+                NaturalAlternative = naturalAlt,
+                CulturalTip = reg.CulturalTip
+            };
+        }
 
         return new AiTurnResult
         {
@@ -985,7 +1061,12 @@ public sealed record RoleplaySocialRegister
     public static string GenerateFuriganaHtml(string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return text;
-        if (text.Contains("<ruby>") && text.Contains("</ruby>")) return text;
+        if (text.Contains("<ruby>", StringComparison.Ordinal)
+            && HasValidRubyMarkupStructure(text, canonicalOnly: true)
+            && !HasInvalidRtContent(text))
+        {
+            return text;
+        }
 
         var furiganaDictionary = new (string Word, string Ruby)[]
         {
@@ -1131,7 +1212,10 @@ public sealed record RoleplaySocialRegister
         // Sắp xếp theo chiều dài từ giảm dần để ưu tiên ghép từ ghép trước
         var orderedMap = furiganaDictionary.OrderByDescending(f => f.Word.Length).ToList();
         var placeholders = new Dictionary<string, string>();
-        var result = text;
+        var result = text
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;");
 
         for (int i = 0; i < orderedMap.Count; i++)
         {
@@ -1153,12 +1237,243 @@ public sealed record RoleplaySocialRegister
     }
 
     private static readonly Regex RubyTagRegex = new(
-        @"<ruby[^>]*>(?:<rp>.*?</rp>)?(.*?)(?:<rp>.*?</rp>)?<rt[^>]*>(.*?)</rt>(?:<rp>.*?</rp>)?</ruby>",
+        @"<ruby[^>]*>(?:\s*<rp[^>]*>.*?</rp>\s*)?(.*?)(?:\s*<rp[^>]*>.*?</rp>\s*)?<rt[^>]*>(.*?)(?:</rt>|(?=(?:\s*<rp[^>]*>.*?</rp>)*\s*</ruby>))(?:\s*<rp[^>]*>.*?</rp>\s*)?</ruby>",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
     private static readonly Regex JapaneseSpaceRegex = new(
         @"(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,>\uFF09\)])[\s\u3000]+(?=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,<\uFF08\(])",
         RegexOptions.Compiled);
+
+    private static readonly Regex RpTagRegex = new(
+        @"<rp[^>]*>.*?</rp>",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+    private static readonly Regex RtTagRegex = new(
+        @"<rt[^>]*>.*?(?:</rt>|(?=</ruby>))",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+    private static readonly Regex RtInnerContentRegex = new(
+        @"<rt[^>]*>(.*?)(?:</rt>|(?=<rp[^>]*>|</ruby>|$))",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+    private static readonly Regex AnyHtmlTagRegex = new(
+        @"<[^>]*>",
+        RegexOptions.Compiled);
+
+    private static readonly Regex AnyRubyMarkupTagRegex = new(
+        @"</?(?:ruby|rt|rp)[^>]*>",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex RubyStructureTagRegex = new(
+        @"^<(/?)(ruby|rt|rp)(?:\s[^<>]*)?>$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex CanonicalRubyTagRegex = new(
+        @"^<(/?)(ruby|rt)>$",
+        RegexOptions.Compiled);
+
+    private static readonly Regex ValidRtKanaWhitelistRegex = new(
+        @"^[\u3040-\u309F\u30A0-\u30FF\u30FC\u309D\u309E\u30FD\u30FE\s]+$",
+        RegexOptions.Compiled);
+
+    private static readonly Regex WhitespaceNormRegex = new(
+        @"[\s\u3000]+",
+        RegexOptions.Compiled);
+
+    private static bool HasValidRubyMarkupStructure(string html, bool canonicalOnly = false)
+    {
+        int rubyDepth = 0;
+        bool inRt = false;
+        bool inRp = false;
+        bool hasRtInCurrentRuby = false;
+        int cursor = 0;
+
+        foreach (Match tagMatch in AnyHtmlTagRegex.Matches(html))
+        {
+            if (tagMatch.Index > cursor)
+            {
+                var between = html.AsSpan(cursor, tagMatch.Index - cursor);
+                if (between.IndexOfAny('<', '>') >= 0)
+                {
+                    return false;
+                }
+            }
+
+            cursor = tagMatch.Index + tagMatch.Length;
+            var tag = tagMatch.Value;
+
+            if (canonicalOnly)
+            {
+                var canonicalMatch = CanonicalRubyTagRegex.Match(tag);
+                if (!canonicalMatch.Success)
+                {
+                    return false;
+                }
+
+                bool isClosing = canonicalMatch.Groups[1].Value.Length > 0;
+                var name = canonicalMatch.Groups[2].Value;
+                if (name == "ruby")
+                {
+                    if (!isClosing)
+                    {
+                        if (rubyDepth != 0 || inRt) return false;
+                        rubyDepth = 1;
+                        hasRtInCurrentRuby = false;
+                    }
+                    else
+                    {
+                        if (rubyDepth != 1 || inRt || !hasRtInCurrentRuby) return false;
+                        rubyDepth = 0;
+                        hasRtInCurrentRuby = false;
+                    }
+                }
+                else
+                {
+                    if (!isClosing)
+                    {
+                        if (rubyDepth != 1 || inRt) return false;
+                        inRt = true;
+                        hasRtInCurrentRuby = true;
+                    }
+                    else
+                    {
+                        if (rubyDepth != 1 || !inRt) return false;
+                        inRt = false;
+                    }
+                }
+                continue;
+            }
+
+            var structMatch = RubyStructureTagRegex.Match(tag);
+            if (!structMatch.Success)
+            {
+                return false;
+            }
+
+            bool closing = structMatch.Groups[1].Value.Length > 0;
+            var tagName = structMatch.Groups[2].Value.ToLowerInvariant();
+
+            switch (tagName)
+            {
+                case "ruby":
+                    if (!closing)
+                    {
+                        if (rubyDepth != 0 || inRt || inRp) return false;
+                        rubyDepth = 1;
+                        hasRtInCurrentRuby = false;
+                    }
+                    else
+                    {
+                        if (rubyDepth != 1 || inRp || !hasRtInCurrentRuby) return false;
+                        rubyDepth = 0;
+                        inRt = false;
+                        hasRtInCurrentRuby = false;
+                    }
+                    break;
+
+                case "rt":
+                    if (!closing)
+                    {
+                        if (rubyDepth != 1 || inRt || inRp) return false;
+                        inRt = true;
+                        hasRtInCurrentRuby = true;
+                    }
+                    else
+                    {
+                        if (rubyDepth != 1 || !inRt || inRp) return false;
+                        inRt = false;
+                    }
+                    break;
+
+                case "rp":
+                    if (!closing)
+                    {
+                        if (rubyDepth != 1 || inRp) return false;
+                        inRt = false;
+                        inRp = true;
+                    }
+                    else
+                    {
+                        if (rubyDepth != 1 || !inRp) return false;
+                        inRp = false;
+                    }
+                    break;
+
+                default:
+                    return false;
+            }
+        }
+
+        if (cursor < html.Length)
+        {
+            var trailing = html.AsSpan(cursor);
+            if (trailing.IndexOfAny('<', '>') >= 0)
+            {
+                return false;
+            }
+        }
+
+        return rubyDepth == 0 && !inRt && !inRp;
+    }
+
+    private static bool HasInvalidRtContent(string html)
+    {
+        foreach (Match match in RtInnerContentRegex.Matches(html))
+        {
+            var stripped = AnyHtmlTagRegex.Replace(match.Groups[1].Value, string.Empty);
+            var normalized = WebUtility.HtmlDecode(stripped).Normalize(NormalizationForm.FormKC);
+            if (string.IsNullOrWhiteSpace(normalized)
+                || !ValidRtKanaWhitelistRegex.IsMatch(normalized)
+                || HasVietnameseLeak(normalized))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static string StripRubyTags(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return string.Empty;
+        var stripped = RpTagRegex.Replace(html, string.Empty);
+        stripped = RtTagRegex.Replace(stripped, string.Empty);
+        stripped = AnyRubyMarkupTagRegex.Replace(stripped, string.Empty);
+        return stripped.Trim();
+    }
+
+    public static string EnsureFuriganaParity(string? candidateFuriganaHtml, string? plainJapaneseText)
+    {
+        var plainJa = (plainJapaneseText ?? string.Empty).Trim();
+        if (string.IsNullOrEmpty(plainJa)) return string.Empty;
+
+        if (string.IsNullOrWhiteSpace(candidateFuriganaHtml)
+            || HasVietnameseLeak(candidateFuriganaHtml)
+            || !HasValidRubyMarkupStructure(candidateFuriganaHtml, canonicalOnly: false)
+            || HasInvalidRtContent(candidateFuriganaHtml))
+        {
+            return GenerateFuriganaHtml(plainJa);
+        }
+
+        var cleaned = CleanFuriganaHtml(candidateFuriganaHtml);
+        if (string.IsNullOrWhiteSpace(cleaned)
+            || HasVietnameseLeak(cleaned)
+            || !HasValidRubyMarkupStructure(cleaned, canonicalOnly: true)
+            || HasInvalidRtContent(cleaned))
+        {
+            return GenerateFuriganaHtml(plainJa);
+        }
+
+        static string NormalizeForParity(string s) =>
+            WhitespaceNormRegex.Replace(s.Normalize(NormalizationForm.FormKC), string.Empty);
+
+        var stripped = StripRubyTags(cleaned);
+        if (!string.Equals(NormalizeForParity(stripped), NormalizeForParity(plainJa), StringComparison.Ordinal))
+        {
+            return GenerateFuriganaHtml(plainJa);
+        }
+
+        return cleaned;
+    }
 
     /// <summary>
     /// Làm sạch thẻ ruby phát sinh từ AI:
@@ -1178,30 +1493,50 @@ public sealed record RoleplaySocialRegister
         cleaned = RubyTagRegex.Replace(cleaned, match =>
         {
             var baseText = match.Groups[1].Value.Trim();
-            var rtText = match.Groups[2].Value.Trim();
+            var rtText = AnyHtmlTagRegex.Replace(match.Groups[2].Value, string.Empty).Trim();
 
             if (string.IsNullOrEmpty(baseText)) return string.Empty;
             if (string.IsNullOrEmpty(rtText)) return baseText;
 
             // Nếu baseText hoàn toàn không chứa chữ Hán
-            if (!Regex.IsMatch(baseText, @"[\u4E00-\u9FAF]"))
+            if (!Regex.IsMatch(baseText, @"[\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u3005]"))
             {
                 return baseText;
             }
 
-            // Tách các ký tự non-kanji ở đầu
-            var leadingNonKanjiMatch = Regex.Match(baseText, @"^([^\u4E00-\u9FAF]+)([\u4E00-\u9FAF].*)$");
+            // Tách các ký tự non-kanji ở đầu (vd: お, ご, カウンター) và đồng bộ cắt phần đọc tương ứng ở đầu rtText
+            var leadingNonKanjiMatch = Regex.Match(baseText, @"^([^\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u3005]+)([\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u3005].*)$");
             string prefix = string.Empty;
             if (leadingNonKanjiMatch.Success)
             {
                 prefix = leadingNonKanjiMatch.Groups[1].Value;
                 baseText = leadingNonKanjiMatch.Groups[2].Value;
+
+                static string ToHiragana(string s)
+                {
+                    var sb = new StringBuilder(s.Length);
+                    foreach (var c in s)
+                    {
+                        if (c >= '\u30A1' && c <= '\u30F6')
+                            sb.Append((char)(c - 0x60));
+                        else
+                            sb.Append(c);
+                    }
+                    return sb.ToString();
+                }
+
+                var prefixHira = ToHiragana(prefix);
+                var rtHira = ToHiragana(rtText);
+                if (prefixHira.Length > 0 && rtText.Length > prefixHira.Length && rtHira.StartsWith(prefixHira, StringComparison.Ordinal))
+                {
+                    rtText = rtText[prefixHira.Length..];
+                }
             }
 
             // Tách các ký tự kana trùng lặp ở đuôi giữa baseText và rtText
             string suffix = string.Empty;
             while (baseText.Length > 0 && rtText.Length > 0 &&
-                   !Regex.IsMatch(baseText[^1].ToString(), @"[\u4E00-\u9FAF]") &&
+                   !Regex.IsMatch(baseText[^1].ToString(), @"[\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u3005]") &&
                    baseText[^1] == rtText[^1])
             {
                 suffix = baseText[^1] + suffix;
@@ -1210,7 +1545,7 @@ public sealed record RoleplaySocialRegister
             }
 
             // Tách các ký tự non-kanji còn sót ở cuối baseText nếu rtText không kết thúc bằng nó
-            var trailingNonKanjiMatch = Regex.Match(baseText, @"^(.*?[\u4E00-\u9FAF])([^\u4E00-\u9FAF]+)$");
+            var trailingNonKanjiMatch = Regex.Match(baseText, @"^(.*?[\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u3005])([^\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u3005]+)$");
             if (trailingNonKanjiMatch.Success)
             {
                 baseText = trailingNonKanjiMatch.Groups[1].Value;

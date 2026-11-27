@@ -116,6 +116,22 @@ Làm thành 2 lượt. Xong lượt nào thì chạy thử và commit lượt đ
 
 > Tiếp mục 9j: dựng ShadowingLessonPreview. Gọi shadowingService.getDetail khi chọn bài (có khung chờ, lưu tạm kết quả), hiện kịch bản theo orderIndex với JpText, nghe nativeAudioUrl, bật tắt Furigana và Nghĩa, tô câu theo vai, đánh dấu câu đang dừng và câu đã nói. RoleSwitch thay cho RoleSelectionModal ở trang này, có cảnh báo khi đổi vai lúc đang dở. Nút chính theo bảng 4 trạng thái trong mục 9j, đường dẫn `/shadowing/practice/:id?role=…` kèm `resume` hoặc `restart` như hiện tại. Bản điện thoại ≤760px: chip mục cuộn ngang, cột xem trước phủ toàn màn có nút quay lại, dải tiếp tục dính đáy. Kiểm tra sáng và tối, chạy `npm run build` và `npm test`. Lập kế hoạch trước và chờ tôi duyệt.
 
+## Bước 17 · Bản đồ tỉnh và ngăn tỉnh 2 tầng
+
+Làm thành 3 lượt. Xong lượt nào thì chạy thử và commit lượt đó.
+
+**17a · Ghim, thẻ tên, tên khu vực, lộ trình, nút điều khiển**
+
+> Đọc mục 9k (phần A) trong @design-handoff/HANDOFF.md, mở @design-handoff/prototype/BanDoTinh.dc.html và @design-handoff/prototype/BanDoTinh-NhomGhim.dc.html để đối chiếu. Trong @jcap-web/src/views/explore/JapanMap.tsx khi đang xem một tỉnh: thay PinFrame + pictogram + dấu tích + huy hiệu số bằng component StationBadge (ô số 34px, 5 trạng thái theo stampOf và nextSpotIndex); bỏ nhãn tên dưới mọi ghim, chip "Tiếp theo", jm-next-ring, jm-ripple; dựng SpotNameCard chỉ hiện ở mốc tiếp theo, mốc đang mở, ghim đang rê chuột/focus (dùng layoutLabels để chọn phía); thêm AreaLabel từ hàm thuần spotAreas (gom mốc liền nhau cùng tiền tố trước " · ", có unit test); đổi kiểu RouteLayer (nét card 3px, đoạn đã có dấu màu --ai); dựng lại bong bóng nhóm ghim thành ClusterStack; ẩn nút + và − khi đang xem tỉnh; cập nhật chú giải. Giữ nguyên ZoneCircles, ranh giới quận, camera, logic nhóm/xoè ghim, nextSpotIndex. Lập kế hoạch trước và chờ tôi duyệt.
+
+**17b · Ngăn tỉnh tầng 1 (Tổng quan)**
+
+> Tiếp mục 9k phần B: thay nội dung PrefecturePanel trong @jcap-web/src/views/explore/JapanMapView.tsx bằng PrefectureOverview: đường dẫn "Nhật Bản / Kanto" (bỏ jm-backbar), tên tỉnh, ProvinceWordButton (khung nổi khi rê chuột/focus/chạm) cạnh con dấu tỉnh, vạch tiến độ 9 đoạn, danh sách lộ trình cố định theo thứ tự (StationBadge 26px, dòng khu vực, chữ phụ theo bảng trong 9k), chân ngăn dính đáy với "Học tiếp: …" và dòng gợi ý, trạng thái đủ dấu, đang tải, lỗi. Rê chuột lên dòng thì ghim tương ứng sáng lên và ngược lại. Không đổi exploreStore, exploreService. Lập kế hoạch trước và chờ tôi duyệt.
+
+**17c · Tầng 2 (Chi tiết mốc) và điện thoại**
+
+> Tiếp mục 9k phần C và D: dựng SpotDetail trong cùng ngăn (thanh "← Chiba" và mốc trước/sau, đầu mốc, câu mẫu luôn hiện với JpText và speakJa, SpotSteps dạng accordion với bước hiện tại mở sẵn, nút chính ở chân ngăn theo bảng trong 9k). "Tôi đã hiểu câu này" gọi exploreService.markUnderstood rồi applySync, có loading và Toast; Shadowing gọi openPractice (khung chat 9g); Hội thoại AI điều hướng như RoleplayStep hiện có. Bấm ghim hoặc dòng mở tầng 2 (URL ?tinh=…&dd=…; &hoc=1 cũ mở tầng 2 với bước Hiểu). Esc: tầng 2 → tầng 1 → toàn quốc. Ngừng dùng SpotCard, SpotFocusCard, modal SpotLesson ở trang này. Bản ≤760px: bottom sheet 70%, không hiện thẻ tên trên bản đồ, reserveBottom theo chiều cao sheet. Chạy `npm run build` và `npm test`, chụp màn hình 1440 và 390 so với prototype. Lập kế hoạch trước và chờ tôi duyệt.
+
 ## Mẹo khi làm
 
 - Thấy lệch so với thiết kế: chụp màn hình trang đang chạy và bản tương tác, dán cả hai vào chat, nói rõ chỗ lệch.

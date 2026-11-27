@@ -1,0 +1,55 @@
+# Example Nginx reverse proxy configuration for JCAP (same-origin deployment)
+# Serves pre-built jcap-web static files and proxies API + media routes to Kestrel (jcap-api:8080).
+
+server {
+    listen 80;
+    server_name app.example.com;
+
+    # Allow audio uploads (Whisper STT / Shadowing)
+    client_max_body_size 25M;
+
+    # Serve built Vite SPA (copy jcap-web/dist here)
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Proxy backend REST API
+    location /api/ {
+        proxy_pass http://jcap-api:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+    }
+
+    # Proxy backend static audio, VoiceVox cache, and local uploads
+    location /audio/ {
+        proxy_pass http://jcap-api:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /audio-cache/ {
+        proxy_pass http://jcap-api:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /uploads/ {
+        proxy_pass http://jcap-api:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # SPA history fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

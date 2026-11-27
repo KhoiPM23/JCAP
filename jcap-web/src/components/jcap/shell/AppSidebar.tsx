@@ -19,6 +19,7 @@ import { Stepper } from '../Tabs';
 import { cx, fmt } from '../utils';
 import { recentRoleplaySessionId } from './recentRoleplay';
 import { useLearnerAccount } from './useLearnerAccount';
+import { resolveMediaUrl } from '../../../utils/apiBase';
 
 const PREF_BY_ID = new Map(PREFECTURES.map((p) => [p.id, p]));
 /** Chữ Hán cho thứ tự chương (mẫu: 一, 二, 三…). Chương 0 là chương nhập môn: dùng 序 (mở đầu) thay cho 〇 vì 〇 trông như hai vòng tròn lồng nhau */
@@ -204,7 +205,18 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
             <MenuItem icon="toll" label="Gói & Credit" on={path.startsWith('/subscription') || path.startsWith('/credits')} onClick={() => go('/subscription')}>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--credit)' }}>{fmt(credit)}</span>
             </MenuItem>
-            <MenuItem icon="person" label="Hồ sơ" on={path.startsWith('/profile')} onClick={() => go('/profile')} />
+            <MenuItem
+              icon="person"
+              label="Hồ sơ"
+              on={path === '/profile' || path === '/profile/edit' || path === '/profile/change-password'}
+              onClick={() => go('/profile')}
+            />
+            <MenuItem
+              icon="psychology"
+              label="Năng lực cá nhân"
+              on={path.startsWith('/profile/competency')}
+              onClick={() => go('/profile/competency')}
+            />
             <MenuItem icon="settings" label="Cài đặt" on={path.startsWith('/settings')} onClick={() => go('/settings')} />
             <MenuItem icon="help" label="Hỗ trợ & Góp ý" on={path.startsWith('/feedback') || path.startsWith('/help')} onClick={() => go('/feedback')} />
             <span style={{ height: 1, margin: '4px 0', background: 'var(--line)' }} />
@@ -242,9 +254,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
 
 const Avatar: React.FC<{ url?: string; initial: string; size: number }> = ({ url, initial, size }) => {
   const [broken, setBroken] = useState(false);
+  const resolvedUrl = resolveMediaUrl(url);
   return (
     <span className="jx-avatar" style={{ width: size, height: size }} aria-hidden="true">
-      {url && !broken ? <img src={url} alt="" onError={() => setBroken(true)} /> : initial}
+      {resolvedUrl && !broken ? <img src={resolvedUrl} alt="" onError={() => setBroken(true)} /> : initial}
     </span>
   );
 };

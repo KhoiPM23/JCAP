@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Toast, type ToastType } from '../components/ui/Toast';
 import { profileService } from '../services/profileService';
+import { resolveMediaUrl } from '../utils/apiBase';
 import type { JLPTLevel } from '../types/profile';
 
 interface ToastMessage {
@@ -176,7 +177,7 @@ export const UpdateProfileView: React.FC = () => {
             <div className="relative">
               {profilePictureUrl ? (
                 <img
-                  src={profilePictureUrl}
+                  src={resolveMediaUrl(profilePictureUrl)}
                   alt="Avatar Preview"
                   className="w-20 h-20 rounded-full object-cover border-2 border-[#0878EE] shadow-sm"
                   onError={(e) => {

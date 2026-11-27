@@ -13,15 +13,18 @@ public class SttController : ControllerBase
 {
     private readonly IWhisperSttService _whisperService;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<SttController> _logger;
 
     public SttController(
         IWhisperSttService whisperService,
         IWebHostEnvironment environment,
+        IConfiguration configuration,
         ILogger<SttController> logger)
     {
         _whisperService = whisperService;
         _environment = environment;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -113,17 +116,73 @@ public class SttController : ControllerBase
     }
 
     /// <summary>
+    /// Xóa file âm thanh nháp của học viên trong wwwroot/audio/roleplay khi người học hủy/xóa bản ghi trước khi gửi
+    /// </summary>
+    [HttpDelete("audio")]
+    [Authorize]
+    public ActionResult<ApiResponse<object>> DeleteAudio([FromQuery] string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Đường dẫn file âm thanh không hợp lệ."));
+        }
+
+        var trimmed = url.Trim();
+        if (!trimmed.StartsWith("/audio/roleplay/", StringComparison.OrdinalIgnoreCase)
+            || trimmed.Contains("..", StringComparison.Ordinal)
+            || trimmed.Contains('\\', StringComparison.Ordinal)
+            || trimmed.Contains('?', StringComparison.Ordinal)
+            || trimmed.Contains('#', StringComparison.Ordinal))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Đường dẫn file âm thanh không được phép."));
+        }
+
+        var fileName = Path.GetFileName(trimmed);
+        if (string.IsNullOrWhiteSpace(fileName) || !string.Equals(trimmed, $"/audio/roleplay/{fileName}", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Tên file âm thanh không hợp lệ."));
+        }
+
+        var webRoot = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        var folder = Path.GetFullPath(Path.Combine(webRoot, "audio", "roleplay"));
+        var fullPath = Path.GetFullPath(Path.Combine(folder, fileName));
+
+        if (!fullPath.StartsWith(folder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Đường dẫn file vượt ngoài phạm vi cho phép."));
+        }
+
+        var deleted = false;
+        if (System.IO.File.Exists(fullPath))
+        {
+            System.IO.File.Delete(fullPath);
+            deleted = true;
+        }
+
+        return Ok(ApiResponse<object>.Ok(new { deleted }, deleted ? "Đã xóa file âm thanh tạm." : "File không còn tồn tại."));
+    }
+
+    /// <summary>
     /// Kiểm tra trạng thái hoạt động của Whisper Engine
     /// </summary>
     [HttpGet("health")]
     public async Task<ActionResult<ApiResponse<object>>> Health(CancellationToken cancellationToken)
     {
+        var rawUrl = _configuration["Whisper:BaseUrl"];
+        var configured = !string.IsNullOrWhiteSpace(rawUrl)
+            && Uri.TryCreate(rawUrl.Trim(), UriKind.Absolute, out _);
+        var effectiveUrl = configured ? rawUrl!.Trim() : "http://127.0.0.1:50022";
+        var port = Uri.TryCreate(effectiveUrl, UriKind.Absolute, out var uri) && uri.Port > 0
+            ? uri.Port
+            : 50022;
+
         var isAvailable = await _whisperService.IsAvailableAsync(cancellationToken);
         var status = new
         {
             available = isAvailable,
             engine = "faster-whisper",
-            port = 50022
+            port,
+            configured
         };
 
         return Ok(ApiResponse<object>.Ok(status, isAvailable ? "Whisper Engine đang hoạt động." : "Whisper Engine chưa được bật."));

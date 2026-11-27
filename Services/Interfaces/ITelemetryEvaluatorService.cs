@@ -18,6 +18,8 @@ namespace JCAP.Services.Interfaces
         public bool BargeInInterrupted { get; set; }
         public string? JapaneseSpoken { get; set; }
         public double TurnScore { get; set; }
+        public bool DeferPersistence { get; set; }
+        public LearnerBehaviorSignal? PendingSignal { get; set; }
     }
 
     public class DynamicScaffoldingDecision

@@ -9,13 +9,12 @@ import {
   type PrefectureShape,
   type RegionId,
 } from '../../data/japanMap';
-import { PREFECTURE_PICTOGRAMS, pictogramUrl, type PictogramKind } from '../../data/japanPictograms';
+import { PREFECTURE_PICTOGRAMS, pictogramUrl } from '../../data/japanPictograms';
 import { useExploreJourney, usePrefectureData } from './exploreStore';
 import { REGION_STYLE, SEIGAIHA, T, mix, paperGrainUrl } from './exploreTheme';
 import { setFurigana, useFurigana } from './furigana';
-import { isStamped, useSpotProgress } from './learnProgress';
-import { nextSpotIndex, prefectureRoute } from './learnRoute';
-import { STAMP_INK } from './ExploreStamp';
+import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
+import { prefectureRoute } from './learnRoute';
 import { Icon } from '../../components/jcap';
 import { useFontVersion } from './measureText';
 import {
@@ -26,11 +25,8 @@ import {
 } from './prefectureDetail';
 import { ProvinceLabels } from './ProvinceLabels';
 import { PrefectureLabels, type PrefectureLabelItem } from './PrefectureLabelLayer';
-import { chipSize, layoutLabels, type Box, type LabelLayout } from './labelLayout';
+import { layoutLabels, type LabelLayout } from './labelLayout';
 import { RouteLayer } from './RouteLayer';
-import { SpotCard } from './SpotCard';
-import { useCanSpeakJa } from './speak';
-import { ZONE_ZOOM_STEP, ZoneCircles } from './ZoneCircles';
 
 export { REGION_STYLE };
 
@@ -133,6 +129,8 @@ export const PREFECTURE_BY_ID = new Map(PREFECTURES.map((p) => [p.id, p]));
 const ZOOM_IN_MS = 650;
 const ZOOM_OUT_MS = 450;
 const BUTTON_ZOOM_MS = 250;
+/** Dời bản đồ giữa các địa điểm cùng tỉnh: ngắn hơn ZOOM_OUT_MS nên bờ biển không bị ẩn rồi hiện lại */
+const SPOT_PAN_MS = 420;
 /**
  * Con lăn chuột có nấc (mỗi nấc ~14%): không nhảy ngay mà trượt tới mức zoom đích, hằng số thời gian này (ms).
  * Nhảy cả bậc trong một khung hình rồi đứng yên chờ nấc sau làm mắt thấy giật dù máy chạy đủ 60 khung hình/giây.
@@ -142,14 +140,10 @@ const WHEEL_SMOOTH_MS = 90;
 const WHEEL_NOTCH_PX = 40;
 /** Bán kính vùng bấm của ghim (px): đường kính 44px, đủ cho ngón tay */
 const PIN_HIT_RADIUS_PX = 22;
-/** Bán kính ghim địa danh nhìn thấy (px) và cỡ biểu tượng bên trong */
-const PIN_RADIUS_PX = 19;
+/** Cỡ biểu tượng bên trong ghim (px) */
 const PIN_ICON_PX = 24;
 /** Khoảng cách từ tâm ghim tới nhãn tên bên cạnh (px) */
 const PIN_LABEL_GAP_PX = 25;
-/** Khi phải dời bản đồ tới một địa điểm, ghim nằm thấp hơn tâm vùng trống chừng này (px) để thẻ nổi có chỗ phía trên */
-const SPOT_PIN_DROP_PX = 46;
-const SPOT_PIN_DROP_MOBILE_PX = 90;
 /** Chọn địa điểm mà ghim đã cách mép vùng trống ít nhất chừng này (px) thì giữ nguyên bản đồ, không dời */
 const SPOT_KEEP_MARGIN_PX = 64;
 /** Hai ghim gần nhau hơn khoảng này (px) thì gộp thành một nhóm */
@@ -201,72 +195,47 @@ function centerViewBox(cx: number, cy: number, ppu: number, cw: number, ch: numb
   return [cx - (pad + availW / 2) / ppu, cy - (pad + availH / 2) / ppu, cw / ppu, ch / ppu];
 }
 
-/** Đa giác đều n cạnh quanh (cx, cy) bán kính r, góc xoay rot (khung ghim di sản) */
-const polygonPoints = (cx: number, cy: number, r: number, n: number, rot: number) =>
-  Array.from({ length: n }, (_, i) => {
-    const a = rot + (i * 2 * Math.PI) / n;
-    return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
-  }).join(' ');
-
-/** Viền hoa 12 cánh trong ô 44×44 (khung ghim văn hóa) */
-const SCALLOP_44 = (() => {
-  const n = 12;
-  const r1 = 17.2;
-  const r2 = 22.4;
-  let d = '';
-  for (let i = 0; i <= n; i++) {
-    const a = (i * 2 * Math.PI) / n - Math.PI / 2;
-    const am = a - Math.PI / n;
-    const x = 22 + r1 * Math.cos(a);
-    const y = 22 + r1 * Math.sin(a);
-    d += i === 0 ? `M${x.toFixed(2)} ${y.toFixed(2)}` : `Q${(22 + r2 * Math.cos(am)).toFixed(2)} ${(22 + r2 * Math.sin(am)).toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)}`;
-  }
-  return d + 'Z';
-})();
+/** Bộ lọc tô màu biểu tượng theo trạng thái (khai báo trong <defs> của lớp ghim) */
+const PIN_ICON_FILTER: Record<SpotStamp, string> = {
+  none: 'url(#jm-ink-region)',
+  understood: 'url(#jm-ink-ai)',
+  stamp: 'url(#jm-ink-on)',
+  red: 'url(#jm-ink-on)',
+};
 
 /**
- * Khung ghim theo loại địa danh (ô 44×44, tâm 22,22): địa danh tròn, thiên nhiên vuông bo, di sản bát giác,
- * văn hóa viền hoa. Lớp ngoài tô giấy viền màu vùng, lớp trong là nét mảnh.
+ * Khung ghim: ô vuông bo góc 34px trong ô 44×44 (tâm 22,22). Chưa học viền màu vùng, đã hiểu nền chàm nhạt,
+ * có con dấu nền chàm, dấu son nền đỏ. Đang mở thì thêm vòng giấy và vòng mực.
  */
-const PinFrame: React.FC<{ kind: PictogramKind; fill: string; stroke: string; ring: string; ringOpacity: number }> = ({
-  kind,
-  fill,
-  stroke,
-  ring,
-  ringOpacity,
-}) => {
-  const outer = { fill, stroke, strokeWidth: 2 };
-  const inner = { fill: 'none', stroke: ring, strokeWidth: 1, opacity: ringOpacity };
-  switch (kind) {
-    case 'nature':
-      return (
+const PinFrame: React.FC<{ look: SpotStamp; ink: string; active: boolean }> = ({ look, ink, active }) => {
+  const filled = look === 'stamp' || look === 'red';
+  return (
+    <>
+      {active && (
         <>
-          <rect x={3.5} y={3.5} width={37} height={37} rx={11} {...outer} />
-          <rect x={7} y={7} width={30} height={30} rx={8} {...inner} />
+          <rect x={0} y={0} width={44} height={44} rx={15} className="jm-sq-ring-ink" />
+          <rect x={2} y={2} width={40} height={40} rx={13} className="jm-sq-ring-paper" />
         </>
-      );
-    case 'heritage':
-      return (
-        <>
-          <polygon points={polygonPoints(22, 22, 21, 8, Math.PI / 8)} {...outer} />
-          <polygon points={polygonPoints(22, 22, 17, 8, Math.PI / 8)} {...inner} />
-        </>
-      );
-    case 'culture':
-      return (
-        <>
-          <path d={SCALLOP_44} {...outer} />
-          <circle cx={22} cy={22} r={14.5} {...inner} />
-        </>
-      );
-    default:
-      return (
-        <>
-          <circle cx={22} cy={22} r={19.5} {...outer} />
-          <circle cx={22} cy={22} r={16} {...inner} />
-        </>
-      );
-  }
+      )}
+      <g className="jm-focus-ring" style={{ filter: 'drop-shadow(0 2px 3px rgba(7,26,68,0.22))' }}>
+        {filled ? (
+          <rect x={5} y={5} width={34} height={34} rx={10} className={`jm-sq is-${look}`} />
+        ) : (
+          // Viền 2.5px nằm gọn trong ô 34px
+          <rect
+            x={6.25}
+            y={6.25}
+            width={31.5}
+            height={31.5}
+            rx={8.75}
+            strokeWidth={2.5}
+            stroke={look === 'none' ? mix(ink, T.card, 0.55) : undefined}
+            className={`jm-sq is-${look}`}
+          />
+        )}
+      </g>
+    </>
+  );
 };
 
 const prefersReducedMotion = () =>
@@ -279,8 +248,6 @@ export interface JapanMapProps {
   onSelect: (id: number | null) => void;
   activeSpot: number | null;
   onSpotSelect: (index: number | null) => void;
-  /** Mở bài học của địa điểm (nút "Vào học" trên thẻ nổi) */
-  onSpotLearn: (index: number) => void;
   /** Số px bị panel che ở cạnh phải / cạnh dưới khi đang xem một tỉnh */
   reserveRight: number;
   reserveBottom: number;
@@ -290,8 +257,12 @@ export interface JapanMapProps {
   legend?: React.ReactNode;
   /** Ô tìm tỉnh (nằm trong cột nút, cạnh nút furigana) */
   search?: React.ReactNode;
-  /** Đang luyện Shadowing của địa điểm đang chọn ở khung bên cạnh: ẩn thẻ nổi và cụm nút, gắn nhãn "Đang luyện" trên ghim */
+  /** Đang luyện Shadowing của địa điểm đang chọn ở khung bên cạnh: ẩn cụm nút, gắn nhãn "Đang luyện" trên ghim */
   practicing?: boolean;
+  /** Mốc đang được rê chuột ở ngăn tỉnh: ghim đó to lên */
+  highlightSpot?: number | null;
+  /** Rê chuột lên một ghim (null khi rời đi) */
+  onSpotHover?: (index: number | null) => void;
 }
 
 export const JapanMap: React.FC<JapanMapProps> = ({
@@ -299,13 +270,14 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   onSelect,
   activeSpot,
   onSpotSelect,
-  onSpotLearn,
   reserveRight,
   reserveBottom,
   onInteract,
   legend,
   search,
   practicing = false,
+  highlightSpot = null,
+  onSpotHover,
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -591,18 +563,17 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       const m = SPOT_KEEP_MARGIN_PX;
       if (px >= m && px <= freeW - m && py >= m && py <= freeH - m) return cur!;
     }
-    // Phải dời: đưa ghim vào giữa vùng trống, thấp hơn tâm một chút (điện thoại có ngăn kéo thì thấp hơn nữa) để thẻ nổi có chỗ phía trên
-    const drop = reserveBottom > 0 ? SPOT_PIN_DROP_MOBILE_PX : SPOT_PIN_DROP_PX;
-    return [landmark.xy[0] - freeW / 2 / ppu, landmark.xy[1] - (freeH / 2 + drop) / ppu, w, h];
+    // Phải dời: đưa ghim vào giữa vùng trống
+    return [landmark.xy[0] - freeW / 2 / ppu, landmark.xy[1] - freeH / 2 / ppu, w, h];
   }, [selected, activeSpot, size.w, size.h, reserveRight, fitBottom]);
   const targetKey = `${selectedId}:${activeSpot}:${reserveRight}:${reserveBottom}`;
 
   // Đổi lựa chọn -> bay tới khung đích; chỉ đổi kích thước -> giữ nguyên tâm và mức phóng to
-  const prevRef = useRef<{ key: string; w: number; h: number } | null>(null);
+  const prevRef = useRef<{ key: string; pref: number | null; w: number; h: number } | null>(null);
   useLayoutEffect(() => {
     if (!target) return;
     const prev = prevRef.current;
-    prevRef.current = { key: targetKey, w: size.w, h: size.h };
+    prevRef.current = { key: targetKey, pref: selectedId, w: size.w, h: size.h };
     sizeRef.current = { w: size.w, h: size.h };
     const current = viewRef.current;
     if (!prev || !current) {
@@ -610,7 +581,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       return;
     }
     if (prev.key !== targetKey) {
-      animateTo(target, target[2] > current[2] ? ZOOM_OUT_MS : ZOOM_IN_MS);
+      const samePref = prev.pref === selectedId;
+      // Khung đích trùng khung đang nhìn (sai khác dưới nửa pixel), vd. chọn địa điểm đã nằm gọn trong vùng trống:
+      // đứng yên. Chạy chuyến bay lúc này chỉ làm bờ biển chớp tắt và vẽ lại bản đồ đúng lúc ngăn đang chuyển cảnh.
+      const slack = current[2] / (size.w || 1) / 2;
+      if (samePref && !animFrameRef.current && target.every((v, i) => Math.abs(v - current[i]) <= slack)) return;
+      const panOnly = samePref && Math.abs(target[2] - current[2]) <= current[2] * 0.01;
+      animateTo(target, panOnly ? SPOT_PAN_MS : target[2] > current[2] ? ZOOM_OUT_MS : ZOOM_IN_MS);
       return;
     }
     if (prev.w !== size.w || prev.h !== size.h) {
@@ -624,7 +601,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       const nh = size.h / ppu;
       commit([x + w / 2 - nw / 2, y + h / 2 - nh / 2, nw, nh]);
     }
-  }, [target, targetKey, size.w, size.h, commit, animateTo]);
+  }, [target, targetKey, selectedId, size.w, size.h, commit, animateTo]);
 
   useEffect(
     () => () => {
@@ -1008,8 +985,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   const ink = selected ? REGION_STYLE[selected.region].ink : T.ink;
   // Màu nền đất của tỉnh đang xem: màu vùng pha 35% giấy, một màu cho mọi quận
   const landFill = selected ? mix(REGION_STYLE[selected.region].fill, T.paper, 0.35) : T.paper;
-  // Cỡ vòng khám phá tính theo độ phóng đã lượng tử hoá (chỉ đổi khi zoom đổi hơn 2%)
-  const zonePxQ = Math.pow(ZONE_ZOOM_STEP, -Math.round(Math.log(rPxPerUnit) / Math.log(ZONE_ZOOM_STEP)));
   // Khi xem một tỉnh: tỉnh có dữ liệu chi tiết vẽ bằng ranh giới thành phố thay cho hình thô
   const selectedDetail = selected ? details.get(selected.id) : undefined;
   const neighborDetails = useMemo(
@@ -1115,24 +1090,17 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   const spotState = (i: number) => (selected ? progressOf(landmarks[i].spotId) : 'none');
   const spotDone = (i: number) => isStamped(spotState(i));
   const route = selected ? prefectureRoute(selected.id) : null;
-  const nextIdx = selected ? nextSpotIndex(selected.id, spotDone) : null;
   const [furigana] = useFurigana();
-  const canSpeak = useCanSpeakJa();
   useFontVersion(); // phông mới tải xong -> số đo chữ đổi -> xếp lại nhãn
   const showLabels = !!selected && !!view && !prefFlying && detailStage >= 3;
 
   const pinScreen = new Map<number, { x: number; y: number }>();
   let labelLayout: LabelLayout | null = null;
-  const nextBubble = nextIdx != null ? bubbles.find((b) => b.members.includes(nextIdx)) : undefined;
-  const nextActive = nextIdx != null && (nextIdx === activeSpot || (nextBubble != null && activeSpot != null && nextBubble.members.includes(activeSpot)));
   if (showLabels && view) {
     for (const p of pinPlacements) pinScreen.set(p.index, toScreen(...p.at)!);
-    const nextAnchor = nextIdx == null || nextActive ? null : (pinScreen.get(nextIdx) ?? nextBubble?.s ?? null);
-    // Ưu tiên chỗ cho nhãn: địa điểm "Tiếp theo" trước, rồi theo thứ tự lộ trình
+    // Ưu tiên chỗ cho nhãn theo thứ tự lộ trình
     const stopOf = (i: number) => (route ? route.stop[i] : i + 1);
-    const ordered = [...pinPlacements].sort((a, b) =>
-      a.index === nextIdx ? -1 : b.index === nextIdx ? 1 : stopOf(a.index) - stopOf(b.index),
-    );
+    const ordered = [...pinPlacements].sort((a, b) => stopOf(a.index) - stopOf(b.index));
     labelLayout = layoutLabels({
       furigana,
       viewport: { w: size.w, h: size.h },
@@ -1143,14 +1111,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           index: p.index,
           x: s.x,
           y: s.y,
-          active: p.index === activeSpot,
+          // Mốc đang mở vẫn giữ nhãn tên: chi tiết nằm ở ngăn bên cạnh, không có thẻ nổi che
+          active: false,
           label: { jp: lm.pictogram.nameJp, kana: lm.kana, vi: lm.pictogram.nameVi },
         };
       }),
       bubbles: bubbles.map((b) => b.s),
-      // Chip "Tiếp theo" gắn lên ghim đó; nếu ghim đang nằm trong một nhóm thì gắn lên nhóm
-      next: nextAnchor,
-      chip: chipSize('Tiếp theo'),
       pinRadius: PIN_HIT_RADIUS_PX,
       pinLabelGap: PIN_LABEL_GAP_PX,
     });
@@ -1385,13 +1351,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               vectorEffect="non-scaling-stroke"
               pointerEvents="none"
             />
-            <ZoneCircles
-              zones={landmarks.map((lm, i) => ({ key: String(lm.spotId), x: lm.xy[0], y: lm.xy[1], done: spotDone(i) }))}
-              clipId={`jm-zone-${selected.id}`}
-              clipD={selectedDetail.allD}
-              color={REGION_STYLE[selected.region].hover}
-              pxQ={zonePxQ}
-            />
           </g>
         )}
 
@@ -1469,8 +1428,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               <feFlood floodColor={ink} />
               <feComposite in2="SourceAlpha" operator="in" />
             </filter>
-            <filter id="jm-ink-paper" colorInterpolationFilters="sRGB">
-              <feFlood floodColor={T.paper} />
+            <filter id="jm-ink-ai" colorInterpolationFilters="sRGB">
+              <feFlood style={{ floodColor: 'var(--ai)' }} />
+              <feComposite in2="SourceAlpha" operator="in" />
+            </filter>
+            <filter id="jm-ink-on" colorInterpolationFilters="sRGB">
+              <feFlood style={{ floodColor: 'var(--on-ai)' }} />
               <feComposite in2="SourceAlpha" operator="in" />
             </filter>
           </defs>
@@ -1519,8 +1482,9 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                   >
                     <g transform={`translate(${x - 24} ${y - 24})`}>
                       <circle cx={24} cy={24} r={PIN_HIT_RADIUS_PX + 2} fill="transparent" />
-                      {nextBubble === b && !nextActive && !reducedMotion && (
-                        <circle className="jm-next-ring" cx={24} cy={24} r={20} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
+                      {/* Rê chuột lên dòng của một mốc đang nằm trong nhóm: viền đỏ toả ra quanh nhóm */}
+                      {highlightSpot != null && b.members.includes(highlightSpot) && !reducedMotion && (
+                        <circle className="jm-hover-ring" cx={24} cy={24} r={20} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
                       )}
                       {/* Chồng giấy: số tờ khớp số địa điểm (nhóm 2 = 2 tờ, từ 3 trở lên = 3 tờ), tờ trước tô màu
                           vùng ghi số địa điểm */}
@@ -1551,21 +1515,25 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                   );
                 })}
 
-              {/* Ghim địa danh (= địa điểm học): khung theo loại, nền giấy, biểu tượng màu vùng */}
+              {/* Ghim địa danh (= địa điểm học): ô vuông bo góc chứa biểu tượng, màu theo tiến độ */}
               {pinPlacements.map(({ index, at }) => {
                 const { x, y } = toScreen(...at)!;
                 const lm = landmarks[index];
                 const active = activeSpot === index;
                 const toggle = () => onSpotSelect(active ? null : index);
-                const stopN = route ? route.stop[index] : null;
-                const isNext = index === nextIdx && !active;
+                const look = spotState(index);
+                const pointed = highlightSpot === index;
                 return (
                   <g
                     key={lm.spotId}
-                    className="jm-pin"
+                    className={`jm-pin${pointed ? ' is-hi' : ''}`}
                     style={{ cursor: 'pointer', outline: 'none' }}
                     role="button"
                     tabIndex={0}
+                    onPointerEnter={(e) => e.pointerType === 'mouse' && !draggingRef.current && onSpotHover?.(index)}
+                    onPointerLeave={() => onSpotHover?.(null)}
+                    onFocus={(e) => e.currentTarget.matches(':focus-visible') && onSpotHover?.(index)}
+                    onBlur={() => onSpotHover?.(null)}
                     aria-label={`${lm.pictogram.nameVi} (${lm.pictogram.nameJp})${spotDone(index) ? ', đã có con dấu' : ''}`}
                     aria-pressed={active}
                     onClick={(e) => {
@@ -1583,47 +1551,25 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                       {/* Vùng bấm trong suốt 44px */}
                       <circle cx={22} cy={22} r={PIN_HIT_RADIUS_PX} fill="transparent" />
                       {active && !reducedMotion && (
-                        <circle className="jm-ripple" cx={22} cy={22} r={21} fill="none" stroke={ink} strokeWidth={2} pointerEvents="none" />
+                        <rect className="jm-ripple" x={1} y={1} width={42} height={42} rx={14} fill="none" stroke={ink} strokeWidth={2} pointerEvents="none" />
                       )}
-                      {isNext && !reducedMotion && (
-                        <circle className="jm-next-ring" cx={22} cy={22} r={20} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
+                      {/* Đang trỏ vào mốc này (trên bản đồ hoặc dòng của nó trong ngăn): viền đỏ toả ra */}
+                      {pointed && !reducedMotion && (
+                        <rect className="jm-hover-ring" x={2} y={2} width={40} height={40} rx={13} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
                       )}
-                      <g className="jm-pin-body" style={{ transform: active ? 'scale(1.14)' : undefined }}>
-                        <g className="jm-focus-ring" style={{ filter: 'drop-shadow(0 2px 3px rgba(7,26,68,0.22))' }}>
-                          <PinFrame
-                            kind={lm.pictogram.kind}
-                            fill={active ? ink : T.paper}
-                            stroke={ink}
-                            ring={active ? T.paper : ink}
-                            ringOpacity={active ? 0.6 : 0.45}
-                          />
-                        </g>
+                      <g className="jm-pin-body" style={{ transform: active ? 'scale(1.18)' : undefined }}>
+                        {pointed && <rect x={1} y={1} width={42} height={42} rx={14} className="jm-sq-halo" />}
+                        <PinFrame look={look} ink={ink} active={active} />
                         <image
                           href={pictogramUrl(lm.pictogram.id)}
                           x={10}
                           y={10}
                           width={PIN_ICON_PX}
                           height={PIN_ICON_PX}
-                          filter={active ? 'url(#jm-ink-paper)' : 'url(#jm-ink-region)'}
+                          filter={PIN_ICON_FILTER[look]}
                           preserveAspectRatio="xMidYMid meet"
                           pointerEvents="none"
                         />
-                        {/* Đã có con dấu: chấm mực chàm (dấu son: đỏ) có dấu tích ở góc trên phải */}
-                        {spotDone(index) && (
-                          <g aria-hidden="true" pointerEvents="none">
-                            <circle cx={37} cy={7} r={8} fill={spotState(index) === 'red' ? T.shu : STAMP_INK} stroke={T.paper} strokeWidth={1.5} />
-                            <path d="M33.4 7.2l2.5 2.5 4.6-5" fill="none" stroke={T.paper} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
-                          </g>
-                        )}
-                        {/* Số thứ tự trên lộ trình: huy hiệu 19px ở góc dưới trái */}
-                        {stopN != null && (
-                          <g aria-hidden="true" pointerEvents="none">
-                            <circle cx={8} cy={36} r={9.5} fill={T.inkLine} stroke={T.paper} strokeWidth={1.5} />
-                            <text x={8} y={40} textAnchor="middle" fontSize={11} fontWeight={700} fill={T.paper}>
-                              {stopN}
-                            </text>
-                          </g>
-                        )}
                       </g>
                     </g>
                   </g>
@@ -1634,14 +1580,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         </svg>
       )}
 
-      {/* Chữ trên bản đồ tỉnh: tên địa điểm, chip "Tiếp theo", tên thành phố/quận (HTML theo pixel màn hình) */}
+      {/* Chữ trên bản đồ tỉnh: tên địa điểm, tên thành phố/quận (HTML theo pixel màn hình) */}
       {showLabels && labelLayout && (
         <ProvinceLabels
           furigana={furigana}
           ink={ink}
           mapLabelColor={T.mapLabel}
           districtColor={T.ink2}
-          chip={labelLayout.chip ? { box: labelLayout.chip.box, text: 'Tiếp theo' } : null}
           pins={pinPlacements.flatMap(({ index }) => {
             const placed = labelLayout!.pins.get(index);
             if (!placed) return [];
@@ -1677,44 +1622,11 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         />
       )}
 
-      {/* Thẻ nổi của địa điểm đang chọn: đặt ở phía không che ghim nào, bám theo ghim khi kéo/phóng to */}
+      {/* Nhãn trên ghim đang được luyện ở khung bên cạnh */}
       {practicing && activePos && activeSpot != null && selected && (
         <span className="jm-practice-tag" style={{ left: activePos.x, top: activePos.y }}>
           Đang luyện
         </span>
-      )}
-
-      {!practicing && showLabels && activePos && activeLandmark && activeSpot != null && selected && (
-        <SpotCard
-          pin={activePos}
-          obstacles={[
-            ...pinPlacements.map((p): Box => {
-              const s = pinScreen.get(p.index) ?? toScreen(...p.at)!;
-              return { x0: s.x - PIN_HIT_RADIUS_PX, y0: s.y - PIN_HIT_RADIUS_PX, x1: s.x + PIN_HIT_RADIUS_PX, y1: s.y + PIN_HIT_RADIUS_PX };
-            }),
-            ...bubbles.map((b): Box => ({
-              x0: b.s.x - PIN_HIT_RADIUS_PX,
-              y0: b.s.y - PIN_HIT_RADIUS_PX,
-              x1: b.s.x + PIN_HIT_RADIUS_PX,
-              y1: b.s.y + PIN_HIT_RADIUS_PX,
-            })),
-          ]}
-          bounds={{ x0: 8, y0: 8, x1: size.w - reserveRight - 8, y1: size.h - reserveBottom - 8 }}
-          pictogramId={activeLandmark.pictogram.id}
-          nameVi={activeLandmark.pictogram.nameVi}
-          nameJp={activeLandmark.pictogram.nameJp}
-          kana={activeLandmark.kana}
-          stop={route ? { n: route.stop[activeSpot], total: route.route.length } : null}
-          status={nextIdx === activeSpot ? 'next' : spotDone(activeSpot) ? 'done' : null}
-          spotId={activeLandmark.spotId}
-          stamp={spotState(activeSpot)}
-          onLearn={() => onSpotLearn(activeSpot)}
-          phrase={activeLandmark.phrase}
-          furigana={furigana}
-          compact={reserveBottom > 0}
-          canSpeak={canSpeak}
-          ink={ink}
-        />
       )}
 
       {/* Góc dưới phải: cột nút [ふ · chú giải · tìm tỉnh] và [+ · − · về khung] (không đặt nút nào ở góc trên phải).
@@ -1811,7 +1723,16 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-pin { animation: jm-fade-in 0.3s ease-out both; }
         .jm-pin-body { transform-box: fill-box; transform-origin: center; transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .jm-pin:hover .jm-pin-body { transform: scale(1.08); }
+        .jm-pin.is-hi .jm-pin-body { transform: scale(1.12); }
         .jm-ripple { transform-box: fill-box; transform-origin: center; animation: jm-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+        .jm-sq.is-none { fill: var(--card); }
+        .jm-sq.is-understood { fill: var(--ai-soft); stroke: var(--ai); }
+        .jm-sq.is-stamp { fill: var(--ai); }
+        .jm-sq.is-red { fill: var(--shu); }
+        .jm-sq-halo { fill: var(--shu); fill-opacity: .18; }
+        .jm-pin.is-hi .jm-sq { stroke: var(--shu); stroke-width: 2.5px; }
+        .jm-sq-ring-ink { fill: var(--sumi); }
+        .jm-sq-ring-paper { fill: var(--card); }
         .jm-label-fade { animation: jm-fade-in 0.2s ease-out both; }
         .jm-open-top, .jm-open-side { transition: transform .26s cubic-bezier(0.4, 0, 0.2, 1); }
         .jm-open.is-up .jm-open-top { transform: translateY(var(--lift)); transition: transform .36s cubic-bezier(0.34, 1.45, 0.64, 1); }
@@ -1843,8 +1764,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-plabel-neighbor .jm-plabel-vi { font-size: 12px; line-height: 12px; font-weight: 600; }
         .jm-plabel-neighbor .jm-plabel-jp { font-size: 10.5px; line-height: 12px; font-weight: 500; }
         .jm-route-in { animation: jm-fade-in 0.4s ease-out 0.35s both; }
-        .jm-next-ring { transform-box: fill-box; transform-origin: center; animation: jm-next-ring 2.4s ease-out infinite; }
-        @keyframes jm-next-ring { from { transform: scale(0.95); opacity: 0.85; } to { transform: scale(1.55); opacity: 0; } }
+        .jm-hover-ring { transform-box: fill-box; transform-origin: center; animation: jm-hover-ring 1.6s ease-out infinite; }
+        @keyframes jm-hover-ring { from { transform: scale(0.95); opacity: 0.85; } to { transform: scale(1.55); opacity: 0; } }
         /* Nhãn tên cạnh ghim/thành phố: [furigana 9px] / tên Nhật 13px / tên Việt 11.5px, viền chữ màu giấy để đọc được trên nền */
         .jm-pl { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
           white-space: nowrap; pointer-events: none; text-shadow: 0 0 2px ${T.paper}, 0 0 2px ${T.paper}, 0 0 3px ${T.paper}, 0 0 4px ${T.paper}; }
@@ -1856,34 +1777,22 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-pl-d { position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center; white-space: nowrap; pointer-events: none;
           font-family: 'Noto Sans JP', 'Inter', system-ui, sans-serif; font-size: 11px; line-height: 14px; font-weight: 500;
           text-shadow: 0 0 2px ${T.paper}, 0 0 2px ${T.paper}, 0 0 3px ${T.paper}; }
-        .jm-next-chip { position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
-          background: ${T.shu}; color: #fff; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; pointer-events: none;
-          box-shadow: 0 1px 3px rgba(8,20,44,.3); }
-        .jm-chip-next { display: inline-flex; align-items: center; background: ${T.shu}; color: #fff; border-radius: 999px; padding: 1px 8px;
-          font-size: 11.5px; font-weight: 700; }
-        .jm-chip-done { display: inline-flex; align-items: center; border: 1px solid; border-radius: 999px; padding: 0 8px; font-size: 11.5px; font-weight: 700; background: ${T.paper}; }
-        .jm-stop-badge { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 19px; height: 19px; border-radius: 999px;
-          background: ${T.inkLine}; color: ${T.paper}; border: 1.5px solid ${T.paper}; font-size: 11px; font-weight: 700; line-height: 1; }
         .jm-cluster-list { position: absolute; z-index: 6; pointer-events: none; min-width: 190px; max-width: 280px; padding: 6px 10px; background: ${T.paper};
           border: 1px solid ${T.inkLine}; border-radius: 8px; box-shadow: var(--sh-2); }
         .jm-cl-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
         .jm-cl-jp { display: block; font-size: 13px; font-weight: 700; line-height: 1.3; color: ${T.ink}; }
         .jm-cl-vi { display: block; font-size: 11.5px; line-height: 1.3; color: ${T.ink2}; }
-        .jm-spotcard { position: absolute; left: 0; top: 0; z-index: 20; box-sizing: border-box; padding: 12px; background: ${T.paper};
-          border: 1px solid ${T.inkLine}; border-radius: 8px; box-shadow: var(--sh-2); pointer-events: auto; cursor: default; animation: jm-fade-in 0.2s ease-out both; }
-        .jm-phrase { font-size: 15.5px; font-weight: 700; line-height: 1.95; color: ${T.ink}; margin: 0; }
-        .jm-spotcard ruby, .jm-wordcard ruby { ruby-align: center; }
-        .jm-spotcard rt, .jm-wordcard rt { font-size: 0.55em; font-weight: 500; color: ${T.ink2}; }
+        .jm-wordcard ruby { ruby-align: center; }
+        .jm-wordcard rt { font-size: 0.55em; font-weight: 500; color: ${T.ink2}; }
         .jm-wordcard { position: absolute; left: 16px; top: 16px; z-index: 8; box-sizing: border-box; width: 220px; padding: 12px 14px; background: ${T.paper};
           border: 1px solid ${T.inkLine}; border-radius: 8px; box-shadow: var(--sh-2); cursor: default; }
         .jm-wordcard-inline { position: static; width: auto; box-shadow: none; background: var(--card); border-color: var(--rule); }
         .jm-word-jp { font-family: var(--font-mincho); font-weight: 800; font-size: 30px; line-height: 1.5; }
         .jm-word-jp rt { font-size: 11px; }
         @media (prefers-reduced-motion: reduce) {
-          .jm-fade-in, .jm-fade-quick, .jm-pin, .jm-label-fade, .jm-ripple, .jm-route-in, .jm-spotcard { animation: none; }
+          .jm-fade-in, .jm-fade-quick, .jm-pin, .jm-label-fade, .jm-ripple, .jm-route-in { animation: none; }
           .jm-open-top, .jm-open-side, .jm-open.is-up .jm-open-top, .jm-open.is-up .jm-open-side, .jm-open-shadow { transition: none; }
           .jm-plabel-group, .jm-plabel-group.jm-on { transition: none; }
-          .jm-next-ring { display: none; }
           .jm-pin-body { transition: none; }
         }
         g[role='button']:focus-visible .jm-focus-ring > *:first-child,

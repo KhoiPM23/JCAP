@@ -27,7 +27,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
    * được cấp. Chỉ nhận đường dẫn nội bộ của Khám phá (không cho chuyển hướng ra ngoài).
    */
   const returnParam = searchParams.get('return');
-  const returnTo = returnParam && returnParam.startsWith('/explore') ? returnParam : null;
+  const returnTo =
+    returnParam && (returnParam.startsWith('/explore') || returnParam.startsWith('/roleplay/results'))
+      ? returnParam
+      : null;
   const initialLevel = (searchParams.get('level')?.toUpperCase() as 'N5' | 'N4' | 'N3') || 'N4';
   const [selectedLevel, setSelectedLevel] = useState<'N5' | 'N4' | 'N3'>(initialLevel);
   const roleParam = (searchParams.get('role')?.toUpperCase() as 'A' | 'B') || 'A';

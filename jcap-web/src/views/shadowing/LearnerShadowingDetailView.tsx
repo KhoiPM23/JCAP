@@ -4,6 +4,7 @@ import { shadowingService } from '../../services/shadowingService';
 import type { ShadowingDialogueDetail, ShadowingSentenceItem } from '../../types/shadowing';
 import { Button } from '../../components/ui/Button';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
+import { resolveMediaUrl } from '../../utils/apiBase';
 
 export const LearnerShadowingDetailView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,8 +87,9 @@ export const LearnerShadowingDetailView: React.FC = () => {
       }
     };
 
-    if (sentence.nativeAudioUrl && (sentence.nativeAudioUrl.startsWith('http') || sentence.nativeAudioUrl.startsWith('/audio'))) {
-      const audio = new Audio(sentence.nativeAudioUrl);
+    const resolvedNativeAudioUrl = resolveMediaUrl(sentence.nativeAudioUrl);
+    if (resolvedNativeAudioUrl) {
+      const audio = new Audio(resolvedNativeAudioUrl);
       audioRef.current = audio;
       audio.onended = onFinish;
       audio.onerror = () => {
