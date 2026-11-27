@@ -1087,6 +1087,17 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             int failedRank = GetLevelRank(NormalizeJlptLevel(query.SessionLevel));
             stretchMaxRank = Math.Min(stretchMaxRank, failedRank);
         }
+
+        // Cold-start & N5-session guardrail: never jump straight to N3 when learner has < 3 completed sessions
+        // or just finished an N5 session (prevents e.g. 1st N5 pass -> Stretch N3 with 32% pass rate).
+        bool isColdStartLearner = historyRows.Count < 3;
+        bool isPostN5Session = isTactical
+            && !string.IsNullOrWhiteSpace(query?.SessionLevel)
+            && string.Equals(NormalizeJlptLevel(query!.SessionLevel), "N5", StringComparison.OrdinalIgnoreCase);
+        if (isColdStartLearner || isPostN5Session)
+        {
+            stretchMaxRank = Math.Min(stretchMaxRank, 2);
+        }
         DateTime nowUtc = DateTime.UtcNow;
 
         var scoredCandidates = scenarioRows.Select(s =>
@@ -1095,7 +1106,13 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 ? s.Levels.Select(l => NormalizeJlptLevel(l.JLPTLevel)).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                 : new List<string> { effectiveTargetDifficulty };
 
-            var bestLevelEval = levelList
+            var eligibleCoreLevels = levelList.Where(l => GetLevelRank(l) <= stretchMaxRank).ToList();
+            if (eligibleCoreLevels.Count == 0)
+            {
+                eligibleCoreLevels = levelList;
+            }
+
+            var bestLevelEval = eligibleCoreLevels
                 .Select(lv =>
                 {
                     double p = ComputeIrtPassProbability(thetaEff, lv);
