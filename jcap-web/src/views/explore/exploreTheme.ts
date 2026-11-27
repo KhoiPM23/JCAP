@@ -41,7 +41,7 @@ export const mix = (a: string, b: string, t: number) =>
  * tint = nhạt hơn (đầu panel), dim = tỉnh không được chọn khi đang xem một tỉnh.
  * Độ tương phản ink trên giấy 6.4–8.5:1, ink trên nền vùng 4.7–5.8:1.
  */
-const WOODBLOCK: Record<RegionId, [string, string, string]> = {
+export const WOODBLOCK: Record<RegionId, [string, string, string]> = {
   hokkaido: ['#BCCAD6', '#9DB2C6', '#294669'],
   tohoku: ['#C5C9A2', '#ABB27F', '#45521C'],
   kanto: ['#E5C3B3', '#D9A693', '#843526'],

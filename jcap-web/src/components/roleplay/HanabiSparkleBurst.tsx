@@ -32,7 +32,7 @@ const GOLD_PALETTE = [
 export const HanabiSparkleBurst: React.FC<HanabiSparkleBurstProps> = ({
   className = '',
   count = 18,
-  label = '見事！ Xuất sắc',
+  label = 'Xuất sắc!',
   text,
   active = true,
   onComplete,
@@ -65,6 +65,8 @@ export const HanabiSparkleBurst: React.FC<HanabiSparkleBurstProps> = ({
 
   if (!active) return null;
 
+  if (!active) return null;
+
   return (
     <div
       className={`pointer-events-none fixed inset-0 z-50 flex items-center justify-center overflow-hidden select-none ${className}`}
@@ -74,7 +76,9 @@ export const HanabiSparkleBurst: React.FC<HanabiSparkleBurstProps> = ({
         {/* Central Celebratory Badge */}
         {displayLabel && (
           <div className="animate-modal-pop rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 px-4 py-1.5 text-xs font-black text-white shadow-xl border border-amber-300/80 flex items-center gap-1.5 z-10 animate-pulse">
-            <span className="text-xs font-serif font-bold text-amber-300">祝</span>
+            <svg className="w-3.5 h-3.5 text-amber-200 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z" />
+            </svg>
             <span className="font-serif font-black tracking-wide">{displayLabel}</span>
           </div>
         )}

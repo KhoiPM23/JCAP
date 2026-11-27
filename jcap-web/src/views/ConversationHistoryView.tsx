@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { roleplayService } from '../services/roleplayService';
@@ -12,28 +12,31 @@ import type {
 } from '../types/roleplayResult';
 
 type ResultFilter = 'all' | 'passed' | 'not-passed';
+type JlptFilter = 'all' | 'N5' | 'N4' | 'N3';
 
 const PAGE_SIZE = 8;
 
 const formatDate = (value: string) => formatDateMedium(value);
 
 const getScoreRank = (score: number) => {
-  if (score >= 90) return { kanji: '極', title: 'Xuất sắc · Kiệt xuất', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' };
-  if (score >= 80) return { kanji: '優', title: 'Ưu tú · Thành thạo', badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300' };
-  if (score >= 70) return { kanji: '良', title: 'Khá tốt · Thông suốt', badgeClass: 'bg-sky-100 text-sky-900 border-sky-300' };
-  if (score >= 60) return { kanji: '可', title: 'Đạt chuẩn · Vừa vặn', badgeClass: 'bg-blue-100 text-blue-900 border-blue-200' };
-  return { kanji: '研', title: 'Cần rèn luyện thêm', badgeClass: 'bg-rose-100 text-rose-900 border-rose-300' };
+  if (score >= 90) return { title: 'Xuất sắc', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' };
+  if (score >= 80) return { title: 'Thành thạo', badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300' };
+  if (score >= 70) return { title: 'Khá tốt', badgeClass: 'bg-sky-100 text-sky-900 border-sky-300' };
+  if (score >= 60) return { title: 'Đạt chuẩn', badgeClass: 'bg-blue-100 text-blue-900 border-blue-200' };
+  return { title: 'Chưa đạt', badgeClass: 'bg-rose-100 text-rose-900 border-rose-300' };
 };
 
 const getScenarioCrest = (title: string) => {
   const t = title.toLowerCase();
-  if (t.includes('ramen') || t.includes('ăn') || t.includes('mì') || t.includes('món') || t.includes('quán')) return { kanji: '食', theme: 'border-amber-600/40 bg-amber-50/80 text-amber-900' };
-  if (t.includes('ga') || t.includes('tàu') || t.includes('bay') || t.includes('vé') || t.includes('sân bay')) return { kanji: '駅', theme: 'border-sky-600/40 bg-sky-50/80 text-sky-900' };
-  if (t.includes('konbini') || t.includes('mua') || t.includes('chợ') || t.includes('tiện lợi') || t.includes('hàng')) return { kanji: '店', theme: 'border-emerald-600/40 bg-emerald-50/80 text-emerald-900' };
-  if (t.includes('khách sạn') || t.includes('phòng') || t.includes('nhận')) return { kanji: '宿', theme: 'border-indigo-600/40 bg-indigo-50/80 text-indigo-900' };
-  if (t.includes('đường') || t.includes('hỏi') || t.includes('băng qua')) return { kanji: '道', theme: 'border-teal-600/40 bg-teal-50/80 text-teal-900' };
-  if (t.includes('bệnh') || t.includes('thuốc') || t.includes('khám')) return { kanji: '医', theme: 'border-rose-600/40 bg-rose-50/80 text-rose-900' };
-  return { kanji: '会', theme: 'border-blue-600/40 bg-blue-50/80 text-blue-900' };
+  if (t.includes('giúp') || t.includes('cụ già') || t.includes('băng qua')) return { topicLabel: 'Hỗ trợ', theme: 'border-teal-600/40 bg-teal-50/80 text-teal-900' };
+  if (t.includes('baito') || t.includes('phỏng vấn') || t.includes('công sở') || t.includes('làm thêm')) return { topicLabel: 'Công sở', theme: 'border-indigo-600/40 bg-indigo-50/80 text-indigo-900' };
+  if (t.includes('ramen') || t.includes('cà phê') || t.includes('quán ăn') || t.includes('món ăn') || t.includes('gọi món') || t.includes('đặt món') || /\b(?:mì|uống)\b/i.test(t)) return { topicLabel: 'Ẩm thực', theme: 'border-amber-600/40 bg-amber-50/80 text-amber-900' };
+  if (t.includes('ga ') || t.includes('nhà ga') || t.includes('tàu') || t.includes('bay') || t.includes('vé') || t.includes('sân bay')) return { topicLabel: 'Di chuyển', theme: 'border-sky-600/40 bg-sky-50/80 text-sky-900' };
+  if (t.includes('konbini') || t.includes('mua sắm') || t.includes('cửa hàng tiện lợi') || t.includes('siêu thị')) return { topicLabel: 'Đời sống', theme: 'border-emerald-600/40 bg-emerald-50/80 text-emerald-900' };
+  if (t.includes('khách sạn') || t.includes('đặt phòng') || t.includes('nhận phòng')) return { topicLabel: 'Khách sạn', theme: 'border-indigo-600/40 bg-indigo-50/80 text-indigo-900' };
+  if (t.includes('hỏi đường') || t.includes('chỉ đường')) return { topicLabel: 'Chỉ đường', theme: 'border-teal-600/40 bg-teal-50/80 text-teal-900' };
+  if (t.includes('bệnh') || t.includes('thuốc') || t.includes('khám')) return { topicLabel: 'Y tế', theme: 'border-rose-600/40 bg-rose-50/80 text-rose-900' };
+  return { topicLabel: 'Hội thoại', theme: 'border-blue-600/40 bg-blue-50/80 text-blue-900' };
 };
 
 const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => {
@@ -48,21 +51,21 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Cụm huy hiệu kịch bản & Thông tin - Căn giữa hoàn hảo */}
         <div className="flex items-center gap-4 min-w-0">
-          {/* Biểu trưng chữ Hán (Scenario Kanji Monogram Crest) - Căn giữa quang học */}
+          {/* Biểu trưng trình độ & chủ đề */}
           <div
-            className={`w-14 h-14 sm:w-16 sm:h-16 my-auto rounded-2xl border-2 flex flex-col items-center justify-center shrink-0 shadow-2xs font-serif font-black select-none pt-1 pb-0.5 ${crest.theme}`}
-            title="Biểu trưng bối cảnh hội thoại"
+            className={`w-16 h-14 sm:w-[72px] sm:h-16 my-auto rounded-2xl border-2 flex flex-col items-center justify-center shrink-0 shadow-2xs font-sans select-none px-1 ${crest.theme}`}
+            title={`Chủ đề ${crest.topicLabel} · ${result.jlptLevel}`}
           >
-            <span className="text-2xl sm:text-3xl leading-none translate-y-0.5">{crest.kanji}</span>
-            <span className="text-[9px] font-sans font-bold uppercase tracking-tight opacity-80 mt-1">
-              JLPT {result.jlptLevel}
+            <span className="text-lg sm:text-xl font-black font-mono leading-none">{result.jlptLevel}</span>
+            <span className="text-[9px] font-sans font-bold uppercase tracking-tight opacity-85 mt-1 truncate max-w-full text-center">
+              {crest.topicLabel}
             </span>
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border font-sans ${rank.badgeClass}`}>
-                Hạng {rank.kanji} · {rank.title}
+                {rank.title}
               </span>
 
               <span className="text-[11px] text-slate-400 font-medium">
@@ -103,7 +106,7 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
           <Link
             to={`/roleplay/results/${result.id}`}
             onClick={() => ukiyoSound.playSubtleTap()}
-            className="inline-flex h-10 sm:h-11 items-center justify-center rounded-xl bg-slate-900 px-4 sm:px-5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-[var(--ai)] hover:shadow-sm active:scale-95 cursor-pointer shrink-0"
+            className="inline-flex h-10 sm:h-11 items-center justify-center rounded-xl bg-[var(--ai)] px-4 sm:px-5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-[var(--ai-hover)] hover:shadow-sm active:scale-95 cursor-pointer shrink-0"
           >
             <span>Xem kết quả</span>
             <span aria-hidden="true" className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
@@ -119,10 +122,31 @@ ResultRow.displayName = 'ResultRow';
 export const ConversationHistoryView: React.FC = () => {
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<ResultFilter>('all');
+  const [jlptFilter, setJlptFilter] = useState<JlptFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [history, setHistory] = useState<RoleplayResultHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<LearnerIntelligenceProfileDto | null>(null);
+
+  const filteredItems = useMemo(() => {
+    const items = history?.items ?? [];
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    return items.filter((item) => {
+      if (jlptFilter !== 'all' && item.jlptLevel?.toUpperCase() !== jlptFilter) {
+        return false;
+      }
+      if (normalizedQuery) {
+        const matchTitle = item.scenarioTitle?.toLowerCase().includes(normalizedQuery);
+        const matchSession = `#${item.roleplaySessionId}`.includes(normalizedQuery) || String(item.roleplaySessionId).includes(normalizedQuery);
+        const matchJlpt = item.jlptLevel?.toLowerCase().includes(normalizedQuery);
+        return Boolean(matchTitle || matchSession || matchJlpt);
+      }
+      return true;
+    });
+  }, [history?.items, jlptFilter, searchQuery]);
+
+  const hasClientFilters = jlptFilter !== 'all' || searchQuery.trim().length > 0;
 
   useEffect(() => {
     let isCurrent = true;
@@ -182,7 +206,7 @@ export const ConversationHistoryView: React.FC = () => {
             <div className="max-w-2xl">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300 font-mono">
-                  Nhật ký luyện tập · 会話の記録
+                  Nhật ký luyện tập
                 </span>
               </div>
 
@@ -191,30 +215,16 @@ export const ConversationHistoryView: React.FC = () => {
               </h1>
 
               <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-                Lưu trữ toàn bộ các phiên hội thoại cùng AI. Xem lại đánh giá chi tiết, biểu đồ kỹ năng và nhận xét để cải thiện phản xạ giao tiếp.
+                Lưu trữ các phiên hội thoại đã hoàn thành để xem lại điểm số, nhận xét và điểm cần cải thiện.
               </p>
-            </div>
-
-            {/* Triện triện cổ thư phong cách Nhật */}
-            <div className="hidden lg:flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs text-center shrink-0">
-              <span className="text-2xl font-serif font-black text-amber-300 tracking-widest writing-vertical py-1">
-                対話録
-              </span>
-              <span className="text-[9px] font-mono font-bold text-sky-200 uppercase tracking-tighter mt-1">
-                KAIWA LOG
-              </span>
             </div>
           </div>
         </header>
 
-        {/* BẢNG 4 BẢN KHẮC NĂNG LỰC TỰ TRÍ (INTELLIGENCE INSCRIBED TABLETS) */}
+        {/* TÓM TẮT 4 CHỈ SỐ NĂNG LỰC CHÍNH */}
         {profile && (
           <div className="mb-7 grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-            {/* Tablet 1: Phiên hoàn thành */}
             <div className="relative overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-4 shadow-xs transition hover:border-indigo-400 hover:shadow-sm">
-              <div className="absolute -right-2 -bottom-3 text-4xl font-serif font-black text-slate-100 select-none pointer-events-none">
-                戦
-              </div>
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-sans">
                 Phiên hoàn thành
               </span>
@@ -226,11 +236,7 @@ export const ConversationHistoryView: React.FC = () => {
               </span>
             </div>
 
-            {/* Tablet 2: Phản xạ cất lời */}
             <div className="relative overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-4 shadow-xs transition hover:border-sky-400 hover:shadow-sm">
-              <div className="absolute -right-2 -bottom-3 text-4xl font-serif font-black text-sky-50 select-none pointer-events-none">
-                速
-              </div>
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-sans">
                 Điểm phản xạ
               </span>
@@ -243,11 +249,7 @@ export const ConversationHistoryView: React.FC = () => {
               </span>
             </div>
 
-            {/* Tablet 3: Chuẩn trợ từ */}
             <div className="relative overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-4 shadow-xs transition hover:border-emerald-400 hover:shadow-sm">
-              <div className="absolute -right-2 -bottom-3 text-4xl font-serif font-black text-emerald-50 select-none pointer-events-none">
-                格
-              </div>
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-sans">
                 Chuẩn trợ từ
               </span>
@@ -259,11 +261,7 @@ export const ConversationHistoryView: React.FC = () => {
               </span>
             </div>
 
-            {/* Tablet 4: Khí chất kính ngữ */}
             <div className="relative overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-4 shadow-xs transition hover:border-indigo-400 hover:shadow-sm">
-              <div className="absolute -right-2 -bottom-3 text-4xl font-serif font-black text-indigo-50 select-none pointer-events-none">
-                礼
-              </div>
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-sans">
                 Vững kính ngữ
               </span>
@@ -278,41 +276,76 @@ export const ConversationHistoryView: React.FC = () => {
         )}
 
         {/* BỘ LỌC KẾT QUẢ */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold font-sans text-slate-900 flex items-center gap-2">
-              <span>Danh sách kết quả</span>
-              {history && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold font-mono">
-                  {history.totalCount}
-                </span>
-              )}
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500">
-              Chọn một phiên hội thoại để xem chi tiết đánh giá và nhận xét từ AI.
-            </p>
+        <div className="mb-6 space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold font-sans text-slate-900 flex items-center gap-2">
+                <span>Danh sách kết quả</span>
+                {history && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold font-mono">
+                    {hasClientFilters ? `${filteredItems.length}/${history.items.length}` : history.totalCount}
+                  </span>
+                )}
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Chọn một phiên hội thoại để xem chi tiết đánh giá và nhận xét từ AI.
+              </p>
+            </div>
+
+            <div className="inline-flex w-fit rounded-2xl border border-stone-200 bg-white p-1 shadow-2xs">
+              {([
+                ['all', 'Tất cả'],
+                ['passed', 'Đạt chuẩn'],
+                ['not-passed', 'Chưa đạt'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => changeFilter(value)}
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition cursor-pointer ${
+                    filter === value
+                      ? 'bg-[var(--ai)] text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-stone-100 hover:text-slate-900'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="jx-mobile-wrap inline-flex w-fit rounded-2xl border border-stone-200 bg-white p-1 shadow-2xs">
-            {([
-              ['all', 'Tất cả'],
-              ['passed', 'Đạt chuẩn'],
-              ['not-passed', 'Cần rèn luyện'],
-            ] as const).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => changeFilter(value)}
-                aria-pressed={filter === value}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition cursor-pointer ${
-                  filter === value
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-stone-100 hover:text-slate-900'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm tình huống hoặc #phiên..."
+                aria-label="Tìm tình huống hoặc mã phiên"
+                className="w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:border-[var(--ai)] focus:outline-none shadow-2xs"
+              />
+            </div>
+
+            <div className="jx-mobile-wrap inline-flex w-fit items-center gap-1 rounded-2xl border border-stone-200 bg-white p-1 shadow-2xs">
+              {(['all', 'N5', 'N4', 'N3'] as const).map((lv) => (
+                <button
+                  key={lv}
+                  type="button"
+                  aria-pressed={jlptFilter === lv}
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    setJlptFilter(lv);
+                  }}
+                  className={`rounded-xl px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                    jlptFilter === lv
+                      ? 'bg-[var(--ai)] text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-stone-100 hover:text-slate-900'
+                  }`}
+                >
+                  {lv === 'all' ? 'Tất cả JLPT' : lv}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -327,25 +360,47 @@ export const ConversationHistoryView: React.FC = () => {
           <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm font-medium text-rose-800">
             {error}
           </div>
-        ) : history && history.items.length > 0 ? (
+        ) : history && filteredItems.length > 0 ? (
           <div className="space-y-3.5">
-            {history.items.map((result) => (
+            {filteredItems.map((result) => (
               <ResultRow key={result.id} result={result} />
             ))}
           </div>
+        ) : history && history.items.length > 0 ? (
+          <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-10 text-center shadow-xs">
+            <h2 className="text-base font-bold text-slate-900 font-sans">Không tìm thấy phiên phù hợp bộ lọc hiện tại</h2>
+            <p className="mx-auto mt-1 max-w-md text-xs text-slate-500">
+              Thử đổi từ khóa tìm kiếm hoặc cấp độ JLPT để xem các phiên đối thoại trong trang này.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                ukiyoSound.playSubtleTap();
+                setSearchQuery('');
+                setJlptFilter('all');
+              }}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2 text-xs font-bold text-white transition shadow-xs cursor-pointer"
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
         ) : (
           <div className="rounded-[32px] border border-dashed border-stone-300 bg-white px-6 py-14 text-center shadow-xs">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 text-3xl font-serif text-amber-800 shadow-2xs">
-              巻
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--ai-soft)] border border-[var(--ai)]/20 text-[var(--ai)] shadow-2xs">
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M12 7v5l4 2" />
+              </svg>
             </div>
             <h2 className="text-lg font-bold text-slate-900 font-sans">Chưa có kết quả trong danh mục này</h2>
             <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-500">
-              Hoàn thành các tình huống đàm thoại cùng AI Persona để ghi nhận thêm những ấn ký chiến tích mới.
+              Hoàn thành các tình huống hội thoại cùng nhân vật AI để lưu lại kết quả tại đây.
             </p>
             <Link
               to="/scenarios"
               onClick={() => ukiyoSound.playSubtleTap()}
-              className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[var(--ai)] shadow-xs"
+              className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-[var(--ai)] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[var(--ai-hover)] shadow-xs"
             >
               <span>Vào thư viện tình huống</span>
               <span>→</span>

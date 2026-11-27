@@ -185,8 +185,23 @@
   transition: left .2s var(--e) .09s;
 }
 .jx-app.is-collapsed .jx-page { left: 72px; }
+/* Thanh cuộn của trang: nét bo tròn mảnh theo màu theme, không mũi tên, không rãnh; rê chuột vào thì đậm và dày hơn.
+   Chrome/Edge: đặt scrollbar-width thì bị vẽ kiểu mặc định (có mũi tên), nên thuộc tính chuẩn chỉ dành cho Firefox. */
+.jx-page::-webkit-scrollbar { width: 12px; }
+.jx-page::-webkit-scrollbar-track { background: transparent; }
+.jx-page::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.jx-page::-webkit-scrollbar-thumb { min-height: 48px; border: 3.5px solid transparent; border-radius: 12px; background-clip: padding-box; background-color: color-mix(in srgb, var(--line-strong) 38%, transparent); }
+.jx-page::-webkit-scrollbar-thumb:hover { border-width: 2.5px; background-color: color-mix(in srgb, var(--line-strong) 70%, transparent); }
+.jx-page::-webkit-scrollbar-thumb:active { border-width: 2.5px; background-color: var(--line-strong); }
+@supports not selector(::-webkit-scrollbar) {
+  .jx-page { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--line-strong) 55%, transparent) transparent; }
+}
 /* Nội dung trang hiện sau khi nền đã phủ được một nửa (trễ 0,14s) */
-.jx-page-inner { animation: jx-page-fade .22s linear .14s both, jx-page-rise .32s var(--e) .14s both; }
+/* jx-page-rise chỉ fill "backwards": giữ transform sau khi chạy xong sẽ biến khung trang thành gốc toạ độ của mọi
+   phần tử position:fixed bên trong, làm hộp thoại lệch chỗ và trôi theo khi cuộn */
+.jx-page-inner { animation: jx-page-fade .22s linear .14s both, jx-page-rise .32s var(--e) .14s backwards; }
+/* Đang mở hộp thoại: trang phía sau không cuộn, lớp phủ che được cả thanh bên (z-index 40) */
+.jx-page:has([aria-modal="true"]) { overflow: hidden; scrollbar-gutter: stable; z-index: 45; }
 /* Đang chờ chuyển cảnh: trang đã dựng và bố cục xong nhưng chưa hiện, hoạt ảnh vào chưa bắt đầu */
 .jx-page.is-pending { visibility: hidden; pointer-events: none; }
 .jx-page.is-pending .jx-page-inner { animation: none; opacity: 0; }
@@ -300,7 +315,6 @@
 .jx-app.is-mobile :is(.jx-mobile-nav, .jx-mobile-header, .jx-mobile-more) :is(a, button),
 .jx-mobile-practice :is(header, .jx-shadow-sentence-actions, .jx-practice-composer, .jx-practice-panel) button { touch-action: manipulation; }
 .jx-app.is-mobile .jm-back, .jx-app.is-mobile .jm-panel-bottom button[aria-label^="Đóng"] { min-height: 44px; min-width: 44px; }
-.jx-shadow-mobile-history { display: none; }
 
 @media (max-width: 767px), (max-width: 1023px) and (max-height: 500px) and (pointer: coarse) {
   .jx-flash-study-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; padding-block: 8px; }
@@ -355,13 +369,7 @@
   .jx-result-toast { width: max-content; max-width: calc(100% - 24px); flex-wrap: wrap; }
   .jx-result-toast a { min-height: 44px; white-space: normal; }
   .jx-placement-history { padding-inline: 0; }
-  .jx-placement-detail, .jx-support-detail { scroll-margin-top: 12px; }
-  .jx-touch-page .jx-shf { column-gap: 6px; row-gap: 8px; }
-  .jx-touch-page .jx-shf-sep { display: none; }
-  .jx-touch-page .jx-shf-search, .jx-touch-page .jx-shf-search:is(:focus-within, .has-q) { width: 100%; margin-bottom: 8px; }
-  .jx-touch-page .jx-shf-search :is(label, input) { height: 44px; }
-  .jx-shadow-history { padding-inline: 0; }
-  .jx-shadow-mobile-history { display: block; }
+  .jx-placement-detail { scroll-margin-top: 12px; }
 
   .jx-mobile-records, .jx-mobile-records tbody, .jx-mobile-records .jx-record-detail, .jx-mobile-records .jx-record-detail td { display: block; }
   .jx-mobile-records thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -388,9 +396,6 @@
 
   .jx-practice-panel > .jx-phone-overlay { position: static; padding: 0; background: none; backdrop-filter: none; }
   .jx-practice-panel > .jx-phone-overlay > div { max-width: none; border: 0; border-radius: 0; overflow: visible; box-shadow: none; }
-  .jx-practice-panel > .jx-phone-overlay > div:has(> form) > div:first-child { position: sticky; top: 0; z-index: 1; background-color: var(--paper-50); }
-  .jx-forum-page .jx-mobile-wrap { overflow-x: visible; }
-  .jx-support-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
   .jx-app.is-mobile .sb-top > div:first-child { flex-basis: 100%; }
   .jx-app.is-mobile .sb-top :is(button, a), .jx-app.is-mobile .sb-tab { min-height: 44px; }
@@ -426,48 +431,6 @@
   .jx-um-row { grid-template-columns: 1fr 72px; gap: 8px 16px; }
   .jx-um-row .jx-um-lab { grid-column: 1 / -1; }
 }
-
-/* ===== Thanh lọc một hàng (prototype trang pgShadow, lớp .shf-*) ===== */
-.jx-shf { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); }
-.jx-shf-tabs { display: flex; flex-wrap: wrap; gap: 2px; }
-.jx-shf-tab {
-  position: relative; display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 10px; border: 0; background: transparent;
-  font: inherit; font-size: 14px; font-weight: 600; color: var(--sumi-muted); cursor: pointer; transition: color .15s; white-space: nowrap;
-}
-.jx-shf-tab:hover { color: var(--sumi); }
-.jx-shf-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; border-radius: 8px; }
-.jx-shf-tab::after {
-  content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--ai);
-  transform: scaleX(0); transition: transform .22s cubic-bezier(.2, .7, .2, 1);
-}
-.jx-shf-tab.on { color: var(--sumi); }
-.jx-shf-tab.on::after { transform: scaleX(1); }
-.jx-shf-n {
-  box-sizing: border-box; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--paper-200); font-size: 11px;
-  line-height: 18px; font-weight: 700; color: var(--sumi-muted); text-align: center; font-variant-numeric: tabular-nums; transition: background .15s, color .15s;
-}
-.jx-shf-tab.on .jx-shf-n { background: var(--ai-soft); color: var(--ai); }
-.jx-shf-lv { display: flex; align-items: center; gap: 2px; }
-.jx-shf-chip {
-  height: 28px; min-width: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 13px;
-  font-weight: 600; color: var(--sumi-muted); cursor: pointer; transition: background .15s, color .15s;
-}
-.jx-shf-chip:hover { background: var(--paper-200); color: var(--sumi); }
-.jx-shf-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
-.jx-shf-chip.on { background: var(--paper-200); color: var(--sumi); }
-.jx-shf-chip.on.lv-N5 { background: var(--n5-soft); color: var(--n5); }
-.jx-shf-chip.on.lv-N4 { background: var(--n4-soft); color: var(--n4); }
-.jx-shf-chip.on.lv-N3 { background: var(--n3-soft); color: var(--n3); }
-.jx-shf-sep { width: 1px; height: 20px; background: var(--line); }
-.jx-shf-search {
-  display: flex; align-items: center; width: 36px; height: 36px; margin-bottom: 4px; border-radius: 999px; overflow: hidden;
-  transition: width .24s cubic-bezier(.2, .7, .2, 1), background .15s, box-shadow .15s;
-}
-.jx-shf-search:hover { background: var(--paper-200); }
-.jx-shf-search:focus-within, .jx-shf-search.has-q { width: 220px; background: var(--paper-50); box-shadow: 0 0 0 1px var(--line-strong); }
-.jx-shf-search:focus-within { box-shadow: 0 0 0 2px var(--focus); }
-.jx-shf-search label { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--sumi-muted); cursor: pointer; }
-.jx-shf-search input { flex: 1; min-width: 0; height: 36px; padding: 0 12px 0 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: var(--sumi); outline: none; }
 
 body[data-theme$="-dem"] { background-color: var(--paper-100); color: var(--sumi); }
 /* Tấm sáng cho trang chưa làm lại theo design system khi bật chế độ tối (màu cứng cũ vẫn đọc được) */

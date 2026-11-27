@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { formatDateTime } from '../../utils/dateUtils';
+import { resolveApiUrl } from '../../utils/apiBase';
 
 export type TimeRange = 'day' | 'week' | 'month' | 'year';
 
@@ -108,7 +109,7 @@ export const AdminRevenueReportSection: React.FC<AdminRevenueReportSectionProps>
     setTxError(null);
     try {
       const token = localStorage.getItem('jcap_token');
-      const response = await fetch('/api/admin/credits/packages/recent-transactions?limit=20', {
+      const response = await fetch(resolveApiUrl('/api/admin/credits/packages/recent-transactions?limit=20'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

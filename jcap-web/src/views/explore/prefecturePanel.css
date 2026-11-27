@@ -1,0 +1,248 @@
+/* Ngăn tỉnh (design-handoff mục 9k phần B). Màu chỉ từ token kham-pha và biến của trang Khám phá;
+   --jm-region-ink do ngăn đặt theo vùng của tỉnh. */
+
+.jm-pp {
+  position: absolute; z-index: 20; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--card); color: var(--sumi); font-family: var(--font-sans); box-shadow: 0 2px 4px rgba(11, 22, 46, .16), 0 20px 48px rgba(11, 22, 46, .3);
+}
+.jm-pp.is-wide { top: 16px; right: 16px; bottom: 16px; border-radius: 18px; }
+/* Lề hai bên của thẻ, vạch tiến độ và con dấu: bằng mép nút ở chân ngăn */
+.jm-pp { --pp-r: 16px; }
+.jm-pp.is-sheet { left: 0; right: 0; bottom: 0; height: 70%; border-radius: 22px 22px 0 0; }
+.jx-app.is-mobile .jm-pp.is-sheet { height: 62%; }
+.jm-pp-grab { display: block; flex: none; width: 40px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: var(--line-strong); opacity: .6; }
+.jm-pp :where(h2, h3, p, ol, ul) { margin: 0; padding: 0; }
+.jm-pp :where(ol, ul) { list-style: none; }
+.jm-pp-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 20px; }
+/* Không hiện thanh cuộn (mép dưới mờ dần cho biết còn nội dung) */
+.jm-pp .jm-pp-body, .jm-pp .jm-pp-scroll { scrollbar-width: none; }
+.jm-pp .jm-pp-body::-webkit-scrollbar, .jm-pp .jm-pp-scroll::-webkit-scrollbar { display: none; }
+/* Tầng 1: phần đầu đứng yên, danh sách mốc cuộn. Ngăn quá thấp (điện thoại nằm ngang) thì cả khối cuộn,
+   để danh sách luôn còn ít nhất khoảng ba dòng */
+.jm-pp-body { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow-y: auto; }
+.jm-pp-head { flex: none; padding-bottom: 6px; }
+.jm-pp-body > .jm-pp-scroll { flex: 1 0 0; min-height: 140px; }
+/* Hai tầng xếp chồng trong lúc chuyển cảnh (PanelSwitch) */
+.jm-pp-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.jm-pp-layer { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+/* ---- đầu ngăn ---- */
+.jm-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 12px var(--pp-r) 8px 24px; }
+/* Nút đóng gọn hơn cỡ sm mặc định; màn cảm ứng giữ 36px cho dễ chạm */
+.jm-pp .jm-pp-top .jc-iconbtn { width: 28px; height: 28px; border-radius: 8px; }
+.jm-pp .jm-pp-top .jc-iconbtn .jc-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }
+@media (pointer: coarse) { .jm-pp .jm-pp-top .jc-iconbtn { width: 36px; height: 36px; } }
+.jm-pp-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sumi-muted); }
+.jm-pp-home {
+  height: 28px; margin-left: -8px; padding: 0 4px 0 8px; border: 0; border-radius: 999px; background: none;
+  font: inherit; font-weight: 600; color: var(--sumi-muted); cursor: pointer;
+}
+.jm-pp-home:hover { background: var(--paper-200); color: var(--sumi); }
+.jm-pp-region { font-weight: 600; color: var(--jm-region-ink); }
+.jm-pp-region span { margin-left: 2px; font-family: var(--font-jp); font-weight: 500; }
+.jm-pp-pref { display: flex; align-items: flex-start; gap: 12px; padding: 6px var(--pp-r) 0 24px; }
+.jm-pp-names { min-width: 0; flex: 1; }
+.jm-pp-jp { font-family: var(--font-mincho); font-size: 44px; line-height: 52px; font-weight: 700; letter-spacing: .04em; outline: none; }
+.jm-pp-vi { display: flex; align-items: center; height: 26px; font-size: 15px; font-weight: 600; color: var(--sumi-muted); }
+.jm-pp-vi .jc-iconbtn { margin: -5px 0; }
+/* Con dấu (72px) cùng trục ngang với chữ Hán tên tỉnh (dòng cao 52px): nhô đều lên trên và xuống dưới,
+   hạ thêm 3px vì nét chữ Mincho nằm thấp hơn giữa dòng */
+.jm-pp-side { position: relative; top: 3px; display: flex; flex: none; align-items: center; gap: 10px; height: 52px; }
+/* Số gắn ở hai góc bên trái của con dấu tỉnh, đẩy ra ngoài vùng hình tỉnh (hình nằm trong dải 14–58px) */
+.jm-pp-seal { position: relative; width: 72px; height: 72px; }
+.jm-pp-tally {
+  position: absolute; left: 12px; display: inline-flex; align-items: center; justify-content: center; box-sizing: content-box; min-width: 20px; height: 17px; padding: 0 4px;
+  border: 2px solid var(--card); border-radius: 7px; font-size: 10.5px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+.jm-pp-tally.is-stamp { top: 3px; background: var(--ai); color: var(--on-ai); }
+.jm-pp-tally.is-red { top: 69px; background: var(--shu); color: var(--on-shu); }
+.jm-pp-oct { display: block; color: var(--jm-region-ink); opacity: .28; }
+.jm-pp-oct.is-stamp { color: var(--ai); opacity: 1; }
+.jm-pp-oct.is-red { color: var(--shu); opacity: 1; }
+
+/* ---- một từ ở tỉnh: nằm trên vạch tiến độ; mô tả dài rút còn một dòng, rê chuột hoặc bấm thì xổ ra ---- */
+.jm-word { margin: 8px var(--pp-r) 0 16px; padding: 10px 8px 10px 14px; border-radius: 14px; background: var(--sora-soft); }
+/* Dòng tiêu đề chỉ cao bằng chữ để khoảng trống trên và dưới thẻ bằng nhau; nút nghe 36px tràn đều ra hai phía */
+.jm-word-head { display: flex; align-items: center; justify-content: space-between; height: 18px; }
+.jm-word-head .jc-iconbtn { margin: -9px 0; }
+.jm-word-head h3 { font-size: 12px; line-height: 18px; font-weight: 600; color: var(--jm-region-ink); }
+.jm-pp .jm-word-main { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; margin-top: 2px; }
+.jm-word-main > span { font-family: var(--font-jp); font-size: 22px; line-height: 34px; font-weight: 700; }
+.jm-word-main ruby { ruby-align: start; }
+.jm-word-main rt { font-size: 10px; font-weight: 500; color: var(--sumi-muted); }
+.jm-word-main b { font-size: 15px; font-weight: 600; }
+.jm-word-more { display: flex; width: 100%; margin-top: 2px; padding: 0; border: 0; border-radius: 6px; background: none; font: inherit; text-align: left; color: inherit; }
+button.jm-word-more { cursor: pointer; }
+.jm-word-note { flex: 1; min-width: 0; overflow: hidden; font-size: 12.5px; line-height: 18px; color: var(--sumi-muted); transition: max-height .28s cubic-bezier(.2, .7, .2, 1); }
+
+/* ---- tiến độ ---- */
+.jm-pp-prog { display: flex; gap: 3px; margin: 16px var(--pp-r) 0 16px; }
+.jm-pp-prog i { flex: 1; height: 6px; border-radius: 3px; background: var(--paper-300); }
+.jm-pp-prog i.is-understood { background: color-mix(in srgb, var(--ai) 40%, var(--card)); }
+.jm-pp-prog i.is-stamp { background: var(--ai); }
+.jm-pp-prog i.is-red { background: var(--shu); }
+
+/* ---- lộ trình: đường ray chạy dọc qua tâm các ô mốc ---- */
+.jm-pp .jm-rail { position: relative; margin-top: 6px; padding: 0 12px; }
+.jm-rail::before { content: ""; position: absolute; left: 31.5px; top: 24px; bottom: 22px; width: 3px; border-radius: 2px; background: var(--paper-300); }
+.jm-row {
+  position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 44px; padding: 4px 12px 4px 7px; border: 0; border-radius: 12px;
+  background: none; font: inherit; color: var(--sumi); text-align: left; cursor: pointer; transition: background .15s;
+}
+.jm-row:hover, .jm-row.is-hi { background: var(--paper-200); }
+.jm-row-name { flex: 1; min-width: 0; font-size: 14.5px; line-height: 20px; font-weight: 500; }
+.jm-row-meta { flex: none; font-size: 12px; font-weight: 600; color: var(--ai); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ---- ô mốc: cùng 5 màu trạng thái với ghim trên bản đồ ---- */
+.jm-stn {
+  display: inline-flex; position: relative; z-index: 1; flex: none; align-items: center; justify-content: center; box-sizing: border-box;
+  width: 26px; height: 26px; border-radius: 8px; background: var(--card); color: var(--jm-region-ink);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--jm-region-ink) 45%, var(--card));
+}
+.jm-stn.s30 { width: 30px; height: 30px; border-radius: 9px; }
+.jm-stn.is-understood { background: var(--ai-soft); color: var(--ai); box-shadow: inset 0 0 0 2px var(--ai); }
+.jm-stn.is-stamp { background: var(--ai); color: var(--on-ai); box-shadow: none; }
+.jm-stn.is-red { background: var(--shu); color: var(--on-shu); box-shadow: none; }
+.jm-pict { display: block; width: 72%; height: 72%; background: currentColor; -webkit-mask: var(--pict) center / contain no-repeat; mask: var(--pict) center / contain no-repeat; }
+
+/* ---- ghi nguồn (điều khoản của bộ biểu tượng và dữ liệu ranh giới) ---- */
+.jm-pp .jm-pp-credit { flex: none; padding: 8px 16px 10px; border-top: 1px solid var(--line); font-size: 11.5px; line-height: 18px; text-align: center; color: var(--sumi-muted); }
+.jm-pp-credit a { color: inherit; text-underline-offset: 2px; }
+
+/* ---- trạng thái tải, lỗi, chưa có mốc ---- */
+.jm-pp-sk { display: flex; flex-direction: column; gap: 16px; padding: 18px 24px; }
+.jm-pp-sk .sk-bar { height: 6px; border-radius: 3px; }
+.jm-pp-sk .sk-row { display: flex; align-items: center; gap: 16px; }
+.jm-pp-sk .sk-n { flex: none; width: 26px; height: 26px; border-radius: 8px; }
+.jm-pp-sk .sk-t { height: 14px; border-radius: 7px; }
+.jm-pp-sk .sk-btn { height: 48px; border-radius: 999px; }
+.jm-pp-err {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: 24px 24px 0; padding: 18px; border-radius: 16px;
+  background: var(--paper-50); box-shadow: 0 0 0 1px var(--line); font-size: 13.5px; color: var(--sumi-muted);
+}
+.jm-pp-err b { display: block; font-size: 15px; color: var(--sumi); }
+.jm-pp .jm-pp-empty { margin: 20px 24px 0; font-size: 14px; color: var(--sumi-muted); }
+
+/* ---- chân ngăn: một chỗ cho nút chính ở cả hai tầng ---- */
+.jm-pp-foot { position: relative; display: flex; flex: none; flex-direction: column; gap: 6px; padding: 12px 16px 14px; background: var(--card); }
+.jm-pp-foot .jc-btn { height: 48px; border-radius: 999px; font-size: 15px; }
+.jm-pp-foot .jc-btn__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jm-pp .jm-pp-hint { font-size: 12px; text-align: center; color: var(--sumi-muted); }
+.jm-pp .jm-pp-done { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; font-weight: 700; color: var(--ai); text-align: center; }
+.jm-pp .jm-pp-practicing {
+  display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border: 1.5px dashed var(--ai); border-radius: 999px;
+  font-size: 14px; font-weight: 600; color: var(--ai);
+}
+
+.jm-pp :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.jm-pp .jm-pp-jp:focus-visible { outline: none; }
+.jm-pp .jm-row:focus-visible { outline: 2px solid var(--ai); outline-offset: -2px; }
+
+
+/* ================= tầng 2: chi tiết mốc ================= */
+.jm-sd-bar { display: flex; flex: none; align-items: center; justify-content: space-between; padding: 12px 12px 4px 14px; }
+.jm-sd-back {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px 0 8px; border: 0; border-radius: 999px; background: none;
+  font: inherit; font-size: 14px; font-weight: 700; color: var(--sumi); cursor: pointer;
+}
+.jm-sd-back:hover { background: var(--paper-200); }
+.jm-sd-pos-group { display: inline-flex; align-items: center; gap: 2px; }
+.jm-sd-pos { min-width: 32px; text-align: center; font-size: 12px; font-weight: 600; color: var(--sumi-muted); font-variant-numeric: tabular-nums; }
+.jm-pp .jc-iconbtn:disabled { opacity: .35; cursor: default; background: none; }
+
+.jm-sd-head { padding: 4px 24px 0; }
+.jm-pp .jm-sd-area { margin-bottom: 4px; font-size: 12.5px; line-height: 18px; font-weight: 600; color: var(--jm-region-ink); }
+.jm-pp .jm-sd-title { display: flex; align-items: center; gap: 10px; font-size: 22px; line-height: 30px; font-weight: 700; }
+.jm-pp .jm-sd-title:focus-visible { outline: none; }
+.jm-pp .jm-sd-jp { margin-top: 4px; font-family: var(--font-jp); font-size: 13.5px; line-height: 20px; color: var(--sumi-muted); }
+.jm-pp .jm-sd-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12.5px; color: var(--sumi-muted); }
+
+.jm-sd-sentence { margin: 14px 24px 0; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.jm-sd-card { display: flex; align-items: flex-start; gap: 8px; padding: 10px 8px 12px 14px; border-radius: 14px; background: var(--paper-50); box-shadow: 0 0 0 1px var(--line); }
+.jm-pp .jm-sd-card .jc-jp { flex: 1; min-width: 0; font-size: 20px; line-height: 38px; font-weight: 500; }
+.jm-pp .jm-sd-meaning { margin-top: 10px; font-size: 14.5px; line-height: 22px; font-weight: 600; }
+
+/* ---- các bước: nút tròn nối bằng một đường dọc ---- */
+.jm-pp .jm-steps { margin-top: 8px; padding: 0 12px; }
+.jm-step { position: relative; }
+.jm-step:not(:last-child)::before { content: ""; position: absolute; left: 25px; top: 38px; bottom: -8px; width: 2px; background: var(--line); }
+.jm-step-head {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 12px; border: 0; border-radius: 12px; background: none;
+  font: inherit; color: var(--sumi); text-align: left; cursor: pointer;
+}
+.jm-step-head:hover { background: var(--paper-200); }
+.jm-step-dot {
+  display: inline-flex; position: relative; z-index: 1; flex: none; align-items: center; justify-content: center; box-sizing: border-box; width: 28px; height: 28px;
+  border-radius: 50%; border: 2px solid var(--line-strong); background: var(--card); font-size: 12px; font-weight: 700; color: var(--sumi-muted);
+}
+.jm-step.is-current .jm-step-dot { border-color: var(--ai); color: var(--ai); box-shadow: 0 0 0 4px var(--ai-soft); }
+.jm-step.is-done .jm-step-dot { border: 0; background: var(--ai); color: var(--on-ai); }
+.jm-step.is-done.is-red .jm-step-dot { background: var(--shu); color: var(--on-shu); }
+.jm-step.is-missing .jm-step-dot { border-color: var(--line); background: var(--paper-100); color: var(--sumi-faint); }
+.jm-step-title { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; }
+.jm-step.is-current .jm-step-title { font-weight: 700; }
+.jm-step.is-missing .jm-step-title { color: var(--sumi-muted); }
+.jm-step-meta { flex: none; font-size: 12px; font-weight: 500; color: var(--sumi-muted); white-space: nowrap; }
+.jm-step-meta.is-ok { font-weight: 600; color: var(--ai); }
+.jm-step-meta.is-progress { font-weight: 600; color: var(--ai); font-variant-numeric: tabular-nums; }
+.jm-step-meta.is-red { font-weight: 600; color: var(--shu); }
+.jm-step-body { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 2px 12px 12px 52px; }
+.jm-pp .jm-step-text { font-size: 13.5px; line-height: 20px; color: var(--sumi-muted); }
+.jm-pp .jm-step-activity { display: flex; align-items: center; gap: 8px; font-size: 13.5px; line-height: 20px; font-weight: 600; }
+.jm-step-facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 13.5px; line-height: 20px; }
+.jm-step-facts dt { font-weight: 600; color: var(--sumi-muted); }
+.jm-step-facts dd { margin: 0; }
+.jm-step-bar { display: block; align-self: stretch; height: 4px; overflow: hidden; border-radius: 2px; background: var(--paper-300); }
+.jm-step-bar i { display: block; height: 100%; background: var(--ai); transform-origin: left; }
+.jm-pp .jc-btn.jm-step-btn { border-radius: 999px; }
+
+.jm-pp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.jm-pp-foot .jm-pp-two .jc-btn { padding: 0 12px; font-size: 14px; }
+/* Thông báo nằm ngay trên chân ngăn */
+.jm-pp-toast { position: absolute; left: 16px; right: 16px; bottom: calc(100% + 8px); z-index: 6; }
+.jm-pp-toast .jc-toast { width: 100%; }
+
+@media (max-width: 420px) {
+  .jm-pp-two { grid-template-columns: 1fr; }
+}
+
+/* ================= chuyển động ================= */
+/* Đổi tầng: trang cũ mờ đi nhanh, trang mới trượt vào theo chiều đi tới hoặc lùi (--dx). Chỉ dùng transform và opacity. */
+.jm-pp-layer.is-entering { animation: jm-pp-in .28s cubic-bezier(.22, 1, .36, 1) .09s backwards; }
+.jm-pp-layer.is-leaving { pointer-events: none; animation: jm-pp-out .11s ease-in forwards; }
+/* Chuyển giữa hai mốc: thanh trên đứng yên để bấm mũi tên liên tiếp, chỉ nội dung trượt */
+.jm-pp-layer.is-swap.is-entering, .jm-pp-layer.is-swap.is-leaving { animation: none; }
+.jm-pp-layer.is-swap.is-entering > .jm-pp-scroll { animation: jm-pp-in .28s cubic-bezier(.22, 1, .36, 1) .09s backwards; }
+.jm-pp-layer.is-swap.is-entering > .jm-pp-foot { animation: jm-pp-fade .24s ease-out .09s backwards; }
+.jm-pp-layer.is-swap.is-leaving > .jm-sd-bar, .jm-pp-layer.is-swap.is-leaving > .jm-pp-foot { visibility: hidden; }
+.jm-pp-layer.is-swap.is-leaving > .jm-pp-scroll { animation: jm-pp-out .11s ease-in forwards; }
+@keyframes jm-pp-in { from { opacity: 0; transform: translate3d(var(--dx, 0px), 0, 0); } }
+@keyframes jm-pp-out { to { opacity: 0; transform: translate3d(calc(var(--dx, 0px) * -.5), 0, 0); } }
+@keyframes jm-pp-fade { from { opacity: 0; } }
+/* Nút chính đổi theo tình trạng mốc */
+.jm-pp-foot > .jc-btn, .jm-pp-foot > .jm-pp-two { animation: jm-pp-fade .22s ease-out backwards; }
+
+/* Đóng mở một bước */
+.jm-step-panel { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .28s cubic-bezier(.2, .7, .2, 1), visibility 0s linear .28s; }
+.jm-step-panel.is-open { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows .28s cubic-bezier(.2, .7, .2, 1); }
+.jm-step-inner { min-height: 0; overflow: hidden; opacity: 0; transition: opacity .2s ease; }
+.jm-step-panel.is-open .jm-step-inner { opacity: 1; }
+.jm-step-chev { transition: transform .28s cubic-bezier(.2, .7, .2, 1); }
+.jm-step-head[aria-expanded='true'] .jm-step-chev { transform: rotate(180deg); }
+
+/* Cảm giác bấm: lún nhẹ khi nhấn, nhả ra êm */
+.jm-row, .jm-step-head, .jm-sd-back, .jm-pp-home, .jm-pp .jc-btn, .jm-pp .jc-iconbtn {
+  transition: background .15s ease, box-shadow .15s ease, color .15s ease, transform .16s cubic-bezier(.2, .7, .2, 1);
+}
+.jm-row:active, .jm-step-head:active, .jm-pp .jc-btn:active:not(:disabled) { transform: scale(.975); transition-duration: .06s; }
+.jm-sd-back:active, .jm-pp-home:active, .jm-pp .jc-iconbtn:active:not(:disabled) { transform: scale(.92); transition-duration: .06s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .jm-word-note, .jm-row, .jm-step-head, .jm-sd-back, .jm-pp-home, .jm-pp .jc-btn, .jm-pp .jc-iconbtn,
+  .jm-step-panel, .jm-step-panel.is-open, .jm-step-inner, .jm-step-chev { transition: none; }
+  .jm-row:active, .jm-step-head:active, .jm-sd-back:active, .jm-pp-home:active,
+  .jm-pp .jc-btn:active:not(:disabled), .jm-pp .jc-iconbtn:active:not(:disabled) { transform: none; }
+  /* chỉ đổi mờ, không trượt */
+  .jm-pp-layer { --dx: 0px !important; }
+}

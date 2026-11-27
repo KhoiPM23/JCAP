@@ -194,7 +194,9 @@ export function sanitizeDisplayJapanese(text: string): string {
     }
   }
 
-  return withoutParen.replace(JAPANESE_SPACE_REGEX, '');
+  return withoutParen
+    .replace(/ごちそうさました/g, 'ごちそうさまでした')
+    .replace(JAPANESE_SPACE_REGEX, '');
 }
 
 /**
@@ -267,6 +269,52 @@ export function cleanJapaneseForTts(text?: string | null): string {
   return clean;
 }
 
+const JAPANESE_SENTENCE_CHUNK_REGEX = /[^。！？!?]+(?:[。！？!?]+[」』）\)]*)?/g;
+const MIN_TTS_SENTENCE_CHUNK_LENGTH = 12;
+const MAX_MERGED_TTS_SENTENCE_CHUNK_LENGTH = 70;
+
+/**
+ * Tách đoạn thoại tiếng Nhật dài thành các câu ngắn đồng bộ 1:1 với Backend
+ * (PlacementTestService.SplitJapaneseSentencesForTts) để tổng hợp & phát cuốn chiếu
+ * từng câu trên CPU VOICEVOX (giảm độ trễ tiếng đầu tiên từ ~20s xuống ~3-6s).
+ */
+export function splitJapaneseSentencesForTts(text?: string | null): string[] {
+  if (!text) return [];
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+
+  const matches = trimmed.match(JAPANESE_SENTENCE_CHUNK_REGEX) || [];
+  const raw = matches.map((s) => s.trim()).filter(Boolean);
+  if (raw.length === 0) return [trimmed];
+
+  const merged: string[] = [];
+  let i = 0;
+  while (i < raw.length) {
+    let current = raw[i];
+    while (
+      current.length < MIN_TTS_SENTENCE_CHUNK_LENGTH &&
+      i + 1 < raw.length &&
+      current.length + raw[i + 1].length <= MAX_MERGED_TTS_SENTENCE_CHUNK_LENGTH
+    ) {
+      i += 1;
+      current += raw[i];
+    }
+    merged.push(current);
+    i += 1;
+  }
+
+  if (
+    merged.length >= 2 &&
+    merged[merged.length - 1].length < MIN_TTS_SENTENCE_CHUNK_LENGTH &&
+    merged[merged.length - 2].length + merged[merged.length - 1].length <= MAX_MERGED_TTS_SENTENCE_CHUNK_LENGTH
+  ) {
+    merged[merged.length - 2] += merged[merged.length - 1];
+    merged.pop();
+  }
+
+  return merged;
+}
+
 /**
  * Tự động tạo thẻ <ruby><rt> cho các từ tiếng Nhật thông dụng nếu backend chưa kịp gắn furigana.
  * Đảm bảo 100% người học N5/N4 luôn đọc được cách phát âm trên giàn giáo gợi ý và phòng luyện.
@@ -290,6 +338,11 @@ export function generateClientFuriganaHtml(
     ['お願いします', 'お<ruby>願<rt>ねが</rt></ruby>いします'],
     ['お手伝い', 'お<ruby>手伝<rt>てつだ</rt></ruby>い'],
     ['少々お待ち', '<ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ち'],
+    ['お越し', 'お<ruby>越<rt>こ</rt></ruby>し'],
+    ['ご注文', 'ご<ruby>注文<rt>ちゅうもん</rt></ruby>'],
+    ['お決まり', 'お<ruby>決<rt>き</rt></ruby>まり'],
+    ['カウンター席', 'カウンター<ruby>席<rt>せき</rt></ruby>'],
+    ['テーブル席', 'テーブル<ruby>席<rt>せき</rt></ruby>'],
     ['志望動機', '<ruby>志望動機<rt>しぼうどうき</rt></ruby>'],
     ['自己紹介', '<ruby>自己紹介<rt>じこしょうかい</rt></ruby>'],
     ['電話番号', '<ruby>電話番号<rt>でんわばんごう</rt></ruby>'],
@@ -477,8 +530,45 @@ export function generateClientFuriganaHtml(
   return cleanFuriganaHtml(result);
 }
 
-const RUBY_TAG_REGEX = /<ruby[^>]*>(?:<rp>.*?<\/rp>)?(.*?)(?:<rp>.*?<\/rp>)?<rt[^>]*>(.*?)<\/rt>(?:<rp>.*?<\/rp>)?<\/ruby>/gi;
+const RUBY_TAG_REGEX = /<ruby[^>]*>(?:<rp[^>]*>[\s\S]*?<\/rp>)?([\s\S]*?)(?:<rp[^>]*>[\s\S]*?<\/rp>)?<rt[^>]*>([\s\S]*?)<\/rt>(?:<rp[^>]*>[\s\S]*?<\/rp>)?<\/ruby>/gi;
 const JAPANESE_SPACE_REGEX = /(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,>\uFF09\)])[\s\u3000]+(?=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,<\uFF08\(])/g;
+
+function decodeEncodedRubyTags(html: string): string {
+  return html
+    .replace(/&lt;\s*(\/?\s*(?:ruby|rt|rp))(?:\s+[^&]*)?\s*&gt;/gi, (_m, tag: string) => {
+      const normalizedTag = tag.replace(/\s+/g, '').toLowerCase();
+      return `<${normalizedTag}>`;
+    });
+}
+
+function normalizeUnclosedRtTags(html: string): string {
+  return html.replace(/<ruby[^>]*>([\s\S]*?)<\/ruby>/gi, (_match, inner: string) => {
+    const normalizedInner = inner.replace(
+      /<rt[^>]*>([\s\S]*?)(<\/rt>|(?=<rp\b|<rt\b|$))/gi,
+      (_rtMatch, rtBody: string) => `<rt>${rtBody}</rt>`
+    );
+    return `<ruby>${normalizedInner}</ruby>`;
+  });
+}
+
+function isValidRtReading(rtText: string): boolean {
+  const trimmed = rtText.trim();
+  if (!trimmed) return false;
+  if (/[<>]/.test(trimmed) || /&(?:lt|gt);/i.test(trimmed)) return false;
+  // Reject Kanji inside <rt>
+  if (/[\u4E00-\u9FAF]/.test(trimmed)) return false;
+  // Allow only Hiragana, Katakana, prolonged/iteration marks, and spaces
+  return /^[\u3040-\u309F\u30A0-\u30FF\u30FC\u30FB\uFF65\u309D\u309E\u30FD\u30FE\s\u3000]+$/.test(trimmed);
+}
+
+function escapeHtmlPlainText(text: string): string {
+  return text
+    .replace(/<[^>]+>/g, '')
+    .replace(/<[a-zA-Z!/\?][^>]*$/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 /**
  * Đảm bảo tính trung thực Furigana so với câu gốc (Furigana-Original Alignment Guard):
@@ -492,36 +582,52 @@ export function alignFuriganaWithOriginal(furiganaHtml?: string | null, original
   if (!furiganaHtml) return '';
   if (!originalText) return cleanFuriganaHtml(furiganaHtml);
 
-  const cleanOriginal = sanitizeDisplayJapanese(originalText).trim();
+  const cleanOriginal = sanitizeDisplayJapanese(originalText)
+    .replace(/<[^>]+>/g, '')
+    .replace(/<[a-zA-Z!/\?][^>]*$/g, '')
+    .trim();
 
-  // 1. Nếu câu gốc hoàn toàn không chứa chữ Hán nào -> Trả về thẳng câu gốc (100% Hiragana/Katakana thuần)
+  // 1. Nếu câu gốc hoàn toàn không chứa chữ Hán nào -> Trả về thẳng câu gốc đã escape HTML an toàn
   if (!/[\u4E00-\u9FAF]/.test(cleanOriginal)) {
-    return cleanOriginal;
+    return escapeHtmlPlainText(cleanOriginal);
   }
 
-  // 2. Làm sạch thẻ ruby cơ bản trước
+  // 2. Làm sạch thẻ ruby cơ bản trước (khử XSS, unclosed <rt>, non-kana <rt>)
   const cleaned = cleanFuriganaHtml(furiganaHtml);
 
   // 3. Quét từng thẻ ruby: kiểm tra xem chữ Hán trong thẻ ruby có thực sự tồn tại trong câu gốc hay không
-  return cleaned.replace(
-    /<ruby[^>]*>(?:<rp>.*?<\/rp>)?(.*?)(?:<rp>.*?<\/rp>)?<rt[^>]*>(.*?)<\/rt>(?:<rp>.*?<\/rp>)?<\/ruby>/gi,
+  const aligned = cleaned.replace(
+    RUBY_TAG_REGEX,
     (fullMatch, baseText, rtText) => {
       const cleanBase = (baseText || '').trim();
       const cleanRt = (rtText || '').trim();
 
       // Nếu chữ Hán trong ruby không hề có trong câu gốc (AI/LLM tự ý ép Hiragana thành Kanji)
       if (cleanBase && !cleanOriginal.includes(cleanBase)) {
-        // Hoàn lại cách đọc Hiragana nguyên bản của câu gốc
-        return cleanRt || cleanBase;
+        // Hoàn lại cách đọc Hiragana nguyên bản (đã được validate là kana bởi cleanFuriganaHtml)
+        return isValidRtReading(cleanRt) ? cleanRt : cleanBase;
       }
 
       return fullMatch;
     }
   );
+
+  // 4. Bảo toàn nguyên vẹn chuỗi gốc: Nếu kết quả sau khi gỡ ruby bị rớt chữ (vd: mất 'お' trong またお越し hoặc mất Kanji trong ご注文)
+  // thì tái tạo trực tiếp từ câu gốc cleanOriginal để đảm bảo không bao giờ mất chữ.
+  const strippedAligned = stripRubyToPlainJapanese(aligned).replace(/\s+/g, '');
+  const strippedOriginal = cleanOriginal.replace(/\s+/g, '');
+  if (strippedAligned !== strippedOriginal) {
+    return generateClientFuriganaHtml(cleanOriginal);
+  }
+
+  return aligned;
 }
 
 /**
  * Làm sạch thẻ <ruby> phát sinh từ AI:
+ * - Hỗ trợ HTML-encoded ruby tags và HTML5 unclosed <rt>
+ * - Kiểm tra nội dung <rt> chỉ chấp nhận kana hợp lệ (từ chối Kanji/tiếng Việt/HTML trong <rt>)
+ * - Loại bỏ triệt để thẻ HTML không phải ruby/rt/rp (<script>, <img>, v.v.) và ký tự <, > rò rỉ
  * - Đưa trợ từ, hiragana, dấu câu ra ngoài thẻ ruby (vd: <ruby>は海老<rt>えび</rt></ruby> -> は<ruby>海老<rt>えび</rt></ruby>)
  * - Đưa okurigana ra ngoài thẻ ruby (vd: <ruby>使われ<rt>つかわれ</rt></ruby> -> <ruby>使<rt>つか</rt></ruby>われ)
  * - Gỡ thẻ ruby nếu chữ gốc hoàn toàn là kana (vd: <ruby>が<rt>が</rt></ruby> -> が)
@@ -530,22 +636,37 @@ export function alignFuriganaWithOriginal(furiganaHtml?: string | null, original
 export function cleanFuriganaHtml(html?: string | null): string {
   if (!html) return '';
 
-  let cleaned = html
+  let cleaned = decodeEncodedRubyTags(html)
+    .replace(/<(?:script|style)\b[^>]*>[\s\S]*?<\/(?:script|style)>/gi, '')
     .replace(/>[\s\u3000]+</g, '><')
     .replace(/<ruby[^>]*>[\s\u3000]+/gi, '<ruby>')
     .replace(/<rt[^>]*>[\s\u3000]+/gi, '<rt>')
     .replace(/[\s\u3000]+<\/rt>/gi, '</rt>')
     .replace(/[\s\u3000]+<\/ruby>/gi, '</ruby>')
     .replace(/<\/ruby>[\s\u3000]+(?=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF<])/gi, '</ruby>')
-    .replace(/(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF>])[\s\u3000]+<ruby/gi, '<ruby')
-    .replace(JAPANESE_SPACE_REGEX, '');
+    .replace(/(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF>])[\s\u3000]+<ruby/gi, '<ruby');
+
+  cleaned = normalizeUnclosedRtTags(cleaned);
+  cleaned = cleaned.replace(JAPANESE_SPACE_REGEX, '');
+
+  const validRubyTokens: Record<string, string> = {};
+  let tokenCounter = 0;
 
   cleaned = cleaned.replace(RUBY_TAG_REGEX, (_, rawBase, rawRt) => {
-    let baseText = (rawBase || '').trim();
+    let baseText = (rawBase || '')
+      .replace(/<\/?(?:rb|span)\b[^>]*>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .trim();
     let rtText = (rawRt || '').trim();
 
     if (!baseText) return '';
-    if (!rtText) return baseText;
+    if (/[<>]/.test(baseText) || /[<>]/.test(rtText)) {
+      return baseText
+        .replace(/<[a-zA-Z!/\?][^>]*$/g, '')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+    if (!isValidRtReading(rtText)) return baseText;
 
     if (!/[\u4E00-\u9FAF]/.test(baseText)) {
       return baseText;
@@ -556,6 +677,13 @@ export function cleanFuriganaHtml(html?: string | null): string {
     if (leadingMatch) {
       prefix = leadingMatch[1];
       baseText = leadingMatch[2];
+      const toHira = (s: string) =>
+        s.replace(/[\u30A1-\u30F6]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+      const prefixHira = toHira(prefix);
+      const rtHira = toHira(rtText);
+      if (prefixHira.length > 0 && rtText.length > prefixHira.length && rtHira.startsWith(prefixHira)) {
+        rtText = rtText.slice(prefixHira.length);
+      }
     }
 
     let suffix = '';
@@ -576,11 +704,34 @@ export function cleanFuriganaHtml(html?: string | null): string {
       suffix = trailingMatch[2] + suffix;
     }
 
-    return `${prefix}<ruby>${baseText}<rt>${rtText}</rt></ruby>${suffix}`;
+    if (!baseText || /[<>]/.test(baseText) || !isValidRtReading(rtText)) {
+      const safeBase = baseText
+        .replace(/<[a-zA-Z!/\?][^>]*$/g, '')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      const safePrefix = prefix.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const safeSuffix = suffix.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `${safePrefix}${safeBase}${safeSuffix}`;
+    }
+
+    const token = `\uE000JCAP_RUBY_${tokenCounter++}\uE001`;
+    validRubyTokens[token] = `<ruby>${baseText}<rt>${rtText}</rt></ruby>`;
+    return `${prefix}${token}${suffix}`;
+  });
+
+  // Strip any remaining non-token HTML tags (including unclosed <tag tails) and escape stray < or > outside canonical <ruby> tags
+  cleaned = cleaned
+    .replace(/<[^>]+>/g, '')
+    .replace(/<[a-zA-Z!/\?][^>\uE000]*(?=\uE000|$)/g, '')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  Object.entries(validRubyTokens).forEach(([token, canonicalRuby]) => {
+    cleaned = cleaned.replaceAll(token, canonicalRuby);
   });
 
   // Quét triệt để lần cuối loại bỏ khoảng trắng rò rỉ giữa các ký tự tiếng Nhật và ruby
-  cleaned = cleaned.replace(/(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,>\uFF09\)])[\s\u3000]+(?=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,<\uFF08\(])/g, '');
+  cleaned = cleaned.replace(JAPANESE_SPACE_REGEX, '');
   return cleaned;
 }
 

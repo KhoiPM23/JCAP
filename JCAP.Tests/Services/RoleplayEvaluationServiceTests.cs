@@ -207,6 +207,7 @@ public class RoleplayEvaluationServiceTests
             isNaturallyConcluded: true);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.ScoreBreakdown);
         Assert.Equal(100, result.AutonomyScore);
         Assert.Equal(10, result.ScoreBreakdown.AutonomyPoints);
     }
@@ -241,7 +242,100 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(1.5, result.AverageResponseLatencySeconds);
         Assert.True(result.FluencyScore >= 90);
         Assert.Contains("4.5 âm/giây", result.GeneralFeedbackText);
-        Assert.Contains("nhịp độ vừa vặn, tự nhiên", result.GeneralFeedbackText);
+        Assert.Contains("nhịp độ vừa phải", result.GeneralFeedbackText);
+    }
+
+    [Fact]
+    public void Evaluate_WhenWhisperOfflineWithAudioUrlOnly_ExemptsOralMetricsAndNormalizesOver80Percent()
+    {
+        var whisperOfflineFeedback = """
+        {
+          "evaluationSource": "AI",
+          "status": "Good",
+          "summary": "Câu trả lời rất tự nhiên",
+          "details": [
+            { "type": "success", "aspect": "Ngữ pháp", "comment": "Chính xác." },
+            { "type": "success", "aspect": "Từ vựng", "comment": "Phù hợp." },
+            { "type": "success", "aspect": "Ngữ cảnh", "comment": "Tự nhiên." }
+          ],
+          "speechDelivery": {
+            "audioUrl": "/uploads/audio-whisper-offline.webm",
+            "isTextInput": false,
+            "speechConfidence": null,
+            "turnAutonomyScore": 100
+          }
+        }
+        """;
+
+        var result = _service.Evaluate(
+            [whisperOfflineFeedback],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.ScoreBreakdown);
+        Assert.Contains(result.ScoreBreakdown!.Adjustments, a =>
+            a.Description.Contains("Miễn trừ chấm âm học") || a.Category.Contains("Miễn trừ"));
+        Assert.Equal(0, result.FluencyScore);
+        Assert.Equal(0, result.PronunciationScore);
+        Assert.Equal(0, result.SpeechConfidenceScore);
+        Assert.Equal(100, result.AutonomyScore);
+        Assert.True(result.OverallScore >= 95, $"Expected normalized score >= 95 over 80% pillars, got {result.OverallScore}");
+    }
+
+    [Fact]
+    public void BuildEarlyTerminationResult_ReturnsHonestZeroEvaluatedTurnScore()
+    {
+        var result = _service.BuildEarlyTerminationResult(
+            completedMissionCount: 1,
+            totalMissionCount: 3,
+            isNaturallyConcluded: false);
+
+        Assert.NotNull(result);
+        Assert.Equal(0, result.EvaluatedTurnCount);
+        Assert.True(result.OverallScore <= 40, $"Expected OverallScore <= 40, got {result.OverallScore}");
+        Assert.False(result.AllMissionsCompleted);
+        Assert.NotNull(result.ScoreBreakdown);
+        Assert.Contains(result.ScoreBreakdown!.Adjustments, a => a.Category.Contains("Kết thúc sớm"));
+    }
+
+    [Fact]
+    public void Evaluate_ExcludesAcousticConfidenceGuardFromLinguisticScoring()
+    {
+        var acousticGuardJson = """
+        {
+          "evaluationSource": "AcousticConfidenceGuard",
+          "status": "Warning",
+          "summary": "Âm thanh chưa rõ • Vui lòng nói lại",
+          "details": [
+            { "type": "warning", "aspect": "Độ rõ âm học (STT Confidence)", "comment": "Âm thanh có độ rõ thấp." }
+          ],
+          "speechDelivery": {
+            "speechConfidence": 0.45,
+            "isTextInput": false
+          }
+        }
+        """;
+
+        var result = _service.Evaluate(
+            [GoodFeedbackJson, acousticGuardJson],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result!.EvaluatedTurnCount);
+        Assert.Equal(90, result.GrammarScore);
+        Assert.Equal(90, result.VocabularyScore);
+
+        var guardOnlyResult = _service.Evaluate(
+            [acousticGuardJson],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.Null(guardOnlyResult);
     }
 
     private const string GoodFeedbackJson = """

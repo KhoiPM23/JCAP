@@ -66,7 +66,7 @@ namespace JCAP.Tests.Services
             }
         }
 
-        private VoiceVoxService CreateService(FakeVoiceVoxHandler handler)
+        private VoiceVoxService CreateService(FakeVoiceVoxHandler handler, string baseUrl = "http://127.0.0.1:50021")
         {
             var httpClient = new HttpClient(handler);
             var factoryMock = new Mock<IHttpClientFactory>();
@@ -75,7 +75,7 @@ namespace JCAP.Tests.Services
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new System.Collections.Generic.Dictionary<string, string?>
                 {
-                    ["VoiceVox:BaseUrl"] = "http://127.0.0.1:50021"
+                    ["VoiceVox:BaseUrl"] = baseUrl
                 })
                 .Build();
 
@@ -224,6 +224,33 @@ namespace JCAP.Tests.Services
             Assert.Equal(wavPayload, retryResult);
             Assert.Equal(2, handler.AudioQueryCount);
             Assert.Equal(1, handler.SynthesisCount);
+        }
+
+        [Fact]
+        public async Task GetAvailableVoicesAsync_WhenEngineUnreachable_IncludesConfiguredBaseUrlInError()
+        {
+            var handler = new FakeVoiceVoxHandler((_, _) => throw new HttpRequestException("Connection refused"));
+            var service = CreateService(handler, "http://tts-engine:50123/");
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                service.GetAvailableVoicesAsync(CancellationToken.None));
+
+            Assert.Contains("http://tts-engine:50123", ex.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain("port 50021", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task SynthesizeAsync_WhenEngineUnreachable_IncludesConfiguredBaseUrlInError()
+        {
+            var uniqueText = $"テスト接続失敗_{Guid.NewGuid():N}";
+            var handler = new FakeVoiceVoxHandler((_, _) => throw new HttpRequestException("Connection refused"));
+            var service = CreateService(handler, "http://tts-engine:50123/");
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                service.SynthesizeAsync(uniqueText, 14, CancellationToken.None));
+
+            Assert.Contains("http://tts-engine:50123", ex.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain("port 50021", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

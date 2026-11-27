@@ -1,6 +1,7 @@
 using JCAP.Data;
 using JCAP.DTOs.Credit;
 using JCAP.DTOs.Flashcard;
+using JCAP.Hosting;
 using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
@@ -91,18 +92,12 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 4. Cấu hình CORS để frontend sau này gọi API thuận tiện
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+// 4. Cấu hình Forwarded Headers & CORS cho reverse proxy / frontend
+builder.Services.AddJcapForwardedHeaders(builder.Configuration);
+builder.Services.AddJcapCors(builder.Configuration);
 
 // 5. Đăng ký Dependency Injection cho Services
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOsSettings.SectionName));
@@ -127,6 +122,8 @@ builder.Services.AddSingleton<ISrsCalculationService, SrsCalculationService>();
 builder.Services.AddScoped<ILearningTopicLookup, DefaultLearningTopicLookup>();
 builder.Services.AddScoped<ILearnerBookmarkService, LearnerBookmarkService>();
 builder.Services.AddScoped<ILearnerFlashcardService, LearnerFlashcardService>();
+builder.Services.AddScoped<IFlashcardQuizService, FlashcardQuizService>();
+builder.Services.AddSingleton<GeminiModelCooldownTracker>();
 builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
@@ -162,6 +159,7 @@ builder.Services.AddSingleton<IRegisterAnalyzer, RegisterAnalyzer>();
 builder.Services.AddSingleton<IEventDirector, EventDirector>();
 builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
 builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
+builder.Services.AddScoped<IAdaptiveProfileService, AdaptiveProfileService>();
 builder.Services.AddScoped<IPersonaMemoryService, PersonaMemoryService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
@@ -182,6 +180,39 @@ builder.Services.AddRateLimiter(options =>
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    options.AddPolicy("community-write", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    options.AddPolicy("feedback-write", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    options.AddPolicy("attachment-upload", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
@@ -233,6 +264,8 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -243,12 +276,10 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger";
     });
 }
-else
-{
-    app.UseHttpsRedirection();
-}
 
-app.UseCors("AllowAll");
+app.UseJcapHttpsRedirection(app.Configuration);
+
+app.UseCors(HostingConfigurationExtensions.DefaultCorsPolicyName);
 app.UseStaticFiles();
 
 app.UseAuthentication();
@@ -260,23 +291,31 @@ app.MapControllers();
 // Tự động nạp dữ liệu mẫu (Seed Data)
 await JCAP.Data.Seeds.SeedManager.SeedAllAsync(app);
 
-// Tự động kiểm tra và khởi chạy Faster-Whisper Engine ngầm nếu máy có python và script server.py
-_ = Task.Run(async () =>
+// Tự động kiểm tra và khởi chạy Faster-Whisper Engine ngầm chỉ ở Development khi là URL local
+var whisperBaseUrl = string.IsNullOrWhiteSpace(app.Configuration["Whisper:BaseUrl"])
+    ? "http://127.0.0.1:50022"
+    : app.Configuration["Whisper:BaseUrl"]!;
+if (app.Environment.IsDevelopment()
+    && app.Configuration.GetValue<bool>("Whisper:AutoStart", true)
+    && WhisperSttService.IsLocalUrl(whisperBaseUrl))
 {
-    try
+    _ = Task.Run(async () =>
     {
-        using var scope = app.Services.CreateScope();
-        var whisperService = scope.ServiceProvider.GetRequiredService<JCAP.Services.Interfaces.IWhisperSttService>();
-        if (!await whisperService.IsAvailableAsync())
+        try
         {
-            await whisperService.TryAutoStartEngineAsync();
+            using var scope = app.Services.CreateScope();
+            var whisperService = scope.ServiceProvider.GetRequiredService<JCAP.Services.Interfaces.IWhisperSttService>();
+            if (!await whisperService.IsAvailableAsync())
+            {
+                await whisperService.TryAutoStartEngineAsync();
+            }
         }
-    }
-    catch
-    {
-        // Engine vắng mặt thì bỏ qua, hệ thống đã có Web Speech API native fallback
-    }
-});
+        catch
+        {
+            // Engine vắng mặt thì bỏ qua, hệ thống đã có Web Speech API native fallback
+        }
+    });
+}
 
 app.Run();
 

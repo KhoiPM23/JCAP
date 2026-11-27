@@ -1,5 +1,6 @@
 import type { ApiResponse } from '../types/auth';
 import type { ExploreJourney, ExploreStampBook, ExploreSyncResult } from '../types/explore';
+import { resolveApiUrl } from '../utils/apiBase';
 
 /** Bản đồ Khám phá phía người học: hành trình, các mốc học của từng tỉnh và con dấu của người học */
 class ExploreService {
@@ -12,7 +13,7 @@ class ExploreService {
 
   private async send<T>(method: 'GET' | 'POST', url: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, { method, headers: this.getHeaders() });
+      const response = await fetch(resolveApiUrl(url), { method, headers: this.getHeaders() });
       const body = await response.json().catch(() => null);
       if (!response.ok || !body) {
         return { success: false, message: body?.message || `Lỗi máy chủ (${response.status})` };

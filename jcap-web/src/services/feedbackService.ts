@@ -1,4 +1,5 @@
 import type { ApiResponse } from '../types/auth';
+import { resolveApiUrl } from '../utils/apiBase';
 
 export type FeedbackCategory =
   | 'SCENARIO_BUG'
@@ -162,15 +163,6 @@ function getAuthHeaders(includeJsonContentType = true): Record<string, string> {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  try {
-    const rawUser = localStorage.getItem('jcap_user');
-    if (rawUser) {
-      const parsed = JSON.parse(rawUser);
-      if (parsed?.id) headers['X-User-Id'] = String(parsed.id);
-    }
-  } catch {
-    // Ignore
-  }
   return headers;
 }
 
@@ -178,7 +170,7 @@ export const feedbackService = {
   // ================= LEARNER APIs (UC-09) =================
   async getMyTickets(): Promise<ApiResponse<FeedbackTicket[]>> {
     try {
-      const res = await fetch('/api/feedback/my', {
+      const res = await fetch(resolveApiUrl('/api/feedback/my'), {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -191,7 +183,7 @@ export const feedbackService = {
 
   async createTicket(payload: CreateFeedbackTicketPayload): Promise<ApiResponse<FeedbackTicket>> {
     try {
-      const res = await fetch('/api/feedback', {
+      const res = await fetch(resolveApiUrl('/api/feedback'), {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
@@ -208,7 +200,7 @@ export const feedbackService = {
     payload: ReplyFeedbackTicketPayload
   ): Promise<ApiResponse<FeedbackTicket>> {
     try {
-      const res = await fetch(`/api/feedback/${ticketId}/reply`, {
+      const res = await fetch(resolveApiUrl(`/api/feedback/${ticketId}/reply`), {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
@@ -226,7 +218,7 @@ export const feedbackService = {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/feedback/upload-attachment', {
+      const res = await fetch(resolveApiUrl('/api/feedback/upload-attachment'), {
         method: 'POST',
         headers: getAuthHeaders(false),
         body: formData,
@@ -241,7 +233,7 @@ export const feedbackService = {
   // ================= ADMIN APIs (UC-59) =================
   async getAllTicketsForAdmin(): Promise<ApiResponse<FeedbackTicket[]>> {
     try {
-      const res = await fetch('/api/admin/feedback', {
+      const res = await fetch(resolveApiUrl('/api/admin/feedback'), {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -254,7 +246,7 @@ export const feedbackService = {
 
   async markSeenByAdmin(ticketId: number): Promise<ApiResponse<FeedbackTicket>> {
     try {
-      const res = await fetch(`/api/admin/feedback/${ticketId}/seen`, {
+      const res = await fetch(resolveApiUrl(`/api/admin/feedback/${ticketId}/seen`), {
         method: 'POST',
         headers: getAuthHeaders(),
       });
@@ -270,7 +262,7 @@ export const feedbackService = {
     payload: ReplyFeedbackTicketPayload
   ): Promise<ApiResponse<FeedbackTicket>> {
     try {
-      const res = await fetch(`/api/admin/feedback/${ticketId}/reply`, {
+      const res = await fetch(resolveApiUrl(`/api/admin/feedback/${ticketId}/reply`), {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
@@ -284,7 +276,7 @@ export const feedbackService = {
 
   async closeTicketAsAdmin(ticketId: number): Promise<ApiResponse<FeedbackTicket>> {
     try {
-      const res = await fetch(`/api/admin/feedback/${ticketId}/close`, {
+      const res = await fetch(resolveApiUrl(`/api/admin/feedback/${ticketId}/close`), {
         method: 'POST',
         headers: getAuthHeaders(),
       });
@@ -297,7 +289,7 @@ export const feedbackService = {
 
   async reopenTicketAsAdmin(ticketId: number): Promise<ApiResponse<FeedbackTicket>> {
     try {
-      const res = await fetch(`/api/admin/feedback/${ticketId}/reopen`, {
+      const res = await fetch(resolveApiUrl(`/api/admin/feedback/${ticketId}/reopen`), {
         method: 'POST',
         headers: getAuthHeaders(),
       });

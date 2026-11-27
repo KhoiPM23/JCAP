@@ -354,4 +354,279 @@ public class LearnerFlashcardAndBookmarkServiceTests
         var quota = await service.GetDailyQuotaAsync("learner-1");
         Assert.Equal(0, quota.Data!.StudiedNewCardsToday);
     }
+
+    [Fact]
+    public async Task StartSession_WhenUnlockedQuotaExceeds20AndLargeTopic_ReturnsAllRemainingNewCards()
+    {
+        using var db = CreateInMemoryContext();
+        var user = new ApplicationUser
+        {
+            Id = "learner-large",
+            UserName = "large@jcap.test",
+            Email = "large@jcap.test",
+            Role = "Learner",
+            JLPTLevel = "N4",
+            CreditBalance = 50,
+            IsActive = true
+        };
+        db.Users.Add(user);
+
+        var topic = new LearningTopic
+        {
+            Id = 50,
+            Code = "TOPIC_LARGE_35",
+            Name = "Chủ đề 35 thẻ",
+            JLPTLevel = "N4",
+            IsActive = true
+        };
+        for (int i = 1; i <= 35; i++)
+        {
+            var vocab = new Vocabulary
+            {
+                Id = 500 + i,
+                Word = $"単語{i}",
+                Reading = $"たんご{i}",
+                Meaning = $"Nghĩa {i}",
+                JLPTLevel = "N4",
+                IsActive = true
+            };
+            db.Vocabularies.Add(vocab);
+            topic.TopicVocabularies.Add(new TopicVocabulary
+            {
+                TopicId = 50,
+                VocabularyId = vocab.Id,
+                Vocabulary = vocab,
+                OrderIndex = i
+            });
+        }
+        db.LearningTopics.Add(topic);
+        await db.SaveChangesAsync();
+
+        var service = CreateFlashcardService(db);
+
+        // Unlock +10 extra new cards -> RemainingNewCardsToday = 30 (> 20)
+        var unlockRes = await service.UnlockExtraQuotaAsync("learner-large");
+        Assert.True(unlockRes.Success);
+        Assert.Equal(30, unlockRes.Data!.RemainingNewCardsToday);
+
+        // NewOnly mode must open 30 cards (NOT capped at 20)
+        var newSession = await service.StartSessionAsync("learner-large", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 50,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        Assert.True(newSession.Success);
+        Assert.Equal(30, newSession.Data!.Cards.Count);
+
+        // ExtraPractice mode must open all 35 cards (NOT capped at 20)
+        var extraSession = await service.StartSessionAsync("learner-large", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 50,
+            ContentType = FlashcardContentType.Vocabulary,
+            IsExtraPractice = true
+        });
+        Assert.True(extraSession.Success);
+        Assert.Equal(35, extraSession.Data!.Cards.Count);
+    }
+
+    [Fact]
+    public async Task StartSession_StudyModeDueOnlyAndNewOnly_SeparatesDueAndNewCardsInSameTopic()
+    {
+        using var db = CreateInMemoryContext();
+        var (vocab1, vocab2, _) = await SeedTestEntitiesAsync(db);
+
+        // Mark vocab1 as Due (NextReviewAt in the past); vocab2 stays New
+        db.LearnerFlashcardProgresses.Add(new LearnerFlashcardProgress
+        {
+            UserId = "learner-1",
+            VocabularyId = vocab1.Id,
+            Repetitions = 1,
+            IntervalDays = 1,
+            EaseFactor = 2.5,
+            NextReviewAt = DateTime.UtcNow.AddHours(-2),
+            LastReviewedAt = DateTime.UtcNow.AddDays(-1),
+            LastRating = FlashcardRating.Good,
+            CreatedAt = DateTime.UtcNow.AddDays(-1)
+        });
+        await db.SaveChangesAsync();
+
+        var service = CreateFlashcardService(db);
+
+        var dueOnlyRes = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.DueOnly
+        });
+        Assert.True(dueOnlyRes.Success);
+        Assert.Single(dueOnlyRes.Data!.Cards);
+        Assert.Equal(vocab1.Id, dueOnlyRes.Data.Cards[0].ItemId);
+        Assert.Equal("Due", dueOnlyRes.Data.Cards[0].SrsState);
+
+        var newOnlyRes = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        Assert.True(newOnlyRes.Success);
+        Assert.Single(newOnlyRes.Data!.Cards);
+        Assert.Equal(vocab2.Id, newOnlyRes.Data.Cards[0].ItemId);
+        Assert.Equal("New", newOnlyRes.Data.Cards[0].SrsState);
+    }
+
+    [Fact]
+    public async Task StartSession_ResumedAndDueOnlyInSameTopic_PreservesTotalAndIsolatesIncompleteSession()
+    {
+        using var db = CreateInMemoryContext();
+        var (vocab1, vocab2, _) = await SeedTestEntitiesAsync(db);
+        var service = CreateFlashcardService(db);
+
+        // 1. Start NewOnly session on Topic 1 (2 new cards), review only 1 card, then exit early (incomplete session)
+        var initialNew = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        Assert.True(initialNew.Success);
+        Assert.Equal(2, initialNew.Data!.TotalCardsInSession);
+
+        await service.SubmitCardReviewAsync("learner-1", initialNew.Data.SessionId, new SubmitFlashcardReviewRequestDto
+        {
+            VocabularyId = vocab1.Id,
+            Rating = FlashcardRating.Good
+        });
+        await service.CompleteSessionAsync("learner-1", initialNew.Data.SessionId, isEarlyExit: true);
+
+        // 2. Simulate 1 day so vocab1 becomes Due while the NewOnly session is still incomplete
+        await service.SimulateTimeAdvanceAsync("learner-1", 1);
+
+        // 3. Start DueOnly session on the SAME Topic 1 -> MUST create a separate DueReview session with TopicId = 1
+        var dueSession = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.DueOnly
+        });
+        Assert.True(dueSession.Success);
+        Assert.NotEqual(initialNew.Data.SessionId, dueSession.Data!.SessionId);
+        Assert.Equal(FlashcardSessionSource.DueReview, dueSession.Data.SourceType);
+        Assert.Equal(1, dueSession.Data.TopicId);
+        Assert.Single(dueSession.Data.Cards);
+        Assert.Equal(1, dueSession.Data.TotalCardsInSession);
+
+        await service.SubmitCardReviewAsync("learner-1", dueSession.Data.SessionId, new SubmitFlashcardReviewRequestDto
+        {
+            VocabularyId = vocab1.Id,
+            Rating = FlashcardRating.Good
+        });
+        await service.CompleteSessionAsync("learner-1", dueSession.Data.SessionId);
+
+        // 4. Verify the original incomplete NewOnly session is STILL incomplete and NOT merged/closed
+        var originalSession = await db.FlashcardStudySessions.FindAsync(initialNew.Data.SessionId);
+        Assert.NotNull(originalSession);
+        Assert.Null(originalSession!.EndedAt);
+
+        // 5. Resuming NewOnly session reports TotalCardsInSession = PreviouslyReviewedCount (1) + Remaining (1) = 2 (1A)
+        var resumedNew = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        Assert.True(resumedNew.Success);
+        Assert.Equal(initialNew.Data.SessionId, resumedNew.Data!.SessionId);
+        Assert.True(resumedNew.Data.IsResumedSession);
+        Assert.Equal(1, resumedNew.Data.PreviouslyReviewedCount);
+        Assert.Single(resumedNew.Data.Cards);
+        Assert.Equal(2, resumedNew.Data.TotalCardsInSession);
+    }
+
+    [Fact]
+    public async Task StartSession_WhenEmpty_ReturnsAccurateEmptyReason()
+    {
+        using var db = CreateInMemoryContext();
+        var (vocab1, vocab2, _) = await SeedTestEntitiesAsync(db);
+        var service = CreateFlashcardService(db, new FlashcardQuotaOptions
+        {
+            FreeNewCardsPerDay = 1,
+            UnlockBatchSize = 10,
+            UnlockCreditCost = 5,
+            MaxCardsPerSession = 20
+        });
+
+        // 1. DueOnly when no cards are due -> NoDueCards
+        var noDue = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.DueOnly
+        });
+        Assert.True(noDue.Success);
+        Assert.Empty(noDue.Data!.Cards);
+        Assert.Equal("NoDueCards", noDue.Data.EmptyReason);
+
+        // 2. Consume daily quota of 1 -> NewOnly on remaining new card returns QuotaExhausted
+        var s1 = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        await service.SubmitCardReviewAsync("learner-1", s1.Data!.SessionId, new SubmitFlashcardReviewRequestDto
+        {
+            VocabularyId = vocab1.Id,
+            Rating = FlashcardRating.Good
+        });
+
+        var quotaExhausted = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        Assert.True(quotaExhausted.Success);
+        Assert.Empty(quotaExhausted.Data!.Cards);
+        Assert.Equal("QuotaExhausted", quotaExhausted.Data.EmptyReason);
+        Assert.Equal(1, quotaExhausted.Data.RemainingNewCardsInSource);
+        Assert.Equal(1, quotaExhausted.Data.LearnedCardsInSource);
+
+        // 3. Unlock quota and finish vocab2 -> NewOnly returns AllCompleted
+        await service.UnlockExtraQuotaAsync("learner-1");
+        var s2 = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        await service.SubmitCardReviewAsync("learner-1", s2.Data!.SessionId, new SubmitFlashcardReviewRequestDto
+        {
+            VocabularyId = vocab2.Id,
+            Rating = FlashcardRating.Good
+        });
+
+        var allCompleted = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = FlashcardContentType.Vocabulary,
+            StudyMode = FlashcardStudyMode.NewOnly
+        });
+        Assert.True(allCompleted.Success);
+        Assert.Empty(allCompleted.Data!.Cards);
+        Assert.Equal("AllCompleted", allCompleted.Data.EmptyReason);
+    }
 }

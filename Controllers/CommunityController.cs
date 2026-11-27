@@ -2,17 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JCAP.Data;
-using JCAP.Data.Seeds;
+using JCAP.Data.Static;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Community;
 using JCAP.Models;
+using JCAP.Services.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace JCAP.Controllers
 {
@@ -21,12 +26,24 @@ namespace JCAP.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CommunityController : ControllerBase
     {
-        private static bool _tablesVerified;
-        private readonly AppDbContext _context;
+        private static readonly HashSet<string> AllowedChannels = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "QA_JAPANESE",
+            "SPEAKING_TIPS",
+            "STUDY_BUDDY",
+            "RESOURCES",
+            "LOUNGE"
+        };
 
-        public CommunityController(AppDbContext context)
+        private readonly AppDbContext _context;
+        private readonly string? _cloudinaryCloudName;
+        private readonly string _anonHashSecret;
+
+        public CommunityController(AppDbContext context, IConfiguration? configuration = null)
         {
             _context = context;
+            _cloudinaryCloudName = configuration?["Cloudinary:CloudName"];
+            _anonHashSecret = configuration?["Jwt:Key"] ?? "JCAP_Community_Anon_Salt_v1";
         }
 
         private sealed class ResolvedActor
@@ -41,126 +58,60 @@ namespace JCAP.Controllers
 
         private string? GetClaimUserId()
         {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("nameid")
-                ?? User.FindFirstValue("sub")
-                ?? Request.Headers["X-User-Id"].FirstOrDefault();
-        }
-
-        private string? GetClaimUserEmail()
-        {
-            return User.FindFirstValue(ClaimTypes.Email)
-                ?? User.FindFirstValue("email")
-                ?? Request.Headers["X-User-Email"].FirstOrDefault();
-        }
-
-        private async Task<string?> ResolveCurrentUserIdAsync(CancellationToken cancellationToken)
-        {
-            var claimId = GetClaimUserId();
-            var claimEmail = GetClaimUserEmail();
-
-            if (!string.IsNullOrWhiteSpace(claimId))
-            {
-                var existsById = await _context.Users
-                    .AsNoTracking()
-                    .AnyAsync(u => u.Id == claimId, cancellationToken);
-                if (existsById)
-                {
-                    return claimId;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(claimEmail))
-            {
-                var userByEmail = await _context.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email == claimEmail, cancellationToken);
-                if (userByEmail != null)
-                {
-                    return userByEmail.Id;
-                }
-            }
-
-            return claimId;
-        }
-
-        private async Task<ResolvedActor?> ResolveActorAsync(
-            string? fallbackId,
-            string? fallbackEmail,
-            string? fallbackName,
-            string? fallbackLevel,
-            string? fallbackRole,
-            string? fallbackAvatar,
-            CancellationToken cancellationToken)
-        {
-            var candidateId = GetClaimUserId() ?? fallbackId;
-            var candidateEmail = GetClaimUserEmail() ?? fallbackEmail;
-
-            ApplicationUser? dbUser = null;
-
-            if (!string.IsNullOrWhiteSpace(candidateId))
-            {
-                dbUser = await _context.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Id == candidateId, cancellationToken);
-            }
-
-            if (dbUser == null && !string.IsNullOrWhiteSpace(candidateEmail))
-            {
-                dbUser = await _context.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email == candidateEmail, cancellationToken);
-            }
-
-            var claimRole = User.FindFirstValue(ClaimTypes.Role)
-                ?? User.FindFirstValue("role")
-                ?? fallbackRole;
-
-            var isAdmin = User.IsInRole("Admin")
-                || string.Equals(claimRole, "Admin", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(dbUser?.Role, "Admin", StringComparison.OrdinalIgnoreCase);
-
-            var finalUserId = dbUser?.Id
-                ?? (!string.IsNullOrWhiteSpace(candidateId) ? candidateId! : null)
-                ?? (!string.IsNullOrWhiteSpace(candidateEmail) ? candidateEmail! : null);
-
-            if (string.IsNullOrWhiteSpace(finalUserId))
+            if (User.Identity?.IsAuthenticated != true)
             {
                 return null;
             }
 
-            var claimName = User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("unique_name");
-            var displayName = !string.IsNullOrWhiteSpace(dbUser?.FullName)
-                ? dbUser!.FullName!
-                : !string.IsNullOrWhiteSpace(fallbackName)
-                ? fallbackName!
-                : !string.IsNullOrWhiteSpace(claimName)
-                ? claimName!
-                : !string.IsNullOrWhiteSpace(dbUser?.Email)
-                ? dbUser!.Email!.Split('@')[0]
-                : !string.IsNullOrWhiteSpace(candidateEmail)
-                ? candidateEmail!.Split('@')[0]
+            return User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue("nameid")
+                ?? User.FindFirstValue("sub");
+        }
+
+        private async Task<ResolvedActor?> ResolveActorAsync(CancellationToken cancellationToken)
+        {
+            var userId = GetClaimUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return null;
+            }
+
+            var dbUser = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+            if (dbUser == null || !dbUser.IsActive)
+            {
+                return null;
+            }
+
+            var isAdmin = User.IsInRole(UserRoles.Admin)
+                || string.Equals(dbUser.Role, UserRoles.Admin, StringComparison.OrdinalIgnoreCase);
+
+            var displayName = !string.IsNullOrWhiteSpace(dbUser.FullName)
+                ? dbUser.FullName!
+                : !string.IsNullOrWhiteSpace(dbUser.Email)
+                ? dbUser.Email!.Split('@')[0]
                 : "Học viên JCAP";
 
-            var level = !string.IsNullOrWhiteSpace(dbUser?.JLPTLevel)
-                ? dbUser!.JLPTLevel
-                : !string.IsNullOrWhiteSpace(fallbackLevel)
-                ? fallbackLevel!
+            var level = !string.IsNullOrWhiteSpace(dbUser.JLPTLevel)
+                ? dbUser.JLPTLevel
                 : "N5";
+            if (level.Length > 20)
+            {
+                level = level[..20];
+            }
 
-            var avatar = !string.IsNullOrWhiteSpace(dbUser?.ProfilePictureUrl)
-                ? dbUser!.ProfilePictureUrl
-                : fallbackAvatar;
-
+            var avatar = dbUser.ProfilePictureUrl;
             if (avatar != null && avatar.Length > 500)
             {
-                avatar = avatar.Substring(0, 500);
+                avatar = avatar[..500];
             }
 
             return new ResolvedActor
             {
-                UserId = finalUserId,
-                DisplayName = displayName.Length > 140 ? displayName.Substring(0, 140) : displayName,
+                UserId = dbUser.Id,
+                DisplayName = displayName.Length > 140 ? displayName[..140] : displayName,
                 AvatarUrl = avatar,
                 Level = isAdmin ? "ADMIN" : level,
                 Role = isAdmin ? "ADMIN" : "LEARNER",
@@ -170,24 +121,8 @@ namespace JCAP.Controllers
 
         private static bool TryParsePostId(string rawId, out int postId)
         {
-            if (int.TryParse(rawId, out postId))
+            if (int.TryParse(rawId, out postId) && postId > 0)
             {
-                return true;
-            }
-
-            if (string.Equals(rawId, "post-101", StringComparison.OrdinalIgnoreCase))
-            {
-                postId = 1;
-                return true;
-            }
-            if (string.Equals(rawId, "post-102", StringComparison.OrdinalIgnoreCase))
-            {
-                postId = 2;
-                return true;
-            }
-            if (string.Equals(rawId, "post-103", StringComparison.OrdinalIgnoreCase))
-            {
-                postId = 3;
                 return true;
             }
 
@@ -195,23 +130,19 @@ namespace JCAP.Controllers
             return false;
         }
 
-        private async Task EnsureDatabaseReadyAsync()
+        private int ComputeStableAnonSuffix(string userId)
         {
-            if (_tablesVerified)
-            {
-                return;
-            }
-
-            await FeedbackSeeder.EnsureReadyAsync(_context);
-            _tablesVerified = true;
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_anonHashSecret));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(userId));
+            var value = BitConverter.ToUInt32(hash, 0);
+            return (int)(value % 9000) + 1000;
         }
 
         [HttpGet("posts")]
         [AllowAnonymous]
         public async Task<IActionResult> GetPosts(CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
-            var currentUserId = await ResolveCurrentUserIdAsync(cancellationToken);
+            var currentUserId = GetClaimUserId();
 
             var posts = await _context.CommunityPosts
                 .AsNoTracking()
@@ -231,13 +162,12 @@ namespace JCAP.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetPostById(string id, CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
             if (!TryParsePostId(id, out var postId))
             {
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var currentUserId = await ResolveCurrentUserIdAsync(cancellationToken);
+            var currentUserId = GetClaimUserId();
 
             var post = await _context.CommunityPosts
                 .Include(p => p.Attachments)
@@ -258,44 +188,64 @@ namespace JCAP.Controllers
         }
 
         [HttpPost("posts")]
-        [AllowAnonymous]
+        [EnableRateLimiting("community-write")]
         public async Task<IActionResult> CreatePost(
             [FromBody] CreateCommunityPostRequest request,
             CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
-
-            var actor = await ResolveActorAsync(
-                request.AuthorId,
-                request.AuthorEmail,
-                request.AuthorName,
-                request.AuthorLevel,
-                request.AuthorRole,
-                request.AuthorAvatar,
-                cancellationToken);
-
+            var actor = await ResolveActorAsync(cancellationToken);
             if (actor == null)
             {
                 return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại."));
             }
 
+            var cleanTitle = (request.Title ?? string.Empty).Trim();
+            var cleanContent = (request.Content ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(cleanTitle) || string.IsNullOrWhiteSpace(cleanContent))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Vui lòng nhập đầy đủ tiêu đề và nội dung bài thảo luận."));
+            }
+            if (cleanTitle.Length > 300)
+            {
+                return BadRequest(ApiResponse<object>.Fail("Tiêu đề bài viết không được vượt quá 300 ký tự."));
+            }
+            if (cleanContent.Length > AttachmentSecurityHelper.MaxPostContentLength)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    $"Nội dung bài viết không được vượt quá {AttachmentSecurityHelper.MaxPostContentLength} ký tự."));
+            }
+
+            var rawChannel = string.IsNullOrWhiteSpace(request.Channel) ? "QA_JAPANESE" : request.Channel.Trim();
+            if (!AllowedChannels.Contains(rawChannel))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Chuyên mục bài viết không hợp lệ."));
+            }
+            var normalizedChannel = rawChannel.ToUpperInvariant();
+
+            var rawAttachments = request.Attachments ?? new List<CommunityAttachmentDto>();
+            if (rawAttachments.Count > AttachmentSecurityHelper.MaxAttachmentsPerItem)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    $"Chỉ được đính kèm tối đa {AttachmentSecurityHelper.MaxAttachmentsPerItem} tệp cho mỗi bài viết."));
+            }
+
+            if (rawAttachments.Any(a => !AttachmentSecurityHelper.IsAllowedAttachmentUrl(a.Url, _cloudinaryCloudName)))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Đường dẫn tệp đính kèm không hợp lệ."));
+            }
+
+            var isAnon = request.IsAnonymous && !actor.IsAdmin;
             string displayName;
             string? avatarUrl = null;
-            if (request.IsAnonymous && !actor.IsAdmin)
+            if (isAnon)
             {
-                var suffix = Math.Abs(actor.UserId.GetHashCode() % 9000) + 1000;
+                var suffix = ComputeStableAnonSuffix(actor.UserId);
                 displayName = $"Thành viên ẩn danh #{suffix}";
             }
             else
             {
                 displayName = actor.DisplayName;
                 avatarUrl = actor.AvatarUrl;
-            }
-
-            var cleanTitle = (request.Title ?? string.Empty).Trim();
-            if (cleanTitle.Length > 290)
-            {
-                cleanTitle = cleanTitle.Substring(0, 290);
             }
 
             var now = DateTime.UtcNow;
@@ -306,10 +256,10 @@ namespace JCAP.Controllers
                 AuthorAvatarUrl = avatarUrl,
                 AuthorLevel = actor.Level,
                 AuthorRole = actor.Role,
-                IsAnonymous = request.IsAnonymous && !actor.IsAdmin,
-                Channel = string.IsNullOrWhiteSpace(request.Channel) ? "QA_JAPANESE" : request.Channel.Trim(),
+                IsAnonymous = isAnon,
+                Channel = normalizedChannel,
                 Title = cleanTitle,
-                Content = (request.Content ?? string.Empty).Trim(),
+                Content = cleanContent,
                 IsPinned = false,
                 IsSolved = false,
                 Upvotes = 1,
@@ -324,22 +274,19 @@ namespace JCAP.Controllers
                 CreatedAt = now
             });
 
-            if (request.Attachments != null)
+            foreach (var att in rawAttachments)
             {
-                foreach (var att in request.Attachments.Where(a => !string.IsNullOrWhiteSpace(a.Url)))
-                {
-                    var fName = string.IsNullOrWhiteSpace(att.Name) ? "attachment" : att.Name.Trim();
-                    if (fName.Length > 250) fName = fName.Substring(0, 250);
+                var fName = string.IsNullOrWhiteSpace(att.Name) ? "attachment" : att.Name.Trim();
+                if (fName.Length > 250) fName = fName[..250];
 
-                    post.Attachments.Add(new CommunityAttachment
-                    {
-                        FileName = fName,
-                        FileSize = att.Size,
-                        FileType = string.Equals(att.Type, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
-                        Url = att.Url!,
-                        CreatedAt = now
-                    });
-                }
+                post.Attachments.Add(new CommunityAttachment
+                {
+                    FileName = fName,
+                    FileSize = att.Size,
+                    FileType = string.Equals(att.Type, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
+                    Url = att.Url!.Trim(),
+                    CreatedAt = now
+                });
             }
 
             _context.CommunityPosts.Add(post);
@@ -351,28 +298,18 @@ namespace JCAP.Controllers
         }
 
         [HttpPost("posts/{id}/comments")]
-        [AllowAnonymous]
+        [EnableRateLimiting("community-write")]
         public async Task<IActionResult> AddComment(
             string id,
             [FromBody] CreateCommunityCommentRequest request,
             CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
-
             if (!TryParsePostId(id, out var postId))
             {
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var actor = await ResolveActorAsync(
-                request.AuthorId,
-                request.AuthorEmail,
-                request.AuthorName,
-                request.AuthorLevel,
-                request.AuthorRole,
-                request.AuthorAvatar,
-                cancellationToken);
-
+            var actor = await ResolveActorAsync(cancellationToken);
             if (actor == null)
             {
                 return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại."));
@@ -390,23 +327,61 @@ namespace JCAP.Controllers
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
+            var rawAttachments = request.Attachments ?? new List<CommunityAttachmentDto>();
+            if (rawAttachments.Count > AttachmentSecurityHelper.MaxAttachmentsPerItem)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    $"Chỉ được đính kèm tối đa {AttachmentSecurityHelper.MaxAttachmentsPerItem} tệp cho mỗi bình luận."));
+            }
+
+            if (rawAttachments.Any(a => !AttachmentSecurityHelper.IsAllowedAttachmentUrl(a.Url, _cloudinaryCloudName)))
+            {
+                return BadRequest(ApiResponse<object>.Fail("Đường dẫn tệp đính kèm không hợp lệ."));
+            }
+
+            var hasContent = !string.IsNullOrWhiteSpace(request.Content);
+            if (!hasContent && rawAttachments.Count == 0)
+            {
+                return BadRequest(ApiResponse<object>.Fail("Vui lòng nhập nội dung bình luận hoặc đính kèm ít nhất 1 tệp/ảnh."));
+            }
+
+            var cleanContent = hasContent ? request.Content.Trim() : "(Đính kèm tệp/ảnh)";
+            if (cleanContent.Length > AttachmentSecurityHelper.MaxCommentContentLength)
+            {
+                return BadRequest(ApiResponse<object>.Fail(
+                    $"Nội dung bình luận không được vượt quá {AttachmentSecurityHelper.MaxCommentContentLength} ký tự."));
+            }
+
+            int? parentId = null;
+            if (!string.IsNullOrWhiteSpace(request.ParentCommentId))
+            {
+                if (!int.TryParse(request.ParentCommentId, out var parsedParent))
+                {
+                    return BadRequest(ApiResponse<object>.Fail("Bình luận cha không hợp lệ."));
+                }
+
+                var parentComment = post.Comments.FirstOrDefault(c => c.Id == parsedParent);
+                if (parentComment == null)
+                {
+                    return BadRequest(ApiResponse<object>.Fail("Không tìm thấy bình luận cha trong bài viết này."));
+                }
+
+                // Giữ cấu trúc tối đa 2 cấp để bình luận không bị ẩn khỏi giao diện
+                parentId = parentComment.ParentCommentId ?? parentComment.Id;
+            }
+
+            var isAnon = request.IsAnonymous && !actor.IsAdmin;
             string displayName;
             string? avatarUrl = null;
-            if (request.IsAnonymous && !actor.IsAdmin)
+            if (isAnon)
             {
-                var suffix = Math.Abs(actor.UserId.GetHashCode() % 9000) + 1000;
+                var suffix = ComputeStableAnonSuffix(actor.UserId);
                 displayName = $"Thành viên ẩn danh #{suffix}";
             }
             else
             {
                 displayName = actor.DisplayName;
                 avatarUrl = actor.AvatarUrl;
-            }
-
-            int? parentId = null;
-            if (!string.IsNullOrWhiteSpace(request.ParentCommentId) && int.TryParse(request.ParentCommentId, out var parsedParent))
-            {
-                parentId = parsedParent;
             }
 
             var now = DateTime.UtcNow;
@@ -419,37 +394,32 @@ namespace JCAP.Controllers
                 AuthorAvatarUrl = avatarUrl,
                 AuthorLevel = actor.Level,
                 AuthorRole = actor.Role,
-                IsAnonymous = request.IsAnonymous && !actor.IsAdmin,
-                Content = (request.Content ?? string.Empty).Trim(),
+                IsAnonymous = isAnon,
+                Content = cleanContent,
                 Upvotes = 0,
                 IsAcceptedAnswer = false,
                 CreatedAt = now
             };
 
-            if (request.Attachments != null)
+            foreach (var att in rawAttachments)
             {
-                foreach (var att in request.Attachments.Where(a => !string.IsNullOrWhiteSpace(a.Url)))
-                {
-                    var fName = string.IsNullOrWhiteSpace(att.Name) ? "attachment" : att.Name.Trim();
-                    if (fName.Length > 250) fName = fName.Substring(0, 250);
+                var fName = string.IsNullOrWhiteSpace(att.Name) ? "attachment" : att.Name.Trim();
+                if (fName.Length > 250) fName = fName[..250];
 
-                    comment.Attachments.Add(new CommunityAttachment
-                    {
-                        FileName = fName,
-                        FileSize = att.Size,
-                        FileType = string.Equals(att.Type, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
-                        Url = att.Url!,
-                        CreatedAt = now
-                    });
-                }
+                comment.Attachments.Add(new CommunityAttachment
+                {
+                    FileName = fName,
+                    FileSize = att.Size,
+                    FileType = string.Equals(att.Type, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
+                    Url = att.Url!.Trim(),
+                    CreatedAt = now
+                });
             }
 
             _context.CommunityComments.Add(comment);
             post.UpdatedAt = now;
             await _context.SaveChangesAsync(cancellationToken);
 
-            // EF Core relationship fix-up already adds `comment` to `post.Comments` for tracked entities;
-            // only add manually if not yet present to avoid returning duplicate comments before next poll.
             if (!post.Comments.Any(c => c.Id == comment.Id))
             {
                 post.Comments.Add(comment);
@@ -461,18 +431,16 @@ namespace JCAP.Controllers
         }
 
         [HttpPost("posts/{id}/upvote")]
-        [AllowAnonymous]
+        [EnableRateLimiting("community-write")]
         public async Task<IActionResult> ToggleUpvote(string id, CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
-
             if (!TryParsePostId(id, out var postId))
             {
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var userId = await ResolveCurrentUserIdAsync(cancellationToken);
-            if (string.IsNullOrWhiteSpace(userId))
+            var actor = await ResolveActorAsync(cancellationToken);
+            if (actor == null)
             {
                 return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ."));
             }
@@ -489,7 +457,8 @@ namespace JCAP.Controllers
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var existingUpvote = post.PostUpvotes.FirstOrDefault(u => u.UserId == userId);
+            var existingUpvote = post.PostUpvotes.FirstOrDefault(
+                u => string.Equals(u.UserId, actor.UserId, StringComparison.OrdinalIgnoreCase));
             if (existingUpvote != null)
             {
                 _context.CommunityPostUpvotes.Remove(existingUpvote);
@@ -501,7 +470,7 @@ namespace JCAP.Controllers
                 var upvote = new CommunityPostUpvote
                 {
                     CommunityPostId = post.Id,
-                    UserId = userId,
+                    UserId = actor.UserId,
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.CommunityPostUpvotes.Add(upvote);
@@ -510,23 +479,23 @@ namespace JCAP.Controllers
             }
 
             await _context.SaveChangesAsync(cancellationToken);
-            return Ok(ApiResponse<CommunityPostDto>.Ok(MapPostToDto(post, userId)));
+
+            return Ok(ApiResponse<CommunityPostDto>.Ok(MapPostToDto(post, actor.UserId)));
         }
 
         [HttpPost("posts/{id}/toggle-solved")]
-        [AllowAnonymous]
+        [EnableRateLimiting("community-write")]
         public async Task<IActionResult> ToggleSolved(string id, CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
             if (!TryParsePostId(id, out var postId))
             {
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var actor = await ResolveActorAsync(null, null, null, null, null, null, cancellationToken);
+            var actor = await ResolveActorAsync(cancellationToken);
             if (actor == null)
             {
-                return Unauthorized();
+                return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ."));
             }
 
             var post = await _context.CommunityPosts
@@ -543,7 +512,7 @@ namespace JCAP.Controllers
 
             if (!string.Equals(post.AuthorUserId, actor.UserId, StringComparison.OrdinalIgnoreCase) && !actor.IsAdmin)
             {
-                return Forbid();
+                return StatusCode(403, ApiResponse<object>.Fail("Chỉ tác giả bài viết hoặc Admin mới có quyền cập nhật trạng thái giải đáp."));
             }
 
             post.IsSolved = !post.IsSolved;
@@ -553,19 +522,22 @@ namespace JCAP.Controllers
         }
 
         [HttpPost("posts/{id}/toggle-pin")]
-        [AllowAnonymous]
+        [EnableRateLimiting("community-write")]
         public async Task<IActionResult> TogglePin(string id, CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
             if (!TryParsePostId(id, out var postId))
             {
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var actor = await ResolveActorAsync(null, null, null, null, null, null, cancellationToken);
-            if (actor == null || !actor.IsAdmin)
+            var actor = await ResolveActorAsync(cancellationToken);
+            if (actor == null)
             {
-                return Forbid();
+                return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ."));
+            }
+            if (!actor.IsAdmin)
+            {
+                return StatusCode(403, ApiResponse<object>.Fail("Chỉ Admin mới có quyền ghim bài viết."));
             }
 
             var post = await _context.CommunityPosts
@@ -587,22 +559,25 @@ namespace JCAP.Controllers
         }
 
         [HttpDelete("posts/{id}")]
-        [AllowAnonymous]
+        [EnableRateLimiting("community-write")]
         public async Task<IActionResult> DeletePost(string id, CancellationToken cancellationToken)
         {
-            await EnsureDatabaseReadyAsync();
             if (!TryParsePostId(id, out var postId))
             {
                 return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
             }
 
-            var actor = await ResolveActorAsync(null, null, null, null, null, null, cancellationToken);
+            var actor = await ResolveActorAsync(cancellationToken);
             if (actor == null)
             {
-                return Unauthorized();
+                return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ."));
             }
 
             var post = await _context.CommunityPosts
+                .Include(p => p.Attachments)
+                .Include(p => p.PostUpvotes)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Attachments)
                 .FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
 
             if (post == null)
@@ -612,13 +587,92 @@ namespace JCAP.Controllers
 
             if (!string.Equals(post.AuthorUserId, actor.UserId, StringComparison.OrdinalIgnoreCase) && !actor.IsAdmin)
             {
-                return Forbid();
+                return StatusCode(403, ApiResponse<object>.Fail("Bạn không có quyền xóa bài thảo luận này."));
+            }
+
+            // FK_CommunityAttachments_CommunityComments_CommunityCommentId dùng ON DELETE NO ACTION,
+            // nên cần xóa tệp đính kèm của bình luận trước khi xóa bài viết để tránh lỗi khóa ngoại 500.
+            var commentAttachments = post.Comments.SelectMany(c => c.Attachments).ToList();
+            if (commentAttachments.Count > 0)
+            {
+                _context.CommunityAttachments.RemoveRange(commentAttachments);
             }
 
             _context.CommunityPosts.Remove(post);
             await _context.SaveChangesAsync(cancellationToken);
 
             return Ok(ApiResponse<object>.Ok(new { id = postId }, "Đã xóa bài thảo luận."));
+        }
+
+        [HttpDelete("comments/{commentId:int}")]
+        [EnableRateLimiting("community-write")]
+        public async Task<IActionResult> DeleteComment(int commentId, CancellationToken cancellationToken)
+        {
+            var actor = await ResolveActorAsync(cancellationToken);
+            if (actor == null)
+            {
+                return Unauthorized(ApiResponse<object>.Fail("Phiên đăng nhập không hợp lệ."));
+            }
+
+            var targetComment = await _context.CommunityComments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == commentId, cancellationToken);
+            if (targetComment == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("Không tìm thấy bình luận."));
+            }
+
+            var post = await _context.CommunityPosts
+                .Include(p => p.Attachments)
+                .Include(p => p.PostUpvotes)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Attachments)
+                .FirstOrDefaultAsync(p => p.Id == targetComment.CommunityPostId, cancellationToken);
+
+            if (post == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("Không tìm thấy bài thảo luận."));
+            }
+
+            var commentEntity = post.Comments.FirstOrDefault(c => c.Id == commentId);
+            if (commentEntity == null)
+            {
+                return NotFound(ApiResponse<object>.Fail("Không tìm thấy bình luận."));
+            }
+
+            if (!string.Equals(commentEntity.AuthorUserId, actor.UserId, StringComparison.OrdinalIgnoreCase) && !actor.IsAdmin)
+            {
+                return StatusCode(403, ApiResponse<object>.Fail("Bạn không có quyền xóa bình luận này."));
+            }
+
+            var toDelete = post.Comments
+                .Where(c => c.Id == commentId || c.ParentCommentId == commentId)
+                .ToList();
+
+            var commentAttachments = toDelete.SelectMany(c => c.Attachments).ToList();
+            if (commentAttachments.Count > 0)
+            {
+                _context.CommunityAttachments.RemoveRange(commentAttachments);
+            }
+
+            _context.CommunityComments.RemoveRange(toDelete);
+            foreach (var c in toDelete)
+            {
+                post.Comments.Remove(c);
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Ok(ApiResponse<CommunityPostDto>.Ok(
+                MapPostToDto(post, actor.UserId),
+                "Đã xóa bình luận."));
+        }
+
+        private static DateTime SpecifyUtc(DateTime value)
+        {
+            return value.Kind == DateTimeKind.Local
+                ? value.ToUniversalTime()
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
         private static CommunityPostDto MapPostToDto(CommunityPost post, string? currentUserId)
@@ -642,8 +696,8 @@ namespace JCAP.Controllers
                 AuthorRole = post.AuthorRole,
                 IsAnonymous = post.IsAnonymous,
                 IsOwnPost = isOwnPost,
-                CreatedAt = post.CreatedAt,
-                UpdatedAt = post.UpdatedAt,
+                CreatedAt = SpecifyUtc(post.CreatedAt),
+                UpdatedAt = SpecifyUtc(post.UpdatedAt),
                 IsPinned = post.IsPinned,
                 IsSolved = post.IsSolved,
                 Upvotes = post.Upvotes,
@@ -684,7 +738,7 @@ namespace JCAP.Controllers
                             IsAnonymous = c.IsAnonymous,
                             IsOwnComment = isOwnComment,
                             Content = c.Content,
-                            CreatedAt = c.CreatedAt,
+                            CreatedAt = SpecifyUtc(c.CreatedAt),
                             Upvotes = c.Upvotes,
                             UpvotedByMe = false,
                             IsAcceptedAnswer = c.IsAcceptedAnswer,

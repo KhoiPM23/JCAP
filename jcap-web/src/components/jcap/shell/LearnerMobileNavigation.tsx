@@ -15,7 +15,7 @@ const tabs = [
 
 const moreLinks = [
   { to: '/flashcards', label: 'Flashcard', icon: 'style' },
-  { to: '/roleplay/results', label: 'Kết quả hội thoại', icon: 'insights' },
+  { to: '/roleplay/results', label: 'Kết quả luyện tập', icon: 'insights', aliases: ['/placement-test/history'] },
   { to: '/stamps', label: 'Sổ con dấu', icon: 'approval' },
   { to: '/community', label: 'Diễn đàn', icon: 'groups', aliases: ['/forum'] },
   { to: '/subscription', label: 'Gói và Credit', icon: 'toll', aliases: ['/credits'] },

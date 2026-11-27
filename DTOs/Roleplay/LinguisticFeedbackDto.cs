@@ -77,6 +77,7 @@ public class SpeechDeliveryMetricsDto
     public string? AudioUrl { get; set; }
     public bool IsTextInput { get; set; }
     public int HintLevelUsed { get; set; }
+    public List<string>? PronunciationIssues { get; set; }
 }
 
 public class LinguisticDetailItemDto

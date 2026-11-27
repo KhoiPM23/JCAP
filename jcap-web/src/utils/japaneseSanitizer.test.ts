@@ -7,6 +7,7 @@ import {
   deriveJapaneseCloze,
   isWhisperHallucination,
   cleanFuriganaHtml,
+  alignFuriganaWithOriginal,
   cleanPedagogicMeaning,
 } from './japaneseSanitizer.ts';
 
@@ -94,5 +95,76 @@ describe('japaneseSanitizer', () => {
 
     const rawRequest = 'Xin vui lòng hâm nóng... giúp tôi [N + を温めてください] (Yêu cầu nhân viên hâm nóng đồ ăn)';
     assert.equal(cleanPedagogicMeaning(rawRequest), 'Xin vui lòng hâm nóng... giúp tôi');
+  });
+
+  it('cleanFuriganaHtml (#193) should normalize HTML5 unclosed <rt> and encoded ruby tags', () => {
+    assert.equal(
+      cleanFuriganaHtml('<ruby>切符<rt>きっぷ</ruby>を買います'),
+      '<ruby>切符<rt>きっぷ</rt></ruby>を買います'
+    );
+    assert.equal(
+      cleanFuriganaHtml('&lt;ruby&gt;面接&lt;rt&gt;めんせつ&lt;/rt&gt;&lt;/ruby&gt;です。'),
+      '<ruby>面接<rt>めんせつ</rt></ruby>です。'
+    );
+  });
+
+  it('cleanFuriganaHtml (#193) should reject non-kana <rt> content and strip unsafe HTML / XSS payloads', () => {
+    // Kanji or Vietnamese or Latin inside <rt> must be unwrapped to plain base text
+    assert.equal(cleanFuriganaHtml('<ruby>切符<rt>切符</rt></ruby>'), '切符');
+    assert.equal(cleanFuriganaHtml('<ruby>切符<rt>vé tàu</rt></ruby>'), '切符');
+    assert.equal(cleanFuriganaHtml('<ruby>切符<rt><script>alert(1)</script></rt></ruby>'), '切符');
+    assert.equal(cleanFuriganaHtml('<ruby>切符<rt><img src=x onerror=alert(1)>きっぷ</rt></ruby>'), '切符');
+
+    // Arbitrary unsafe HTML tags outside ruby must be stripped, stray < / > escaped
+    assert.equal(
+      cleanFuriganaHtml('<img src=x onerror=alert(1)><ruby>駅<rt>えき</rt></ruby><script>alert(1)</script>'),
+      '<ruby>駅<rt>えき</rt></ruby>'
+    );
+    assert.equal(
+      cleanFuriganaHtml('3 < 5 <ruby>駅<rt>えき</rt></ruby>'),
+      '3 &lt; 5 <ruby>駅<rt>えき</rt></ruby>'
+    );
+  });
+
+  it('alignFuriganaWithOriginal (#193) should prevent Kanji injection on Hiragana input and preserve valid ruby on Kanji input', () => {
+    // Hiragana-only original must never receive Kanji from AI furiganaHtml
+    assert.equal(
+      alignFuriganaWithOriginal('<ruby>切符<rt>きっぷ</rt></ruby>を<ruby>買<rt>か</rt></ruby>います', 'きっぷをかいます'),
+      'きっぷをかいます'
+    );
+
+    // Kanji mismatch or dropped characters regenerate clean furigana aligned with originalText
+    const aligned = alignFuriganaWithOriginal(
+      '<ruby>切符<rt>きっぷ</rt></ruby>をかいます<script>alert(1)</script>',
+      '切符を買います'
+    );
+    assert.equal(aligned.includes('<script>'), false);
+    assert.ok(aligned.includes('<ruby>切符<rt>きっぷ</rt></ruby>'));
+    assert.ok(aligned.includes('<ruby>買<rt>か</rt></ruby>います'));
+  });
+
+  it('cleanFuriganaHtml & alignFuriganaWithOriginal (#193) should block unclosed <img XSS inside ruby rawBase and echoed originalText', () => {
+    const xssPayload = '<ruby>駅<img src=x onerror=alert(1) alt="東京<rt>えき</rt></ruby>';
+    const cleaned = cleanFuriganaHtml(xssPayload);
+    assert.equal(cleaned.includes('<img'), false);
+    assert.equal(cleaned.includes('onerror='), false);
+    assert.equal(cleaned.includes('<ruby>'), false);
+
+    // Empty originalText fallback must also be XSS-free
+    const alignedEmpty = alignFuriganaWithOriginal(xssPayload, '');
+    assert.equal(alignedEmpty.includes('<img'), false);
+    assert.equal(alignedEmpty.includes('onerror='), false);
+
+    // Echoed originalText containing unclosed <img tag must never emit live HTML
+    const echoedOriginal = '駅<img src=x onerror=alert(1) alt="東京';
+    const alignedEchoed = alignFuriganaWithOriginal(xssPayload, echoedOriginal);
+    assert.equal(alignedEchoed.includes('<img'), false);
+    assert.equal(alignedEchoed.includes('onerror='), false);
+
+    // Non-kanji originalText with literal < or unclosed <img must be stripped/escaped
+    const alignedKanaXss = alignFuriganaWithOriginal('<ruby>切符<rt>きっぷ</rt></ruby>', 'きっぷ<img src=x onerror=alert(1)');
+    assert.equal(alignedKanaXss.includes('<img'), false);
+    assert.equal(alignedKanaXss.includes('onerror='), false);
+    assert.equal(alignFuriganaWithOriginal('<ruby>切符<rt>きっぷ</rt></ruby>', '3 < 5 きっぷ'), '3 &lt; 5 きっぷ');
   });
 });

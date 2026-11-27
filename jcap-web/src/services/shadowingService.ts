@@ -16,6 +16,9 @@ import type {
 
 import type { ClientRecognitionSnapshot } from '../utils/speechTranscriptCollector';
 import { fileExtensionForMime } from '../utils/recordingMime';
+import { resolveApiUrl } from '../utils/apiBase';
+
+const BASE_URL = resolveApiUrl('/api/shadowing');
 
 export interface ShadowingEvaluateAudioEvidence {
   /** Câu đang luyện: backend lấy câu mẫu từ CSDL và lưu kết quả chấm để đưa vào lịch sử. */
@@ -61,7 +64,7 @@ class ShadowingService {
       if (params?.jlptLevel && params.jlptLevel !== 'ALL') searchParams.append('jlptLevel', params.jlptLevel);
       if (params?.scenarioId) searchParams.append('scenarioId', params.scenarioId.toString());
 
-      const url = `/api/shadowing${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+      const url = `${BASE_URL}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
       const response = await fetch(url, {
         method: 'GET',
         headers: this.getHeaders(),
@@ -91,7 +94,7 @@ class ShadowingService {
    */
   public async getDetail(id: number): Promise<ApiResponse<ShadowingDialogueDetail>> {
     try {
-      const response = await fetch(`/api/shadowing/${id}`, {
+      const response = await fetch(`${BASE_URL}/${id}`, {
         method: 'GET',
         headers: this.getHeaders(),
       });
@@ -118,7 +121,7 @@ class ShadowingService {
    */
   public async completeSession(payload: ShadowingSessionCompletePayload): Promise<ApiResponse<ShadowingSessionCompleteResult>> {
     try {
-      const response = await fetch('/api/shadowing/session/complete', {
+      const response = await fetch(`${BASE_URL}/session/complete`, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(payload),
@@ -143,7 +146,7 @@ class ShadowingService {
   /** Lịch sử các buổi luyện đã hoàn thành của người dùng (lưu ở backend, mới nhất trước). */
   public async getHistory(): Promise<ApiResponse<ShadowingPracticeSessionRecord[]>> {
     try {
-      const response = await fetch('/api/shadowing/history', { headers: this.getHeaders() });
+      const response = await fetch(`${BASE_URL}/history`, { headers: this.getHeaders() });
       if (response.ok) {
         return await response.json();
       }
@@ -187,7 +190,7 @@ class ShadowingService {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('/api/shadowing/evaluate-audio', {
+      const response = await fetch(`${BASE_URL}/evaluate-audio`, {
         method: 'POST',
         headers,
         body: formData,
@@ -220,7 +223,7 @@ class ShadowingService {
 
   private async progressRequest<T>(url: string, init: RequestInit, failMessage: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, { ...init, headers: this.getHeaders() });
+      const response = await fetch(resolveApiUrl(url), { ...init, headers: this.getHeaders() });
       const body = await response.json().catch(() => null);
       if (response.ok && body) return body as ApiResponse<T>;
       return { success: false, message: body?.message || failMessage };

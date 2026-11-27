@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { resolveMediaUrl } from '../../utils/apiBase';
 
 interface AudioWaveformPlayerProps {
   /** Đường dẫn file âm thanh trực tiếp (ví dụ: /audio/roleplay/stt_xxx.webm) */
@@ -70,8 +71,9 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
   const mediaSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const fallbackStartTimeRef = useRef<number | null>(null);
 
+  const resolvedAudioUrl = resolveMediaUrl(audioUrl);
   const isUser = variant === 'user';
-  const effectivePlaying = audioUrl ? isPlaying : isFallbackPlaying;
+  const effectivePlaying = resolvedAudioUrl ? isPlaying : isFallbackPlaying;
   const effectiveDuration = duration > 0 ? duration : (fallbackDuration > 0 ? fallbackDuration : 2.4);
 
   // Định dạng thời gian mm:ss
@@ -150,7 +152,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
 
   // 2. TRÍCH XUẤT BIÊN ĐỘ VÀ CAO ĐỘ THẬT TỪ FILE AUDIO (Acoustic Buffer Decoding)
   useEffect(() => {
-    if (!audioUrl) {
+    if (!resolvedAudioUrl) {
       setPeaks(DEFAULT_ENVELOPE);
       setDuration(fallbackDuration || 2.4);
       return;
@@ -160,7 +162,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
     const ctx = getSharedAudioContext();
     if (!ctx) return;
 
-    fetch(audioUrl)
+    fetch(resolvedAudioUrl)
       .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject('Fetch failed')))
       .then((arrayBuffer) => ctx.decodeAudioData(arrayBuffer))
       .then((audioBuffer) => {
@@ -198,14 +200,14 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [audioUrl, fallbackDuration]);
+  }, [resolvedAudioUrl, fallbackDuration]);
 
   // 3. ĐIỀU PHỐI AUDIO ELEMENT KHI ĐỔI URL HOẶC HOÀN TẤT PHÁT
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (!audioUrl) {
+    if (!resolvedAudioUrl) {
       audio.pause();
       audio.src = '';
       setIsPlaying(false);
@@ -214,7 +216,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
       return;
     }
 
-    audio.src = audioUrl;
+    audio.src = resolvedAudioUrl;
     audio.currentTime = 0;
 
     const handleLoadedMetadata = () => {
@@ -264,7 +266,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
       audio.removeEventListener('error', handleError);
       audio.pause();
     };
-  }, [audioUrl, effectiveDuration, updateDirectPlayhead]);
+  }, [resolvedAudioUrl, effectiveDuration, updateDirectPlayhead]);
 
   // 4. VÒNG LẶP RENDER CAO ĐỘ THỜI GIAN THỰC & TIẾN TRÌNH SÓNG (60FPS)
   useEffect(() => {
@@ -275,7 +277,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
       }
       fallbackStartTimeRef.current = null;
       setLiveFrequencies(new Array(BAR_COUNT).fill(0));
-      if (!audioUrl) {
+      if (!resolvedAudioUrl) {
         setCurrentTime(0);
         updateDirectPlayhead(0, effectiveDuration);
       }
@@ -291,7 +293,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
     const renderLoop = () => {
       tick++;
 
-      if (audioUrl && audioRef.current) {
+      if (resolvedAudioUrl && audioRef.current) {
         if (!isDraggingRef.current) {
           const cur = audioRef.current.currentTime;
           setCurrentTime(cur);
@@ -338,7 +340,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
         animationFrameRef.current = null;
       }
     };
-  }, [effectivePlaying, audioUrl, effectiveDuration, peaks, updateDirectPlayhead]);
+  }, [effectivePlaying, resolvedAudioUrl, effectiveDuration, peaks, updateDirectPlayhead]);
 
   // 5. ĐIỀU KHIỂN PHÁT / TẠM DỪNG
   const togglePlay = () => {
@@ -347,7 +349,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
       void ctx.resume();
     }
 
-    if (!audioUrl) {
+    if (!resolvedAudioUrl) {
       if (currentTime >= effectiveDuration - 0.05 || !effectivePlaying) {
         setCurrentTime(0);
         fallbackStartTimeRef.current = performance.now();
@@ -393,7 +395,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
     setCurrentTime(0);
     updateDirectPlayhead(0, effectiveDuration);
 
-    if (audioUrl && audioRef.current) {
+    if (resolvedAudioUrl && audioRef.current) {
       const audio = audioRef.current;
       audio.currentTime = 0;
       audio
@@ -426,14 +428,14 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
       setCurrentTime(targetTime);
       updateDirectPlayhead(targetTime, effectiveDuration);
 
-      if (audioUrl && audioRef.current && Number.isFinite(effectiveDuration) && effectiveDuration > 0) {
+      if (resolvedAudioUrl && audioRef.current && Number.isFinite(effectiveDuration) && effectiveDuration > 0) {
         audioRef.current.currentTime = targetTime;
-      } else if (!audioUrl) {
+      } else if (!resolvedAudioUrl) {
         fallbackStartTimeRef.current = performance.now() - (targetTime * 1000);
         onSeekFallback?.(ratio, targetTime);
       }
     },
-    [effectiveDuration, audioUrl, onSeekFallback, updateDirectPlayhead]
+    [effectiveDuration, resolvedAudioUrl, onSeekFallback, updateDirectPlayhead]
   );
 
   const handleTrackMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {

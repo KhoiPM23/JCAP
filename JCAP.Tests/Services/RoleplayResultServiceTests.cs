@@ -139,7 +139,7 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public async Task CompleteSessionAsync_RejectsSessionWithoutLearnerMessages()
+        public async Task CompleteSessionAsync_ReturnsHonestEarlyExitResult_WhenSessionHasNoLearnerMessages()
         {
             using var dbContext = CreateInMemoryDbContext();
             dbContext.RoleplaySessions.Add(new RoleplaySession
@@ -164,14 +164,16 @@ namespace JCAP.Tests.Services
             var service = CreateService(dbContext, provider.Object);
             var response = await service.CompleteSessionAsync("learner-1", 21);
 
-            Assert.False(response.Success);
-            Assert.Contains("ít nhất một câu", response.Message);
-            Assert.Empty(await dbContext.RoleplayResults.ToListAsync());
-            Assert.Equal("Active", (await dbContext.RoleplaySessions.SingleAsync()).Status);
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            var savedResult = await dbContext.RoleplayResults.SingleAsync(r => r.RoleplaySessionId == 21);
+            Assert.False(savedResult.PassStatus);
+            Assert.Equal(0, savedResult.OverallScore);
+            Assert.Equal("Completed", (await dbContext.RoleplaySessions.SingleAsync(s => s.Id == 21)).Status);
         }
 
         [Fact]
-        public async Task CompleteSessionAsync_RejectsSimulatorOnlyFeedback()
+        public async Task CompleteSessionAsync_ReturnsEarlyTerminationResult_WhenSimulatorOnlyFeedback()
         {
             using var dbContext = CreateInMemoryDbContext();
             dbContext.RoleplaySessions.Add(new RoleplaySession
@@ -180,6 +182,11 @@ namespace JCAP.Tests.Services
                 UserId = "learner-1",
                 ScenarioLevelConfigurationId = 1,
                 Status = "Active",
+                SessionMissions =
+                [
+                    new RoleplaySessionMission { RoleplaySessionId = 22, MissionId = 1, IsCompleted = true },
+                    new RoleplaySessionMission { RoleplaySessionId = 22, MissionId = 2, IsCompleted = false }
+                ],
                 Messages =
                 [
                     new RoleplayMessage
@@ -190,7 +197,8 @@ namespace JCAP.Tests.Services
                         {
                           "evaluationSource": "Simulator",
                           "status": "Good",
-                          "summary": "Phản xạ tự nhiên • Đúng ngữ cảnh"
+                          "summary": "Phản xạ tự nhiên",
+                          "details": []
                         }
                         """
                     }
@@ -205,16 +213,19 @@ namespace JCAP.Tests.Services
                     SessionId = 22,
                     UserId = "learner-1",
                     ScenarioTitle = "Gọi món",
-                    JLPTLevel = "N5"
+                    JLPTLevel = "N5",
+                    CompletedMissions = [new CompletedMissionSnapshot { MissionId = 1, Title = "Gọi món" }]
                 });
 
             var service = CreateService(dbContext, provider.Object);
             var response = await service.CompleteSessionAsync("learner-1", 22);
 
-            Assert.False(response.Success);
-            Assert.Contains("Gemini", response.Message);
-            Assert.Empty(await dbContext.RoleplayResults.ToListAsync());
-            Assert.Equal("Active", (await dbContext.RoleplaySessions.SingleAsync()).Status);
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            var savedResult = await dbContext.RoleplayResults.SingleAsync(r => r.RoleplaySessionId == 22);
+            Assert.False(savedResult.PassStatus);
+            Assert.True(savedResult.OverallScore <= 40, $"Expected OverallScore <= 40, got {savedResult.OverallScore}");
+            Assert.Equal("Completed", (await dbContext.RoleplaySessions.SingleAsync(s => s.Id == 22)).Status);
         }
 
         [Fact]
@@ -901,6 +912,177 @@ namespace JCAP.Tests.Services
             Assert.NotNull(response.Data.WeakVocabularies);
             Assert.NotNull(response.Data.WeakGrammars);
             Assert.NotNull(response.Data.RecommendedShadowingDialogues);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_ReadsProfileNextScenario_AndDoesNotFakeOfflineWhisperScore()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var s1 = new Scenario { Id = 11, ScenarioCode = "SCN_PROFILE_1", Title = "Quán Mì", Description = "Gọi mì", IsActive = true };
+            var s2 = new Scenario { Id = 12, ScenarioCode = "SCN_PROFILE_2", Title = "Cửa hàng Tiện lợi", Description = "Mua đồ", IsActive = true };
+            var cfg1 = new ScenarioLevelConfiguration { Id = 11, ScenarioId = 11, JLPTLevel = "N5", Scenario = s1 };
+            dbContext.Scenarios.AddRange(s1, s2);
+            dbContext.ScenarioLevelConfigurations.Add(cfg1);
+
+            var session = CreateSession(301, "hub-spoke-user");
+            session.ScenarioLevelConfigurationId = 11;
+            session.Messages.Clear();
+            session.Messages.Add(new RoleplayMessage
+            {
+                Sender = "User",
+                JapaneseText = "みそラーメンをひとつください。",
+                LinguisticFeedbackJson = """
+                {
+                  "evaluationSource": "AI",
+                  "status": "Good",
+                  "summary": "Tốt",
+                  "details": [],
+                  "speechDelivery": {
+                    "audioUrl": "/uploads/turn-offline.webm",
+                    "isTextInput": false,
+                    "speechConfidence": null,
+                    "turnAutonomyScore": 100
+                  }
+                }
+                """
+            });
+            dbContext.RoleplaySessions.Add(session);
+
+            var res = CreateResult(301, "hub-spoke-user", true, DateTime.UtcNow);
+            res.Id = 301;
+            dbContext.RoleplayResults.Add(res);
+
+            dbContext.LearnerIntelligenceProfiles.Add(new LearnerIntelligenceProfile
+            {
+                UserId = "hub-spoke-user",
+                CommunicativeProficiencyIndex = 76,
+                InferredTraitsJson = """
+                {
+                  "dominantWeaknessCategory": "Particles",
+                  "nextRecommendedScenarioId": 12,
+                  "nextRecommendedScenarioTitle": "Cửa hàng Tiện lợi (Theo Hồ sơ)",
+                  "nextRecommendedReason": "Gợi ý trực tiếp từ LearnerIntelligenceProfile",
+                  "predictedSuccessRateNextScenario": 0.88
+                }
+                """
+            });
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            var service = CreateService(dbContext, provider.Object);
+
+            var response = await service.GetDetailAsync("hub-spoke-user", 301);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            Assert.Equal(0, response.Data!.PronunciationScore);
+            Assert.Equal(0, response.Data.FluencyScore);
+            Assert.Equal(12, response.Data.NextRecommendedScenarioId);
+            Assert.Equal("Cửa hàng Tiện lợi (Theo Hồ sơ)", response.Data.NextRecommendedScenarioTitle);
+            Assert.Equal("Gợi ý trực tiếp từ LearnerIntelligenceProfile", response.Data.NextRecommendedReason);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_DoesNotFlagTargetVocabUsedIndependently_WhenAnotherTurnUsedHint()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var cfg = new ScenarioLevelConfiguration
+            {
+                Id = 310,
+                JLPTLevel = "N5",
+                TargetVocabularies =
+                [
+                    new TargetVocabulary { Id = 1, Word = "お冷", Reading = "おひや", Meaning = "Nước lọc đá" }
+                ],
+                TargetGrammars =
+                [
+                    new TargetGrammar { Id = 2, Pattern = "～をください", Meaning = "Cho tôi..." }
+                ]
+            };
+            dbContext.ScenarioLevelConfigurations.Add(cfg);
+
+            var session = CreateSession(310, "turn-signal-user");
+            session.ScenarioLevelConfigurationId = 310;
+            session.ScenarioLevelConfiguration = cfg;
+            session.Messages =
+            [
+                new RoleplayMessage
+                {
+                    Sender = "User",
+                    JapaneseText = "すみません、1人です。",
+                    LinguisticFeedbackJson = """{"status":"Good","summary":"Tốt","details":[],"speechDelivery":{"hintLevelUsed":2,"turnAutonomyScore":85}}"""
+                },
+                new RoleplayMessage
+                {
+                    Sender = "User",
+                    JapaneseText = "お冷をお願いします。",
+                    LinguisticFeedbackJson = """{"status":"Good","summary":"Tốt","details":[],"speechDelivery":{"hintLevelUsed":0,"turnAutonomyScore":100}}"""
+                }
+            ];
+            dbContext.RoleplaySessions.Add(session);
+            dbContext.LearnerBehaviorSignals.Add(new LearnerBehaviorSignal
+            {
+                SessionId = 310,
+                TurnIndex = 1,
+                HintLevelUsed = 2,
+                DetectedRuleErrorCodes = "E02",
+                TurnScore = 80
+            });
+            dbContext.LearnerBehaviorSignals.Add(new LearnerBehaviorSignal
+            {
+                SessionId = 310,
+                TurnIndex = 2,
+                HintLevelUsed = 0,
+                DetectedRuleErrorCodes = null,
+                TurnScore = 95
+            });
+
+            var res = CreateResult(310, "turn-signal-user", true, DateTime.UtcNow);
+            res.Id = 310;
+            dbContext.RoleplayResults.Add(res);
+            await dbContext.SaveChangesAsync();
+
+            var service = CreateService(dbContext, new Mock<IRoleplaySessionSnapshotProvider>().Object);
+            var detail = await service.GetDetailAsync("turn-signal-user", 310);
+
+            Assert.True(detail.Success);
+            Assert.NotNull(detail.Data);
+            Assert.Empty(detail.Data!.WeakVocabularies);
+            Assert.Empty(detail.Data.WeakGrammars);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_PrioritizesExactResultId_OverCollidingSessionId()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var olderResultForSession36 = CreateResult(36, "learner-collision", true, DateTime.UtcNow.AddDays(-2));
+            olderResultForSession36.Id = 53;
+            olderResultForSession36.ScenarioTitle = "Session 36 Result";
+
+            var targetResultForSession53 = CreateResult(53, "learner-collision", false, DateTime.UtcNow.AddDays(-1));
+            targetResultForSession53.Id = 80;
+            targetResultForSession53.ScenarioTitle = "Session 53 Result";
+
+            dbContext.RoleplayResults.AddRange(olderResultForSession36, targetResultForSession53);
+            await dbContext.SaveChangesAsync();
+
+            var service = CreateService(dbContext, Mock.Of<IRoleplaySessionSnapshotProvider>());
+
+            // Querying 53 collides with both olderResultForSession36.Id (53) and targetResultForSession53.RoleplaySessionId (53).
+            // Exact Id match must win over the newer RoleplaySessionId match.
+            var detailByCollidingId = await service.GetDetailAsync("learner-collision", 53);
+            Assert.True(detailByCollidingId.Success);
+            Assert.NotNull(detailByCollidingId.Data);
+            Assert.Equal(53, detailByCollidingId.Data!.Id);
+            Assert.Equal(36, detailByCollidingId.Data.RoleplaySessionId);
+            Assert.Equal("Session 36 Result", detailByCollidingId.Data.ScenarioTitle);
+
+            var detailByResultId = await service.GetDetailAsync("learner-collision", 80);
+            Assert.True(detailByResultId.Success);
+            Assert.NotNull(detailByResultId.Data);
+            Assert.Equal(80, detailByResultId.Data!.Id);
+            Assert.Equal(53, detailByResultId.Data.RoleplaySessionId);
+            Assert.Equal("Session 53 Result", detailByResultId.Data.ScenarioTitle);
         }
 
         private static RoleplayResult CreateResult(

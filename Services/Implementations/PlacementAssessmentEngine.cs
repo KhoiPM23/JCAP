@@ -138,9 +138,9 @@ namespace JCAP.Services.Implementations
                 {
                     AiReplyJapanese = aiJa,
                     AiReplyVietnamese = aiVi,
-                    AiReplyFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(aiJa),
+                    AiReplyFuriganaHtml = null,
                     UserVietnameseMeaning = userText,
-                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userText),
+                    UserFuriganaHtml = null,
                     InputClassification = "AbusiveOrSpam",
                     DetectedIntent = "SpamOrForeignLanguage",
                     DemonstratedBand = "Unobserved",
@@ -213,9 +213,7 @@ namespace JCAP.Services.Implementations
 
                 var replyJa = root.TryGetProperty("replyJapanese", out var rj) ? rj.GetString() ?? "" : "";
                 var replyVi = root.TryGetProperty("replyVietnamese", out var rv) ? rv.GetString() ?? "" : "";
-                var replyFurigana = root.TryGetProperty("replyFuriganaHtml", out var rf) ? rf.GetString() : null;
                 var userVi = root.TryGetProperty("userVietnameseMeaning", out var uv) ? uv.GetString() ?? userText : userText;
-                var userFurigana = root.TryGetProperty("userFuriganaHtml", out var uf) ? uf.GetString() : null;
 
                 var analysis = root.GetProperty("turnAnalysis");
                 var inputCat = analysis.TryGetProperty("inputCategory", out var ic) ? ic.GetString() ?? "Valid" : "Valid";
@@ -390,14 +388,18 @@ namespace JCAP.Services.Implementations
                 }
 
                 var isConcluded = state.TerminationReason != "None" || state.CurrentEvent == "CONCLUDED";
+                if (!isConcluded && inputCat == "Valid")
+                {
+                    (replyJa, replyVi) = SanitizePrematureKeyHandover(state, replyJa, replyVi);
+                }
 
                 return (state, new EngineTurnOutcome
                 {
                     AiReplyJapanese = replyJa,
                     AiReplyVietnamese = replyVi,
-                    AiReplyFuriganaHtml = !string.IsNullOrWhiteSpace(replyFurigana) ? replyFurigana : RoleplaySocialRegister.GenerateFuriganaHtml(replyJa),
+                    AiReplyFuriganaHtml = null,
                     UserVietnameseMeaning = userVi,
-                    UserFuriganaHtml = !string.IsNullOrWhiteSpace(userFurigana) ? userFurigana : RoleplaySocialRegister.GenerateFuriganaHtml(userText),
+                    UserFuriganaHtml = null,
                     InputClassification = inputCat,
                     DetectedIntent = detectedIntent,
                     DemonstratedBand = demonstratedBand,
@@ -469,11 +471,28 @@ namespace JCAP.Services.Implementations
                 case "EVT-01":
                     if (detectedIntent is "ConfirmReservation" or "ConfirmReservationWithQuietRequest")
                     {
-                        state.ReservationConfirmed = true;
-                        RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
-                        state.CurrentEvent = "EVT-02";
-                        state.CurrentEventScaffoldingStep = 0;
-                        state.CurrentEventStayCount = 0;
+                        bool aiAssignedRoom512 = ContainsAny(aiReplyJapanese, "512");
+                        bool aiStillAskingName = ContainsAny(aiReplyJapanese, "お名前", "名前を") && !aiAssignedRoom512;
+                        bool userProvidedIdentityOrCheckIn = ContainsAny(
+                            userText,
+                            "申します", "と言います", "といいます", "名前", "です", "予約", "チェックイン");
+
+                        if ((taskScore >= 60 && !aiStillAskingName) || aiAssignedRoom512 || (userProvidedIdentityOrCheckIn && !aiStillAskingName))
+                        {
+                            state.ReservationConfirmed = true;
+                            RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
+                            state.CurrentEvent = "EVT-02";
+                            state.CurrentEventScaffoldingStep = 0;
+                            state.CurrentEventStayCount = 0;
+                        }
+                        else
+                        {
+                            state.CurrentEventStayCount++;
+                        }
+                    }
+                    else if (detectedIntent is "GreetingOnlyOrIncomplete")
+                    {
+                        state.CurrentEventStayCount++;
                     }
                     break;
 
@@ -652,6 +671,100 @@ namespace JCAP.Services.Implementations
             }
         }
 
+        /// <summary>
+        /// Hậu kiểm C# ngăn chặn tuyệt đối việc AI tự ý trao chìa khóa phòng hoặc chào kết thúc check-in
+        /// trước khi phiên bước vào trạng thái CONCLUDED (sau khi hoàn tất EVT-05).
+        /// </summary>
+        public static (string ReplyJa, string ReplyVi) SanitizePrematureKeyHandover(
+            PlacementAssessmentState state,
+            string replyJa,
+            string replyVi)
+        {
+            if (state.CurrentEvent == "CONCLUDED" || string.IsNullOrWhiteSpace(replyJa))
+            {
+                return (replyJa, replyVi);
+            }
+
+            bool hasPrematureKeyOrFarewell = ContainsAny(
+                replyJa,
+                "鍵", "ルームキー", "お寛ぎ", "おくつろぎ", "良いご滞在", "よいご滞在", "素敵なご滞在", "ご滞在をお楽しみ");
+
+            if (!hasPrematureKeyOrFarewell)
+            {
+                return (replyJa, replyVi);
+            }
+
+            // Nếu đang ở EVT-03 mà chưa chốt phòng nhưng AI đã tự chốt nâng hạng + trao chìa khóa (như case #91)
+            if (state.CurrentEvent == "EVT-03" &&
+                string.Equals(state.SelectedRoom, "Undecided", StringComparison.OrdinalIgnoreCase) &&
+                ContainsAny(replyJa, "変更いたし", "変更しまし", "ご用意いたし"))
+            {
+                return (
+                    "かしこまりました。あいにく他のスタンダードルームは満室でございますが、静かなデラックスルームの801号室はご用意可能でございます。1泊につき2,000円（3泊で6,000円）の追加料金がかかりますが、こちらにご変更なさいますか？",
+                    "Tôi đã rõ ạ. Rất tiếc các phòng Standard khác đã kín, nhưng chúng tôi có sẵn Phòng Deluxe 801 yên tĩnh. Phụ phí là 2,000 Yên/đêm (6,000 Yên cho 3 đêm), quý khách có muốn đổi sang phòng này không ạ?"
+                );
+            }
+
+            string StripPrematureSentences(string text, string[] markers, string pattern)
+            {
+                if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+                var kept = new List<string>();
+                foreach (Match m in Regex.Matches(text, pattern))
+                {
+                    var sent = m.Value.Trim();
+                    if (!string.IsNullOrWhiteSpace(sent) && !ContainsAny(sent, markers))
+                    {
+                        kept.Add(sent);
+                    }
+                }
+                return string.Join(" ", kept).Trim();
+            }
+
+            var cleanJa = StripPrematureSentences(
+                replyJa,
+                ["鍵", "ルームキー", "お寛ぎ", "おくつろぎ", "良いご滞在", "よいご滞在", "素敵なご滞在", "ご滞在をお楽しみ"],
+                @"[^。？！]+[。？！]?");
+
+            var cleanVi = StripPrematureSentences(
+                replyVi,
+                ["chìa khóa", "chìa khoá", "nghỉ ngơi thoải mái", "kỳ nghỉ vui vẻ", "kỳ nghỉ"],
+                @"[^.?!]+[.?!]?");
+
+            switch (state.CurrentEvent)
+            {
+                case "EVT-02":
+                    if (!ContainsAny(cleanJa, "よろしい", "いかが", "？"))
+                    {
+                        cleanJa = (cleanJa + " 512号室でよろしいでしょうか？それとも別のお部屋をお探ししましょうか？").Trim();
+                        cleanVi = (cleanVi + " Quý khách thấy phòng 512 này có ổn không ạ, hay muốn tìm phòng khác ạ?").Trim();
+                    }
+                    break;
+                case "EVT-03":
+                    if (!ContainsAny(cleanJa, "？"))
+                    {
+                        cleanJa = (cleanJa + " 1泊2,000円（3泊で6,000円）の追加料金でデラックスルームの801号室へご変更なさいますか？").Trim();
+                        cleanVi = (cleanVi + " Quý khách có đồng ý đổi sang Phòng Deluxe 801 với phụ phí 2,000 Yên/đêm (6,000 Yên/3 đêm) không ạ?").Trim();
+                    }
+                    break;
+                case "EVT-04":
+                    if (!ContainsAny(cleanJa, "朝食", "朝ごはん"))
+                    {
+                        cleanJa = (cleanJa + " なお、ご朝食（1,500円）はいかがなさいますか？").Trim();
+                        cleanVi = (cleanVi + " Ngoài ra, quý khách có muốn đăng ký thêm bữa sáng (1,500 Yên) không ạ?").Trim();
+                    }
+                    break;
+                case "EVT-05":
+                    if (!ContainsAny(cleanJa, "？"))
+                    {
+                        cleanJa = (cleanJa + " 他にご質問やご要望はございますか？").Trim();
+                        cleanVi = (cleanVi + " Quý khách còn câu hỏi hay yêu cầu nào khác nữa không ạ?").Trim();
+                    }
+                    break;
+            }
+
+            return (cleanJa, cleanVi);
+        }
+
         private static void AdvanceToNextEvent(PlacementAssessmentState state)
         {
             state.CurrentEventScaffoldingStep = 0;
@@ -775,9 +888,9 @@ namespace JCAP.Services.Implementations
             {
                 AiReplyJapanese = fallbackJa,
                 AiReplyVietnamese = fallbackVi,
-                AiReplyFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(fallbackJa),
+                AiReplyFuriganaHtml = null,
                 UserVietnameseMeaning = userText,
-                UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userText),
+                UserFuriganaHtml = null,
                 InputClassification = "Valid",
                 DetectedIntent = "GeneralResponse",
                 DemonstratedBand = "N4",
@@ -822,7 +935,7 @@ namespace JCAP.Services.Implementations
                 // Bước 2: Đưa ra câu hỏi lựa chọn ngắn A hoặc B
                 ja = state.CurrentEvent switch
                 {
-                    "EVT-01" => "お名前は「田中様」でよろしいですか？「はい」か「いいえ」でお答えください。",
+                    "EVT-01" => "チェックインですね。お名前を教えていただけますか？",
                     "EVT-02" => "この部屋で「いい」ですか？それとも「変えたい」ですか？",
                     "EVT-03" => "「デラックスにする」か「このままでいい」か、どちらがよろしいですか？",
                     "EVT-04" => "朝食は「おねがいします」か「けっこうです」、どちらですか？",
@@ -830,7 +943,7 @@ namespace JCAP.Services.Implementations
                 };
                 vi = state.CurrentEvent switch
                 {
-                    "EVT-01" => "Tên của quý khách có phải là Tanaka không ạ? Xin trả lời 'Vâng' hoặc 'Không'.",
+                    "EVT-01" => "Quý khách đến làm thủ tục nhận phòng phải không ạ? Quý khách cho tôi biết tên đặt phòng được không ạ?",
                     "EVT-02" => "Phòng này 'được' ạ? Hay quý khách 'muốn đổi' ạ?",
                     "EVT-03" => "Quý khách 'đổi sang Deluxe' hay 'giữ phòng này' ạ?",
                     "EVT-04" => "Bữa sáng quý khách 'đăng ký' hay 'thôi không cần' ạ?",
@@ -842,9 +955,9 @@ namespace JCAP.Services.Implementations
             {
                 AiReplyJapanese = ja,
                 AiReplyVietnamese = vi,
-                AiReplyFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(ja),
+                AiReplyFuriganaHtml = null,
                 UserVietnameseMeaning = userText,
-                UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userText),
+                UserFuriganaHtml = null,
                 InputClassification = "CommunicationDifficulty",
                 DetectedIntent = "CommunicationDifficulty",
                 DemonstratedBand = "N5",
@@ -864,22 +977,44 @@ namespace JCAP.Services.Implementations
         {
             return $@"Bạn là Lễ tân khách sạn Sakura (ホテルさくら フロント係 - 山田), đóng vai giao tiếp trong bài Kiểm tra xếp lớp đầu vào (Placement Test) của nền tảng JCAP.
 Nhiệm vụ của bạn:
-1. Tiếp đón khách hàng (Tên khách: {userFullName} / 田中 様 / タナカ, đã đặt phòng Standard Room 3 đêm từ 10/11 - 13/11, có ghi chú 'Ưu tiên phòng yên tĩnh / 静かな部屋を希望').
-2. Thực hiện hội thoại tự nhiên, lịch thiệp theo chuẩn văn hóa dịch vụ khách sạn Nhật Bản (Teineigo/Keigo phù hợp).
-3. Căn cứ vào Conditional Event Directives của sự kiện hiện tại ({state.CurrentEvent}) để dẫn dắt tình huống.
-4. Điều chỉnh độ khó câu thoại của bạn theo bậc mục tiêu: {state.CurrentDifficultyBand} (N5: ngắn gọn, từ vựng cơ bản desu/masu; N4: câu ghép lịch sự tiêu chuẩn; N3: kính ngữ dịch vụ tự nhiên, linh hoạt). Giữ lời thoại tự nhiên, lịch thiệp theo chuẩn tiếp tân khách sạn, duy trì nhịp độ đối thoại vừa phải (thông thường 1–2 câu và không quá 80 ký tự) để người học dễ theo dõi và phản hồi kịp thời.
-5. Phân tích chính xác năng lực giao tiếp của câu người học vừa nói dựa trên khung tham chiếu nhiệm vụ Can-do của giáo trình 『できる日本語』(Dekiru Nihongo: 初級 N5 / 初中級 N4 / 中級 N3) và trả về định dạng JSON thuần túy.";
+1. Tiếp đón khách hàng (Khách có thể tự do xưng bất kỳ tên nào — tên thật, tên tiếng Việt, Katakana hoặc tên tiếng Nhật; chấp nhận mọi tên hợp lệ mà khách nêu ra, TUYỆT ĐỐI KHÔNG bắt buộc tên 'Tanaka' hay một tên cố định nào; hãy ghi nhận đúng tên khách vừa xưng để xưng hô lịch sự kèm 「様」 ở các lượt sau. Khách đã đặt phòng Standard Room 3 đêm từ 10/11 - 13/11, có ghi chú 'Ưu tiên phòng yên tĩnh / 静かな部屋を希望').
+   - Danh mục phòng cố định của khách sạn trong kịch bản (BẮT BUỘC giữ nhất quán số phòng xuyên suốt mọi lượt):
+     + Phòng Standard xếp sẵn: Phòng 512 (スタンダードルームの512号室, tầng 5, ngay cạnh thang máy).
+     + Phòng Deluxe nâng hạng thay thế: Phòng 801 (デラックスルームの801号室, tầng 8, xa thang máy, yên tĩnh, phụ phí +2,000 Yên/đêm = 6,000 Yên/3 đêm).
+   - Khi nhắc tới phòng Deluxe 801 ở bất kỳ lượt nào sau khi chốt, LUÔN gọi đầy đủ kèm loại phòng (VD: 「デラックスルームの801号室」) để tránh nhầm với phòng Standard 512 ban đầu.
+2. QUY TẮC KHÓA BƯỚC KỊCH BẢN (STAGE-LOCKING — BẮT BUỘC TUÂN THỦ TUYỆT ĐỐI):
+   - Tại EVT-01: TUYỆT ĐỐI CHƯA đề cập tới Phòng Deluxe 801 hay phụ phí nâng hạng. Chỉ xác nhận đặt phòng và báo phòng xếp sẵn hiện tại là Phòng 512 cạnh thang máy, hỏi xem phòng 512 này có ổn không.
+   - Tại EVT-02: Nếu khách đề nghị đổi phòng (kể cả khách có hỏi trước về Deluxe hoặc đặt điều kiện giá), chỉ báo các phòng Standard khác/Twin đã kín và giới thiệu Phòng Deluxe 801 kèm mức phụ phí (+2,000 Yên/đêm = 6,000 Yên/3 đêm), rồi hỏi ý kiến khách có đồng ý nâng hạng với mức phí đó không. TUYỆT ĐỐI CHƯA tự chốt đổi phòng và CHƯA hỏi bữa sáng.
+   - Tại EVT-01, EVT-02, EVT-03 và EVT-04: TUYỆT ĐỐI KHÔNG BAO GIỜ trao chìa khóa (鍵 / ルームキー) và KHÔNG BAO GIỜ nói câu chào kết thúc check-in (ごゆっくりお寛ぎください / 良いご滞在を). Việc trao chìa khóa CHỈ được thực hiện duy nhất tại EVT-05 sau khi đã hoàn tất cả chọn phòng lẫn bữa sáng.
+3. Thực hiện hội thoại tự nhiên, lịch thiệp theo chuẩn văn hóa dịch vụ khách sạn Nhật Bản (Teineigo/Keigo phù hợp).
+4. Căn cứ vào Conditional Event Directives của sự kiện hiện tại ({state.CurrentEvent}) để dẫn dắt tình huống.
+5. Điều chỉnh độ khó câu thoại của bạn theo bậc mục tiêu: {state.CurrentDifficultyBand} (N5: ngắn gọn, từ vựng cơ bản desu/masu; N4: câu ghép lịch sự tiêu chuẩn; N3: kính ngữ dịch vụ tự nhiên, linh hoạt). Giữ lời thoại tự nhiên, lịch thiệp theo chuẩn tiếp tân khách sạn, duy trì nhịp độ đối thoại vừa phải (thông thường 2–3 câu ngắn gọn, rõ ý và không quá 130 ký tự), đảm bảo truyền đạt đầy đủ thông tin tình huống bắt buộc để người học có cơ sở phản hồi.
+6. Phân tích chính xác năng lực giao tiếp của câu người học vừa nói dựa trên khung tham chiếu nhiệm vụ Can-do của giáo trình 『できる日本語』(Dekiru Nihongo: 初級 N5 / 初中級 N4 / 中級 N3) và trả về định dạng JSON thuần túy.";
         }
 
         private static string BuildUserPrompt(PlacementAssessmentState state, string userUtterance)
         {
             var eventDirectives = GetConditionalDirectivesForEvent(state);
             var dekiruReference = GetDekiruNihongoReferenceForEvent(state.CurrentEvent);
+            var roomStatusLabel = state.SelectedRoom switch
+            {
+                "Deluxe_Upgrade" => "Đã chốt nâng hạng: Phòng Deluxe số 801 (デラックスルームの801号室, tầng 8 yên tĩnh, phụ phí +6,000 Yên/3 đêm)",
+                "Standard_512" => "Đã chốt giữ nguyên: Phòng Standard số 512 (スタンダードルームの512号室, không mất phụ phí)",
+                _ => "Chưa chốt chính thức (tạm xếp Phòng Standard 512 cạnh thang máy)"
+            };
+            var breakfastStatusLabel = state.BreakfastDecision switch
+            {
+                "Added" => "Đã đăng ký thêm bữa sáng buffet (1,500 Yên/người/đêm)",
+                "Declined" => "Không đăng ký bữa sáng",
+                _ => "Chưa quyết định bữa sáng"
+            };
 
             return $@"BỐI CẢNH HIỆN TẠI:
 - Mã sự kiện hiện tại: {state.CurrentEvent}
 - Bậc độ khó câu hỏi mục tiêu của AI: {state.CurrentDifficultyBand}
 - Bước hỗ trợ hiện tại (ScaffoldingStep): {state.CurrentEventScaffoldingStep}
+- Trạng thái phòng hiện tại: {roomStatusLabel}
+- Trạng thái bữa sáng hiện tại: {breakfastStatusLabel}
 
 CHỈ THỊ ĐIỀU KIỆN SỰ KIỆN (CONDITIONAL EVENT DIRECTIVES):
 {eventDirectives}
@@ -895,8 +1030,8 @@ HƯỚNG DẪN ĐÁNH GIÁ (TURN ANALYSIS GUIDANCE):
    - ""Valid"": Câu nói thuộc bối cảnh nhận phòng khách sạn. ĐẶC BIỆT: Khi khách bày tỏ chưa hiểu, xin giải thích đơn giản hơn (RequestSimplification), xin nói chậm lại (RequestRepetition), hoặc hỏi chi tiết phòng/dịch vụ, ĐÂY LÀ CHIẾN LƯỢC GIAO TIẾP HỢP LỆ VÀ BẮT BUỘC ĐÁNH DẤU LÀ ""Valid"" (TUYỆT ĐỐI KHÔNG coi là OffTopic). Khi đó Lễ tân vui vẻ giải thích lại ngắn gọn, dễ hiểu ở bậc N5/N4.
    - ""OffTopic"": CHỈ KHI khách nói câu tiếng Nhật có nghĩa nhưng hoàn toàn lạc sang chủ đề khác (thời tiết bên ngoài, bóng đá, đồ ăn ngoài, rủ đi chơi...).
    - ""AbusiveOrSpam"": Khi khách gõ chuỗi ký tự chữ Nhật vô nghĩa (như 'あかさたな...', 'あいうえお'), ghép từ hỗn độn không có nghĩa, hoặc dùng ngôn từ xúc phạm/phá đám.
-2. userVietnameseMeaning & userFuriganaHtml:
-   - BẮT BUỘC dịch chính xác câu thực tế của học viên sang tiếng Việt tự nhiên và sinh Furigana HTML cho đúng câu học viên vừa nói. TUYỆT ĐỐI KHÔNG tự ý thay đổi nội dung câu học viên đã nói thành câu khác (như không được đổi thành 'wakarimasen').
+2. userVietnameseMeaning:
+   - BẮT BUỘC dịch chính xác câu thực tế của học viên sang tiếng Việt tự nhiên. TUYỆT ĐỐI KHÔNG tự ý thay đổi nội dung câu học viên đã nói thành câu khác (như không được đổi thành 'wakarimasen').
 3. Quy tắc xác định demonstratedBand (""N5"" | ""N4"" | ""N3"") — ĐÁNH GIÁ ĐỘC LẬP, KHÔNG BỊ NEO THEO ĐỘ KHÓ CÂU HỎI CỦA AI:
    - TUYỆT ĐỐI KHÔNG lấy ""Bậc độ khó câu hỏi mục tiêu của AI ({state.CurrentDifficultyBand})"" làm trần giới hạn cho demonstratedBand của học viên! Dù AI đang hỏi ở bậc N4 hay N5, nếu câu trả lời của học viên đạt tiêu chí N3 thì BẮT BUỘC chấm ""demonstratedBand"": ""N3"".
    - Chọn ""N5"" (『できる日本語 初級』): Câu đơn ngắn gọn, cụm từ cố định cơ bản (〜です/〜ます, 〜をお願いします, いくらですか), truyền đạt ý chính nhưng chưa mở rộng lý do hay mệnh đề phụ.
@@ -905,12 +1040,12 @@ HƯỚNG DẪN ĐÁNH GIÁ (TURN ANALYSIS GUIDANCE):
 4. Trích xuất Bằng chứng Quan sát được (evidence — Theo chuẩn JF Standard & 『できる日本語』, KHÔNG tự cho điểm số 0-100):
    - ""taskAchievement"":
      + ""Exceeded_ProactiveDetail"": Hoàn thành đúng mục tiêu sự kiện VÀ chủ động cung cấp thêm lý do, điều kiện, chi tiết đặt phòng hoặc câu hỏi mở rộng hợp lý.
-     + ""Fulfilled_Core"": Hoàn thành đúng và đủ yêu cầu cốt lõi của sự kiện.
-     + ""Partial_IncompleteInfo"": Phản hồi đúng hướng nhưng còn thiếu thông tin hoặc chưa chốt quyết định (hoặc đang xin nhắc lại/giải thích thêm).
+     + ""Fulfilled_Core"": Hoàn thành đúng và đủ yêu cầu cốt lõi của sự kiện (bao gồm cả khi khách đặt câu hỏi tìm hiểu thông tin hợp lý như AskRoomInfo, AskUpgradeDetails, AskBreakfastInfo trước khi chốt quyết định).
+     + ""Partial_IncompleteInfo"": Phản hồi đúng hướng nhưng còn thiếu thông tin bắt buộc (như mới chào hỏi mà chưa nói tên ở EVT-01) hoặc câu nói lửng lơ chưa rõ ý định (như 'どうしようかな').
      + ""Unfulfilled_Unclear"": Chưa trả lời được câu hỏi hoặc diễn đạt quá mơ hồ.
    - ""sentenceStructure"":
      + ""Complex_MultiClause"": Câu phức đa mệnh đề, điều kiện/giả định/nhượng bộ (〜なら, 〜のであれば, 〜となると, 〜ため, 〜はずなんですが) hoặc kết hợp mệnh đề với kính ngữ.
-     + ""Compound_LinkedClause"": Câu ghép nối mệnh đề (〜から, 〜ので, 〜が, 〜て) hoặc có mệnh đề định ngữ bổ nghĩa danh từ (3泊予約した田中).
+     + ""Compound_LinkedClause"": Câu ghép nối mệnh đề (〜から, 〜ので, 〜が, 〜て) hoặc có mệnh đề định ngữ bổ nghĩa danh từ (3泊予約したミン / 3泊予約した佐藤).
      + ""Simple_CompleteClause"": Câu đơn hoàn chỉnh có vị ngữ.
      + ""Fragment_WordOnly"": Từ đơn rời rạc hoặc cụm từ ngắn thiếu vị ngữ (như 'はい', '部屋、変えて').
    - ""grammarErrorSeverity"":
@@ -934,7 +1069,6 @@ YÊU CẦU ĐÁNH GIÁ VÀ TRẢ LỜI:
 Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp lệ có đúng cấu trúc sau (không kèm markdown ngoài JSON):
 {{
   ""userVietnameseMeaning"": ""Bản dịch tiếng Việt câu nói của người học"",
-  ""userFuriganaHtml"": ""Markup ruby furigana cho câu của người học"",
   ""turnAnalysis"": {{
     ""inputCategory"": ""Valid | OffTopic | AbusiveOrSpam"",
     ""detectedIntent"": ""ĐÚNG 1 tên nhánh intent duy nhất trong Conditional Event Directives của sự kiện hiện tại (không ghép nhiều intent bằng dấu /)"",
@@ -949,8 +1083,7 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
     }},
     ""evidenceNote"": ""Nhận xét cụ thể về cấu trúc, từ vựng, độ lịch sự và đối chiếu mốc bài học Dekiru Nihongo (N5/N4/N3)""
   }},
-  ""replyJapanese"": ""Câu nói tiếp theo của Lễ tân bằng tiếng Nhật (tự nhiên, lịch thiệp theo chuẩn lễ tân, thông thường 1-2 câu và không quá 80 ký tự)"",
-  ""replyFuriganaHtml"": ""Markup ruby furigana câu tiếng Nhật của Lễ tân"",
+  ""replyJapanese"": ""Câu nói tiếp theo của Lễ tân bằng tiếng Nhật (tự nhiên, lịch thiệp theo chuẩn lễ tân, thông thường 2-3 câu ngắn gọn, rõ ý và không quá 130 ký tự, đảm bảo nêu đầy đủ thông tin tình huống bắt buộc)"",
   ""replyVietnamese"": ""Dịch câu Lễ tân sang tiếng Việt tự nhiên""
 }}";
         }
@@ -998,8 +1131,9 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
         }
 
         /// <summary>
-        /// Động cơ tính điểm tất định tại Backend (Backend Deterministic Scoring Engine - Approach C)
-        /// dựa trên bằng chứng JF Standard &amp; Dekiru Nihongo kết hợp hậu kiểm C#.
+        /// Động cơ tính điểm tất định 2 trục tại Backend (Band-Relative Deterministic Scoring Engine 2.0):
+        /// - Trục 1 (ValidatedBand: N5 | N4 | N3): Phân bậc năng lực Can-do đa tiêu chí theo JF Standard &amp; Dekiru Nihongo kết hợp bộ phân tích hình thái C#.
+        /// - Trục 2 (0–100 Scores): Chấm mức độ hoàn thiện độc lập theo chuẩn kỳ vọng riêng của chính bậc N vừa xác định.
         /// </summary>
         public static (int TaskScore, int GrammarScore, int VocabScore, int PragmaticsScore, string ValidatedBand) ComputeDeterministicTurnScores(
             string userText,
@@ -1022,112 +1156,293 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
 
             var trimmed = userText?.Trim() ?? string.Empty;
 
-            // 1. Task Fulfillment Score (35%)
-            int taskScore = evidence.TaskAchievement switch
-            {
-                "Exceeded_ProactiveDetail" => 92,
-                "Fulfilled_Core" => 80,
-                "Partial_IncompleteInfo" => 65,
-                "Unfulfilled_Unclear" => 45,
-                _ => 65
-            };
-
-            if (isClarificationOrStrategy && taskScore < 65)
-            {
-                taskScore = 65;
-            }
-
-            // 2. Grammar Accuracy Score (25%) — Tách biệt Độ chính xác và Độ phức tạp + Hậu kiểm mâu thuẫn
-            var effectiveSeverity = evidence.GrammarErrorSeverity;
+            // BƯỚC 1: HẬU KIỂM C# & CHUẨN HÓA BẰNG CHỨNG QUAN SÁT (EVIDENCE NORMALIZATION)
+            var effectiveSeverity = evidence.GrammarErrorSeverity ?? "NoError";
             if (effectiveSeverity.Equals("NoError", StringComparison.OrdinalIgnoreCase) && evidence.GrammarErrors.Count > 0)
             {
                 effectiveSeverity = "MinorSlip_MeaningIntact";
             }
 
-            int grammarScore;
-            if (effectiveSeverity.Equals("MajorError_MeaningAffected", StringComparison.OrdinalIgnoreCase))
+            bool hasPolite = HasPoliteMarker(trimmed);
+            var effectivePoliteness = evidence.PolitenessRegister ?? "Standard_Teineigo";
+            if (trimmed.Length > 4 && !hasPolite &&
+                (effectivePoliteness.Equals("Standard_Teineigo", StringComparison.OrdinalIgnoreCase) ||
+                 effectivePoliteness.Equals("Advanced_KeigoOrCushioned", StringComparison.OrdinalIgnoreCase)))
             {
-                grammarScore = 50;
+                effectivePoliteness = "Inconsistent_Mixed";
             }
-            else if (effectiveSeverity.Equals("MinorSlip_MeaningIntact", StringComparison.OrdinalIgnoreCase))
+
+            var effectiveTask = evidence.TaskAchievement ?? "Fulfilled_Core";
+            bool isInfoInquiry = IsRelevantInformationInquiryIntent(detectedIntent, trimmed);
+            if (isInfoInquiry && effectiveTask.Equals("Partial_IncompleteInfo", StringComparison.OrdinalIgnoreCase))
             {
-                grammarScore = 70;
+                // Khách chủ động hỏi thông tin phòng/phụ phí/bữa sáng có câu hỏi rõ ràng -> Hoàn thành đúng mục tiêu lượt hỏi
+                effectiveTask = "Fulfilled_Core";
+            }
+
+            bool isFragment = evidence.SentenceStructure.Equals("Fragment_WordOnly", StringComparison.OrdinalIgnoreCase);
+            bool isSimple = evidence.SentenceStructure.Equals("Simple_CompleteClause", StringComparison.OrdinalIgnoreCase);
+            bool isCompound = evidence.SentenceStructure.Equals("Compound_LinkedClause", StringComparison.OrdinalIgnoreCase);
+            bool isComplex = evidence.SentenceStructure.Equals("Complex_MultiClause", StringComparison.OrdinalIgnoreCase);
+
+            bool isMajorGrammarError = effectiveSeverity.Equals("MajorError_MeaningAffected", StringComparison.OrdinalIgnoreCase);
+            bool isMinorGrammarError = effectiveSeverity.Equals("MinorSlip_MeaningIntact", StringComparison.OrdinalIgnoreCase);
+            bool isAbruptOrMixedPolite = effectivePoliteness.Equals("Abrupt_Casual", StringComparison.OrdinalIgnoreCase) ||
+                                         effectivePoliteness.Equals("Inconsistent_Mixed", StringComparison.OrdinalIgnoreCase);
+            bool isAdvancedPolite = effectivePoliteness.Equals("Advanced_KeigoOrCushioned", StringComparison.OrdinalIgnoreCase);
+            bool isRichLexical = evidence.LexicalUsage.Equals("Rich_SituationalSpecific", StringComparison.OrdinalIgnoreCase);
+            bool isInaccurateLexical = evidence.LexicalUsage.Equals("Inaccurate_WrongWord", StringComparison.OrdinalIgnoreCase);
+            bool isProactiveTask = effectiveTask.Equals("Exceeded_ProactiveDetail", StringComparison.OrdinalIgnoreCase);
+            bool isUnfulfilledTask = effectiveTask.Equals("Unfulfilled_Unclear", StringComparison.OrdinalIgnoreCase);
+
+            bool hasN3Signal = HasN3LinguisticSignal(trimmed);
+            bool hasN4Signal = HasN4LinguisticSignal(trimmed);
+            int ruleErrorCount = ruleErrorCodes?.Count ?? 0;
+
+            // BƯỚC 2: XÁC ĐỊNH BẬC NĂNG LỰC BỘC LỘ (VALIDATED BAND: N5 | N4 | N3) ĐỘC LẬP TRƯỚC KHI CHẤM ĐIỂM
+            string validatedBand;
+            if (isFragment || isMajorGrammarError || isUnfulfilledTask || isInaccurateLexical || isAbruptOrMixedPolite || ruleErrorCount >= 2)
+            {
+                validatedBand = "N5";
+            }
+            else if (!isClarificationOrStrategy && effectiveTask.Equals("Partial_IncompleteInfo", StringComparison.OrdinalIgnoreCase))
+            {
+                validatedBand = "N5";
             }
             else
             {
-                grammarScore = evidence.SentenceStructure switch
+                // Kiểm tra điều kiện đạt chuẩn Trung cấp N3 (Dekiru Nihongo Chuu)
+                int n3FeatureCount = (isProactiveTask ? 1 : 0) + (isRichLexical ? 1 : 0) + (isAdvancedPolite ? 1 : 0) + (hasN3Signal ? 1 : 0);
+                bool qualifiesForN3 =
+                    !isMinorGrammarError && ruleErrorCount == 0 && (
+                        (isComplex && n3FeatureCount >= 2) ||
+                        (isCompound && isAdvancedPolite && isRichLexical && (hasN3Signal || string.Equals(rawDemonstratedBand, "N3", StringComparison.OrdinalIgnoreCase))));
+
+                // Cho phép câu phức N3 cực kỳ đầy đủ (có cả từ vựng N3 + kính ngữ N3 + chủ động mở rộng) giữ bậc N3 dù vấp 1 lỗi trợ từ nhẹ
+                if (!qualifiesForN3 && isMinorGrammarError && ruleErrorCount == 0 && isComplex && isProactiveTask && isRichLexical && isAdvancedPolite && hasN3Signal)
                 {
-                    "Complex_MultiClause" or "Compound_LinkedClause" => 92,
-                    "Fragment_WordOnly" => 76,
-                    _ => 85 // Simple_CompleteClause không lỗi đạt 85đ
+                    qualifiesForN3 = true;
+                }
+
+                if (qualifiesForN3)
+                {
+                    validatedBand = "N3";
+                }
+                else if (isComplex || isCompound || (isSimple && (isAdvancedPolite || isProactiveTask || hasN4Signal || hasN3Signal)))
+                {
+                    validatedBand = "N4";
+                }
+                else
+                {
+                    validatedBand = "N5";
+                }
+            }
+
+            // BƯỚC 3: CHẤM ĐIỂM 0–100 ĐỘC LẬP THEO CHUẨN KỲ VỌNG NỘI BẬC CỦA VALIDATED BAND (N5-Rubric / N4-Rubric / N3-Rubric)
+            // 3.1. Task Fulfillment Score (35%)
+            int taskScore;
+            if (isClarificationOrStrategy)
+            {
+                taskScore = validatedBand switch
+                {
+                    "N3" => isProactiveTask ? 90 : 85,
+                    "N4" => isProactiveTask ? 88 : 84,
+                    _ => isProactiveTask ? 86 : 82
+                };
+            }
+            else
+            {
+                taskScore = (validatedBand, effectiveTask) switch
+                {
+                    // Khung N5: Kỳ vọng chuẩn là hoàn thành thông tin cốt lõi (Fulfilled_Core = 90đ)
+                    ("N5", "Exceeded_ProactiveDetail") => 95,
+                    ("N5", "Fulfilled_Core") => 90,
+                    ("N5", "Partial_IncompleteInfo") => 68,
+                    ("N5", "Unfulfilled_Unclear") => 45,
+
+                    // Khung N4: Kỳ vọng giải thích lý do/mở rộng chi tiết (Exceeded = 94đ, Fulfilled_Core = 86đ)
+                    ("N4", "Exceeded_ProactiveDetail") => 94,
+                    ("N4", "Fulfilled_Core") => 86,
+                    ("N4", "Partial_IncompleteInfo") => 65,
+                    ("N4", "Unfulfilled_Unclear") => 45,
+
+                    // Khung N3: Đòi hỏi chủ động lập luận/nêu điều kiện (Exceeded = 94đ; chỉ trả lời tối thiểu Fulfilled_Core = 80đ)
+                    ("N3", "Exceeded_ProactiveDetail") => 94,
+                    ("N3", "Fulfilled_Core") => 80,
+                    ("N3", "Partial_IncompleteInfo") => 62,
+                    ("N3", "Unfulfilled_Unclear") => 45,
+
+                    _ => 70
                 };
             }
 
-            if (ruleErrorCodes != null && ruleErrorCodes.Count > 0)
+            // 3.2. Grammar Accuracy Score (25%) — Chấm độ chính xác & hoàn thiện cấu trúc so với chuẩn của bậc
+            int grammarScore;
+            if (isMajorGrammarError)
+            {
+                grammarScore = 50;
+            }
+            else if (isMinorGrammarError)
+            {
+                grammarScore = validatedBand switch
+                {
+                    "N3" => 76,
+                    "N4" => 74,
+                    _ => isFragment ? 70 : 72
+                };
+            }
+            else
+            {
+                grammarScore = (validatedBand, evidence.SentenceStructure) switch
+                {
+                    // Khung N5: Câu đơn hoàn chỉnh đúng ngữ pháp 100% đạt 92đ (chuẩn mực cao của N5)
+                    ("N5", "Complex_MultiClause" or "Compound_LinkedClause") => 95,
+                    ("N5", "Simple_CompleteClause") => 92,
+                    ("N5", "Fragment_WordOnly") => 74,
+
+                    // Khung N4: Câu ghép liên từ/bổ nghĩa không lỗi đạt 93đ; câu đơn có mẫu N4 đạt 88đ
+                    ("N4", "Complex_MultiClause") => 95,
+                    ("N4", "Compound_LinkedClause") => 93,
+                    ("N4", "Simple_CompleteClause") => 88,
+                    ("N4", _) => 74,
+
+                    // Khung N3: Câu phức đa mệnh đề không lỗi đạt 95đ; câu ghép đạt 91đ
+                    ("N3", "Complex_MultiClause") => 95,
+                    ("N3", "Compound_LinkedClause") => 91,
+                    ("N3", _) => 84,
+
+                    _ => 88
+                };
+            }
+
+            if (ruleErrorCount > 0)
             {
                 if (grammarScore > 75)
                 {
                     grammarScore = 75;
                 }
-                grammarScore = Math.Max(40, grammarScore - (ruleErrorCodes.Count * 5));
+                grammarScore = Math.Max(40, grammarScore - (ruleErrorCount * 6));
             }
 
-            // 3. Vocabulary Range Score (20%)
-            int vocabScore = evidence.LexicalUsage switch
+            // 3.3. Vocabulary Range Score (20%) — Chấm độ phù hợp & phong phú từ vựng so với chuẩn của bậc
+            int vocabScore = (validatedBand, evidence.LexicalUsage) switch
             {
-                "Rich_SituationalSpecific" => 90,
-                "Adequate_StandardTopic" => 78,
-                "Basic_Minimal" => 65,
-                "Inaccurate_WrongWord" => 50,
-                _ => 78
+                // Khung N5: Dùng đúng từ vựng chủ đề sơ cấp (Adequate_StandardTopic) đạt 90đ
+                ("N5", "Rich_SituationalSpecific") => 95,
+                ("N5", "Adequate_StandardTopic") => 90,
+                ("N5", "Basic_Minimal") => (isFragment && trimmed.Length <= 5) ? 65 : 72,
+                ("N5", "Inaccurate_WrongWord") => 50,
+
+                // Khung N4: Từ vựng chuyên biệt đạt 93đ, từ vựng thông dụng đúng chủ đề đạt 86đ
+                ("N4", "Rich_SituationalSpecific") => 93,
+                ("N4", "Adequate_StandardTopic") => 86,
+                ("N4", "Basic_Minimal") => 68,
+                ("N4", "Inaccurate_WrongWord") => 50,
+
+                // Khung N3: Kỳ vọng chuẩn là Rich_SituationalSpecific (94đ); nếu chỉ dùng từ thông dụng sơ cấp thì đạt 78đ
+                ("N3", "Rich_SituationalSpecific") => 94,
+                ("N3", "Adequate_StandardTopic") => 78,
+                ("N3", "Basic_Minimal") => 62,
+                ("N3", "Inaccurate_WrongWord") => 48,
+
+                _ => 82
             };
 
-            if (evidence.SentenceStructure.Equals("Fragment_WordOnly", StringComparison.OrdinalIgnoreCase) && trimmed.Length <= 5)
+            // 3.4. Pragmatics & Politeness Score (20%) — Chấm mức độ lịch sự & rào đón theo chuẩn của bậc
+            int pragmaticsScore = (validatedBand, effectivePoliteness) switch
             {
-                vocabScore = Math.Min(vocabScore, 65);
-            }
+                // Khung N5: Duy trì thể lịch sự です/ます (Standard_Teineigo) đạt 90đ
+                ("N5", "Advanced_KeigoOrCushioned") => 95,
+                ("N5", "Standard_Teineigo") => 90,
+                ("N5", "Inconsistent_Mixed") => 64,
+                ("N5", "Abrupt_Casual") => 48,
 
-            // 4. Pragmatics & Politeness Score (20%) + Hậu kiểm dấu hiệu lịch sự bằng C#
-            int pragmaticsScore = evidence.PolitenessRegister switch
-            {
-                "Advanced_KeigoOrCushioned" => 92,
-                "Standard_Teineigo" => 80,
-                "Inconsistent_Mixed" => 62,
-                "Abrupt_Casual" => 48,
-                _ => 80
+                // Khung N4: Có kính ngữ/rào đón đạt 94đ; です/ます chuẩn đạt 86đ
+                ("N4", "Advanced_KeigoOrCushioned") => 94,
+                ("N4", "Standard_Teineigo") => 86,
+                ("N4", "Inconsistent_Mixed") => 62,
+                ("N4", "Abrupt_Casual") => 46,
+
+                // Khung N3: Kỳ vọng chuẩn là kính ngữ/rào đón tự nhiên (94đ); chỉ dùng です/ます đơn thuần đạt 78đ
+                ("N3", "Advanced_KeigoOrCushioned") => 94,
+                ("N3", "Standard_Teineigo") => 78,
+                ("N3", "Inconsistent_Mixed") => 58,
+                ("N3", "Abrupt_Casual") => 44,
+
+                _ => 82
             };
-
-            bool hasPolite = HasPoliteMarker(trimmed);
-            if (trimmed.Length > 4 && !hasPolite)
-            {
-                pragmaticsScore = Math.Min(pragmaticsScore, 62);
-            }
 
             if (isClarificationOrStrategy && hasPolite)
             {
-                pragmaticsScore = Math.Max(pragmaticsScore, 80);
-            }
-
-            // 5. Hậu kiểm Bậc năng lực bộc lộ (DemonstratedBand: N5 | N4 | N3)
-            string validatedBand = rawDemonstratedBand is "N3" or "N4" or "N5" ? rawDemonstratedBand : "N5";
-            if (evidence.SentenceStructure.Equals("Fragment_WordOnly", StringComparison.OrdinalIgnoreCase))
-            {
-                validatedBand = "N5";
-            }
-            else if (validatedBand == "N3")
-            {
-                if (evidence.SentenceStructure.Equals("Simple_CompleteClause", StringComparison.OrdinalIgnoreCase) &&
-                    !evidence.PolitenessRegister.Equals("Advanced_KeigoOrCushioned", StringComparison.OrdinalIgnoreCase))
-                {
-                    validatedBand = "N4";
-                }
-                else if (effectiveSeverity.Equals("MajorError_MeaningAffected", StringComparison.OrdinalIgnoreCase))
-                {
-                    validatedBand = "N4";
-                }
+                pragmaticsScore = Math.Max(pragmaticsScore, 86);
             }
 
             return (taskScore, grammarScore, vocabScore, pragmaticsScore, validatedBand);
+        }
+
+        private static readonly string[] N3LinguisticMarkers =
+        [
+            "となると", "のであれば", "なければ", "であれば", "はず", "ため",
+            "ただ、", "ただ ", "に関して", "について", "ていただけます", "ていただけない",
+            "可能でしょうか", "よろしいでしょうか", "ことにします", "と思っています",
+            "予算", "追加料金", "検討", "ご対応", "翌朝", "出発"
+        ];
+
+        private static readonly string[] N4LinguisticMarkers =
+        [
+            "から、", "から ", "ので", "んですが", "んですけど", "たいです", "たいと",
+            "つもり", "てもらえませんか", "てもいいですか", "てくれますか", "と申します",
+            "予約した", "予約している", "変えてもらえ", "変えてくれ"
+        ];
+
+        public static bool HasN3LinguisticSignal(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            foreach (var marker in N3LinguisticMarkers)
+            {
+                if (text.Contains(marker, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool HasN4LinguisticSignal(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            foreach (var marker in N4LinguisticMarkers)
+            {
+                if (text.Contains(marker, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool IsRelevantInformationInquiryIntent(string? intent, string userText)
+        {
+            if (string.IsNullOrWhiteSpace(intent)) return false;
+            if (intent.Contains("GreetingOnly", StringComparison.OrdinalIgnoreCase) ||
+                intent.Contains("Incomplete", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Nếu học viên chỉ lẩm bẩm băn khoăn ("どうしようかな") mà không hỏi lễ tân thì không tính là lượt hỏi thông tin hoàn chỉnh
+            if (userText.Contains("どうしよう", StringComparison.Ordinal) &&
+                !userText.Contains("ですか", StringComparison.Ordinal) &&
+                !userText.Contains("ますか", StringComparison.Ordinal) &&
+                !userText.Contains("でしょうか", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return intent.Contains("AskRoomInfo", StringComparison.OrdinalIgnoreCase) ||
+                   intent.Contains("AskUpgradeDetails", StringComparison.OrdinalIgnoreCase) ||
+                   intent.Contains("AskBreakfastInfo", StringComparison.OrdinalIgnoreCase) ||
+                   intent.Contains("Inquiry", StringComparison.OrdinalIgnoreCase);
         }
 
         private static readonly string[] PoliteMarkers =
@@ -1157,10 +1472,10 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
   + 初級 (Sho - N5): Bài 1 ST1 (Nói thông tin cá nhân cơ bản và mục đích đến quầy).
   + 初中級 (Shochuu - N4): Bài 1 ST1 (Tự giới thiệu trang trọng kèm thông tin đặt chỗ).
   + 中級 (Chuu - N3): Bài 4 ST1/ST2 (Xác nhận chi tiết dịch vụ đã đặt trước và chủ động đề cập yêu cầu đặc biệt).
-- Tiêu chí phân bậc câu nói của học viên tại EVT-01:
-  + Mức N5: Xác nhận check-in và nêu tên bằng câu đơn ngắn (VD: 「チェックインをお願いします。田中です」).
-  + Mức N4: Nêu tên kèm chi tiết kỳ lưu trú (3 đêm) hoặc dùng khiêm nhường ngữ cơ bản (VD: 「今日から3泊予約した田中と申します。チェックインをお願いします」).
-  + Mức N3: Xác nhận đầy đủ thông tin đặt phòng kèm chủ động nhắc lại yêu cầu phòng yên tĩnh hoặc rào đón tự nhiên (VD: 「本日3泊で予約している田中と申します。予約時に静かな部屋をお願いしたんですが、確認していただけますか」).",
+- Tiêu chí phân bậc câu nói của học viên tại EVT-01 (chấp nhận mọi tên hợp lệ mà người học xưng, không ràng buộc tên cố định):
+  + Mức N5: Xác nhận check-in và nêu tên bằng câu đơn ngắn (VD: 「チェックインをお願いします。[Tên]です」).
+  + Mức N4: Nêu tên kèm chi tiết kỳ lưu trú (3 đêm) hoặc dùng khiêm nhường ngữ cơ bản (VD: 「今日から3泊予約した[Tên]と申します。チェックインをお願いします」).
+  + Mức N3: Xác nhận đầy đủ thông tin đặt phòng kèm chủ động nhắc lại yêu cầu phòng yên tĩnh hoặc rào đón tự nhiên (VD: 「本日3泊で予約している[Tên]と申します。予約時に静かな部屋をお願いしたんですが、確認していただけますか」).",
 
             "EVT-02" => @"- Tham chiếu giáo trình 『できる日本語』:
   + 初級 (Sho - N5): Bài 2 ST1 (Hỏi thông tin cơ bản tại quầy).
@@ -1204,28 +1519,29 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
         private static string GetConditionalDirectivesForEvent(PlacementAssessmentState state) => state.CurrentEvent switch
         {
             "EVT-01" => @"Sự kiện EVT-01 (Greeting & Reservation Confirmation):
-- Nhánh 1 (ConfirmReservation): Khách xác nhận tên (Tanaka / 田中 / タナカ) và đặt phòng -> Lễ tân cảm ơn, thông báo tìm thấy đặt phòng Standard 3 đêm, nhưng phòng được xếp là Phòng 512 nằm ngay cạnh thang máy (chuyển sang EVT-02).
-- Nhánh 2 (ConfirmReservationWithQuietRequest): Khách xác nhận tên (Tanaka / 田中 / タナカ) kèm nhắc lại yêu cầu phòng yên tĩnh -> Lễ tân xin lỗi vì phòng xếp hiện tại (512) ở cạnh thang máy, hỏi ý kiến khách (chuyển sang EVT-02).
-- Nhánh 3 (OffTopic): Khách nói nội dung không liên quan -> Lễ tân lịch sự hỏi lại xem có phải khách đến nhận phòng không.",
+- Nhánh 1 (ConfirmReservation): CHỈ CHỌN KHI khách đã nêu tên (chấp nhận MỌI tên hợp lệ: tên Việt, Katakana, tên Nhật hay bất kỳ tên nào — TUYỆT ĐỐI KHÔNG bắt buộc phải là Tanaka) hoặc xác nhận đặt phòng check-in -> Lễ tân cảm ơn, gọi đúng tên khách vừa xưng kèm 「様」 (nếu có), xác nhận đặt phòng Standard 3 đêm (có lưu ý khách muốn phòng yên tĩnh), nhưng BẮT BUỘC thông báo rõ ngay trong câu trả lời rằng phòng trống hiện tại được xếp là Phòng 512 nằm ngay cạnh thang máy nên có thể hơi ồn (エレベーターのすぐ隣/近くのため音が気になる場合も…), rồi hỏi ý kiến khách xem phòng 512 này có ổn không hay muốn tìm phòng khác. **TUYỆT ĐỐI CHƯA nhắc tới Phòng Deluxe 801 hay phụ phí và CHƯA trao chìa khóa** (chuyển sang EVT-02).
+- Nhánh 2 (ConfirmReservationWithQuietRequest): Khách nêu tên (chấp nhận MỌI tên hợp lệ, không ràng buộc tên cố định) kèm chủ động nhắc lại yêu cầu phòng yên tĩnh -> Lễ tân xin lỗi, gọi đúng tên khách vừa xưng kèm 「様」 (nếu có) và báo rõ phòng xếp hiện tại là Phòng 512 nằm ngay cạnh thang máy nên không thật sự yên tĩnh như yêu cầu đã đặt, hỏi ý kiến khách xem phòng 512 có ổn không hay muốn tìm phòng khác. **TUYỆT ĐỐI CHƯA đề xuất Phòng Deluxe 801 hay phụ phí ở bước này và CHƯA trao chìa khóa** (chuyển sang EVT-02).
+- Nhánh 3 (GreetingOnlyOrIncomplete): Khách MỚI CHỈ chào hỏi ngắn (như おはよう, こんにちは) mà CHƯA nêu tên hoặc thông tin đặt phòng -> Lễ tân chào đáp lễ lịch sự và hỏi xin tên người đặt phòng (BẮT BUỘC đặt taskAchievement = Partial_IncompleteInfo, duy trì ở EVT-01).
+- Nhánh 4 (OffTopic): Khách nói nội dung không liên quan -> Lễ tân lịch sự hỏi lại xem có phải khách đến nhận phòng không.",
 
             "EVT-02" => @"Sự kiện EVT-02 (Room Assignment Problem - Room 512 near elevator):
-- Nhánh 1 (RequestRoomChange): Khách không hài lòng với phòng 512 ồn ào, đề nghị đổi phòng, hỏi xem có phòng nào khác không (như ほかの部屋はありますか, 別の部屋) hoặc hỏi sang phòng Deluxe/Twin -> Lễ tân kiểm tra hệ thống, báo các phòng Standard khác và Twin đều đã kín (満室), đồng thời giới thiệu Deluxe Room xa thang máy có phụ phí +2,000 Yên/đêm (tổng 6,000 Yên cho 3 đêm) (chuyển sang EVT-03).
-- Nhánh 2 (AcceptAssignedRoom): Khách đồng ý ở phòng 512 -> Lễ tân cảm ơn và hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/ngày) không (chuyển sang EVT-04).
+- Nhánh 1 (RequestRoomChange): Khách không hài lòng với phòng 512 ồn ào, đề nghị đổi phòng, hỏi xem có phòng nào khác không (như ほかの部屋はありますか, 別の部屋), hoặc hỏi có điều kiện về phòng Deluxe/Twin (VD: 'nếu phụ phí không quá cao thì đổi sang Deluxe 801 được không?') -> Lễ tân kiểm tra hệ thống, báo các phòng Standard khác và Twin đều đã kín (満室), đồng thời giới thiệu Phòng Deluxe (デラックスルームの801号室, tầng 8 xa thang máy) có phụ phí +2,000 Yên/đêm (tổng 6,000 Yên cho 3 đêm) và **hỏi khách có đồng ý nâng hạng với mức phụ phí này không**. **TUYỆT ĐỐI CHƯA tự chốt đổi phòng, CHƯA hỏi bữa sáng, CHƯA trao chìa khóa (鍵/ルームキー) và CHƯA chào chúc nghỉ ngơi** (chuyển sang EVT-03).
+- Nhánh 2 (AcceptAssignedRoom): Khách đồng ý ở phòng 512 -> Lễ tân cảm ơn, xác nhận giữ Phòng Standard 512 (スタンダードルームの512号室) (**CHƯA trao chìa khóa**) và hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/ngày) không (chuyển sang EVT-04).
 - Nhánh 3 (AskRoomInfo): Khách CHỈ hỏi thông tin về chính phòng 512 (tầng mấy, diện tích, độ ồn) hoặc bày tỏ băn khoăn chung mà CHƯA hỏi đổi phòng khác -> Lễ tân giải thích phòng 18m2 tầng 5 có cửa cách âm, nhưng giờ cao điểm có thể nghe tiếng thang máy; sau đó hỏi khách có chấp nhận phòng 512 này không hay muốn tìm phòng khác (duy trì ở EVT-02).
 - Nhánh 4 (OffTopic): Nhắc khéo khách về việc xác nhận phòng 512.",
 
             "EVT-03" => @"Sự kiện EVT-03 (Alternative Room Availability - Deluxe Room Offer):
-- Nhánh 1 (AcceptDeluxeUpgrade): Khách đồng ý nâng lên Deluxe +2,000 Yên/đêm -> Lễ tân xác nhận đổi phòng Deluxe yên tĩnh, đồng thời hỏi khách có muốn dùng thêm bữa sáng buffet (1,500 Yên/người) không (chuyển sang EVT-04).
-- Nhánh 2 (KeepOriginalStandardRoom): Khách chọn giữ phòng cũ 512 (hoặc đồng ý ở lại phòng Standard ban đầu) -> Lễ tân xác nhận giữ phòng Standard 512, đồng thời hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/người) không (chuyển sang EVT-04).
-- Nhánh 3 (AskUpgradeDetails): Khách hỏi chi tiết giá (tổng 3 đêm là 6,000 Yên), hỏi diện tích/tiện ích phòng Deluxe, hoặc hỏi xem có thể quay lại giữ phòng Standard cũ được không -> Lễ tân giải thích rõ ràng, trung thực và lịch sự (ví dụ: 3 đêm Deluxe là 6,000 Yên; nếu giữ Standard 512 thì không mất phí; Twin đã kín). ĐẶC BIỆT: Sau khi giải đáp thông tin, Lễ tân CHỦ ĐỘNG TÓM TẮT 2 phương án và lịch sự hỏi khách muốn chọn phương án nào (nâng hạng Deluxe hay giữ phòng Standard 512 ban đầu). Duy trì ở EVT-03 cho đến khi khách đưa ra quyết định.
+- Nhánh 1 (AcceptDeluxeUpgrade): Khách đồng ý nâng lên Deluxe +2,000 Yên/đêm -> Lễ tân cảm ơn, xác nhận đổi sang **Phòng Deluxe số 801 (デラックスルームの801号室, tầng 8 yên tĩnh, phụ phí 6,000 Yên/3 đêm)** (BẮT BUỘC nêu rõ cả chữ デラックスルーム và số phòng 801号室, CHƯA trao chìa khóa), đồng thời hỏi khách có muốn dùng thêm bữa sáng buffet (1,500 Yên/người) không (chuyển sang EVT-04).
+- Nhánh 2 (KeepOriginalStandardRoom): Khách chọn giữ phòng cũ 512 -> Lễ tân xác nhận giữ **Phòng Standard số 512 (スタンダードルームの512号室)** (CHƯA trao chìa khóa), đồng thời hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/người) không (chuyển sang EVT-04).
+- Nhánh 3 (AskUpgradeDetails): Khách hỏi chi tiết giá (tổng 3 đêm là 6,000 Yên), hỏi diện tích/tiện ích phòng Deluxe, hoặc hỏi xem có thể quay lại giữ phòng Standard cũ được không -> Lễ tân giải thích rõ ràng, trung thực và lịch sự (ví dụ: 3 đêm Phòng Deluxe 801 phụ phí 6,000 Yên; nếu giữ Phòng Standard 512 thì không mất phí; Twin đã kín). ĐẶC BIỆT: Sau khi giải đáp thông tin, Lễ tân CHỦ ĐỘNG TÓM TẮT 2 phương án và lịch sự hỏi khách muốn chọn phương án nào (nâng hạng Deluxe hay giữ phòng Standard 512 ban đầu). Duy trì ở EVT-03 cho đến khi khách đưa ra quyết định.
 - Nhánh 4 (OffTopic): Lễ tân mời khách chọn giữa nâng hạng Deluxe hoặc giữ phòng cũ.",
 
             "EVT-04" => @"Sự kiện EVT-04 (Additional Service Inquiry - Breakfast):
-- Nhánh 1 (AddBreakfast hoặc DeclineBreakfast): Khách đăng ký hoặc từ chối bữa sáng -> Lễ tân ghi nhận và chuyển sang tổng kết chốt phương án trao chìa khóa (EVT-05).
+- Nhánh 1 (AddBreakfast hoặc DeclineBreakfast): Khách đăng ký hoặc từ chối bữa sáng -> Lễ tân ghi nhận quyết định bữa sáng, xác nhận tóm tắt lại đúng phòng đã chốt (nếu là Deluxe thì BẮT BUỘC ghi rõ 「デラックスルームの801号室」, nếu giữ phòng cũ thì ghi rõ 「スタンダードルームの512号室」), **TUYỆT ĐỐI CHƯA trao chìa khóa (ルームキー/鍵) và CHƯA chào kết thúc**, đồng thời **hỏi thêm câu đệm lịch sự xem quý khách còn yêu cầu hay câu hỏi nào khác nữa không** (VD: 他にご質問やご要望はございますか？) (chuyển sang EVT-05).
 - Nhánh 2 (AskBreakfastInfo): Khách hỏi giờ hoặc thông tin bữa sáng -> Lễ tân giải thích phục vụ từ 7:00 đến 10:00 tại nhà hàng tầng 1, giá 1,500 Yên/người buffet món Nhật và Tây; sau đó hỏi khách có muốn đăng ký dùng bữa sáng không (duy trì ở EVT-04 cho đến khi khách quyết định).",
 
             "EVT-05" => @"Sự kiện EVT-05 (Solution Confirmation & Natural Hand-off):
-- Nhánh 1 (ConfirmAndThank): Khách xác nhận thông tin thanh toán, nhận chìa khóa hoặc cảm ơn lễ tân (ví dụ: はい確認しました, 有難うございます, よろしくお願いします) -> Lễ tân chúc khách có kỳ nghỉ thoải mái, trao chìa khóa và hoàn tất thủ tục nhận phòng.",
+- Nhánh 1 (ConfirmAndThank): Khách xác nhận không còn yêu cầu gì thêm, nói cảm ơn hoặc chào kết thúc (VD: いいえ大丈夫です, 特にありません, ありがとうございます, よろしくお願いします) -> Lúc này Lễ tân **CHÍNH THỨC trao chìa khóa phòng (nêu rõ đúng loại phòng & số phòng đã chốt: 「デラックスルームの801号室の鍵でございます」 hoặc 「スタンダードルームの512号室の鍵でございます」)** và chúc quý khách có một kỳ nghỉ 3 ngày vui vẻ, thoải mái tại Khách sạn Sakura.", 
 
             _ => "Duy trì đối thoại lịch sự theo bối cảnh lễ tân khách sạn."
         };
@@ -1271,15 +1587,7 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
                 };
             }
 
-            // 1. Tính trung bình 4 chiều Rubric cốt lõi
-            int avgTask = (int)Math.Round(validTurns.Average(t => t.TaskFulfillmentScore));
-            int avgGrammar = (int)Math.Round(validTurns.Average(t => t.GrammarAccuracyScore));
-            int avgVocab = (int)Math.Round(validTurns.Average(t => t.VocabularyRangeScore));
-            int avgPragmatics = (int)Math.Round(validTurns.Average(t => t.PragmaticsScore));
-
-            int overallScore = ComputeTurnOverallScore(avgTask, avgGrammar, avgVocab, avgPragmatics);
-
-            // 2. Tính Confidence Score & Confidence Tier
+            // 1. Tính Confidence Score & Confidence Tier
             int fulfilledEventsCount = state.EventSummaries.Count(e => e.OutcomeStatus.StartsWith("Fulfilled"));
             double cQuantity = Math.Min(1.0, validTurns.Count / 4.0);
             double cCoverage = Math.Min(1.0, fulfilledEventsCount / 3.0);
@@ -1308,36 +1616,71 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
                 confidenceTier = "Low";
             }
 
-            // 3. Quy tắc xác định InitialEstimatedLevel
-            string estimatedLevel;
+            // 2. Xác định Bậc mục tiêu sơ bộ theo Đa số Sự kiện (Majority across completed events)
+            // và tính Điểm Trung bình Quy chiếu về đúng Mặt bằng Trình độ đó (Cross-Band Re-anchoring + Turn Role Weighting)
             int n3Count = state.EventSummaries.Count(e => e.HighestDemonstratedBand == "N3");
             int n4Count = state.EventSummaries.Count(e => e.HighestDemonstratedBand == "N4");
+            int n4OrAboveCount = n3Count + n4Count;
+            int requiredMajorityEvents = fulfilledEventsCount >= 4 ? 3 : 2;
 
-            if (confidenceTier == "Low")
+            // Nếu EventSummaries chưa kịp ghi nhận đủ (VD: bài test mô phỏng ngắn), suy luận bổ sung từ các lượt nói hợp lệ
+            if (state.EventSummaries.Count == 0 && bands.Count > 0)
             {
-                estimatedLevel = (n4Count + n3Count >= 2) ? "N4-N3" : "N5-N4";
+                n3Count = bands.Count(b => b == "N3");
+                n4Count = bands.Count(b => b == "N4");
+                n4OrAboveCount = n3Count + n4Count;
             }
-            else
+
+            string anchorBand;
+            int avgTask;
+            int avgGrammar;
+            int avgVocab;
+            int avgPragmatics;
+            int overallScore;
+
+            if (n3Count >= 2 && n4OrAboveCount >= requiredMajorityEvents)
             {
-                if ((n3Count >= 2 || (n3Count >= 1 && n4Count >= 2 && overallScore >= 78)) && overallScore >= 72)
+                var n3Anchored = ComputeAnchoredRubricAverages(validTurns, "N3");
+                if (n3Anchored.OverallScore >= 75)
                 {
-                    estimatedLevel = "N3";
-                }
-                else if ((n4Count + n3Count >= 2) && overallScore >= 60)
-                {
-                    estimatedLevel = "N4";
+                    anchorBand = "N3";
+                    (avgTask, avgGrammar, avgVocab, avgPragmatics, overallScore) = n3Anchored;
                 }
                 else
                 {
-                    estimatedLevel = "N5";
+                    anchorBand = "N4";
+                    (avgTask, avgGrammar, avgVocab, avgPragmatics, overallScore) = ComputeAnchoredRubricAverages(validTurns, "N4");
                 }
             }
+            else if (n4OrAboveCount >= requiredMajorityEvents)
+            {
+                var n4Anchored = ComputeAnchoredRubricAverages(validTurns, "N4");
+                if (n4Anchored.OverallScore >= 65)
+                {
+                    anchorBand = "N4";
+                    (avgTask, avgGrammar, avgVocab, avgPragmatics, overallScore) = n4Anchored;
+                }
+                else
+                {
+                    anchorBand = "N5";
+                    (avgTask, avgGrammar, avgVocab, avgPragmatics, overallScore) = ComputeAnchoredRubricAverages(validTurns, "N5");
+                }
+            }
+            else
+            {
+                anchorBand = "N5";
+                (avgTask, avgGrammar, avgVocab, avgPragmatics, overallScore) = ComputeAnchoredRubricAverages(validTurns, "N5");
+            }
 
-            // 4. Lấy SpeechDelivery tham khảo từ lượt mới nhất có âm thanh (nếu có)
+            string estimatedLevel = confidenceTier == "Low"
+                ? (anchorBand is "N3" or "N4" ? "N4-N3" : "N5-N4")
+                : anchorBand;
+
+            // 3. Lấy SpeechDelivery tham khảo từ lượt mới nhất có âm thanh (nếu có)
             var speechRef = validTurns.Select(t => t.SpeechDeliveryReference).LastOrDefault(s => s != null);
 
             var feedbackSummary = $"Kết quả xếp lớp tương đương trình độ {estimatedLevel} với độ tin cậy {confidenceTier}. " +
-                $"Điểm tổng thể đạt {overallScore}/100. Người học đã hoàn thành {fulfilledEventsCount} tình huống giao tiếp.";
+                $"Điểm độ thuần thục tại trình độ {anchorBand} đạt {overallScore}/100. Người học đã hoàn thành {fulfilledEventsCount} tình huống giao tiếp.";
 
             return new PlacementTestCompleteResponseDto
             {
@@ -1355,6 +1698,159 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
                 SummaryFeedback = feedbackSummary,
                 CompletedAtUtc = DateTime.UtcNow
             };
+        }
+
+        /// <summary>
+        /// Quy chiếu điểm 0–100 của từng lượt nói (vốn được chấm theo chuẩn nội bậc của lượt đó)
+        /// về mặt bằng chung của Trình độ Đích (targetBand: N5 | N4 | N3) kết hợp trọng số vai trò lượt nói.
+        /// </summary>
+        public static (int AvgTask, int AvgGrammar, int AvgVocab, int AvgPragmatics, int OverallScore) ComputeAnchoredRubricAverages(
+            IReadOnlyList<PlacementTurnEvidence> validTurns,
+            string targetBand)
+        {
+            if (validTurns == null || validTurns.Count == 0)
+            {
+                return (0, 0, 0, 0, 0);
+            }
+
+            int targetRank = GetBandRank(targetBand);
+            if (targetRank == 0) targetRank = 1;
+
+            // Xác định bậc cao nhất đạt được ở mỗi sự kiện để nhận diện các lượt chốt ngắn phụ trợ trong cùng sự kiện
+            var highestRankPerEvent = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in validTurns)
+            {
+                if (string.IsNullOrWhiteSpace(t.EventCode)) continue;
+                int r = GetBandRank(t.DemonstratedBand);
+                if (!highestRankPerEvent.TryGetValue(t.EventCode, out int cur) || r > cur)
+                {
+                    highestRankPerEvent[t.EventCode] = r;
+                }
+            }
+
+            double sumWeights = 0;
+            double weightedTask = 0;
+            double weightedGrammar = 0;
+            double weightedVocab = 0;
+            double weightedPragmatics = 0;
+
+            foreach (var turn in validTurns)
+            {
+                int turnRank = GetBandRank(turn.DemonstratedBand);
+                if (turnRank == 0) turnRank = targetRank;
+
+                int delta = turnRank - targetRank;
+                bool isAuxiliary = IsAuxiliaryOrShortFollowUpTurn(turn, turnRank, highestRankPerEvent);
+
+                double alpha;
+                double weight;
+
+                if (delta >= 2)
+                {
+                    // Lượt nói vượt 2 bậc so với trình độ chung (VD: xếp N5 nhưng có lượt đạt N3)
+                    alpha = 1.20;
+                    weight = 1.35;
+                }
+                else if (delta == 1)
+                {
+                    // Lượt nói vượt 1 bậc so với trình độ chung (VD: xếp N4 có lượt N3, hoặc xếp N5 có lượt N4)
+                    alpha = 1.12;
+                    weight = 1.25;
+                }
+                else if (delta == 0)
+                {
+                    // Lượt nói khớp đúng trình độ xếp lớp
+                    alpha = 1.00;
+                    weight = isAuxiliary ? 0.45 : 1.00;
+                }
+                else if (delta == -1)
+                {
+                    // Lượt nói thấp hơn 1 bậc so với trình độ chung (VD: xếp N4 nhưng có câu đơn N5)
+                    if (isAuxiliary)
+                    {
+                        alpha = 0.96;
+                        weight = 0.35;
+                    }
+                    else
+                    {
+                        alpha = 0.85;
+                        weight = 0.65;
+                    }
+                }
+                else
+                {
+                    // Lượt nói thấp hơn 2 bậc so với trình độ chung (VD: xếp N3 nhưng có câu đơn N5)
+                    if (isAuxiliary)
+                    {
+                        alpha = 0.94;
+                        weight = 0.30;
+                    }
+                    else
+                    {
+                        alpha = 0.75;
+                        weight = 0.50;
+                    }
+                }
+
+                double anchoredTask = Math.Clamp(turn.TaskFulfillmentScore * alpha, 40.0, 98.0);
+                double anchoredGrammar = Math.Clamp(turn.GrammarAccuracyScore * alpha, 40.0, 98.0);
+                double anchoredVocab = Math.Clamp(turn.VocabularyRangeScore * alpha, 40.0, 98.0);
+                double anchoredPragmatics = Math.Clamp(turn.PragmaticsScore * alpha, 40.0, 98.0);
+
+                weightedTask += weight * anchoredTask;
+                weightedGrammar += weight * anchoredGrammar;
+                weightedVocab += weight * anchoredVocab;
+                weightedPragmatics += weight * anchoredPragmatics;
+                sumWeights += weight;
+            }
+
+            if (sumWeights <= 0)
+            {
+                return (0, 0, 0, 0, 0);
+            }
+
+            int avgTask = (int)Math.Round(weightedTask / sumWeights);
+            int avgGrammar = (int)Math.Round(weightedGrammar / sumWeights);
+            int avgVocab = (int)Math.Round(weightedVocab / sumWeights);
+            int avgPragmatics = (int)Math.Round(weightedPragmatics / sumWeights);
+            int overall = ComputeTurnOverallScore(avgTask, avgGrammar, avgVocab, avgPragmatics);
+
+            return (avgTask, avgGrammar, avgVocab, avgPragmatics, overall);
+        }
+
+        private static bool IsAuxiliaryOrShortFollowUpTurn(
+            PlacementTurnEvidence turn,
+            int turnRank,
+            IReadOnlyDictionary<string, int> highestRankPerEvent)
+        {
+            // 1. Lượt kết thúc thủ tục/cảm ơn tại EVT-05
+            if (string.Equals(turn.EventCode, "EVT-05", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // 2. Lượt chỉ mới chào hỏi mở đầu hoặc chiến lược xin nhắc lại/nói chậm lại
+            var intent = turn.DetectedIntent ?? string.Empty;
+            if (intent.Contains("GreetingOnly", StringComparison.OrdinalIgnoreCase) ||
+                intent.Contains("Simplif", StringComparison.OrdinalIgnoreCase) ||
+                intent.Contains("Clarif", StringComparison.OrdinalIgnoreCase) ||
+                intent.Contains("Repeat", StringComparison.OrdinalIgnoreCase) ||
+                intent.Contains("Repetition", StringComparison.OrdinalIgnoreCase) ||
+                intent.Equals("CommunicationDifficulty", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // 3. Trong cùng 1 sự kiện (VD: EVT-03 hoặc EVT-04), người học đã thể hiện bậc cao hơn ở lượt hỏi/thương lượng trước đó,
+            // và lượt hiện tại chỉ là câu chốt xác nhận ngắn gọn (VD: "はい、それにします")
+            if (!string.IsNullOrWhiteSpace(turn.EventCode) &&
+                highestRankPerEvent.TryGetValue(turn.EventCode, out int maxEventRank) &&
+                maxEventRank > turnRank)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 

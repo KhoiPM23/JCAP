@@ -2,13 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl } from '../components/jcap';
 import { useAuth } from '../contexts/AuthContext';
+import { placementTestService } from '../services/placementTestService';
 import { profileService } from '../services/profileService';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { shadowingService } from '../services/shadowingService';
-import { formatDateFull } from '../utils/dateUtils';
+import { formatDateFull, formatDateTime } from '../utils/dateUtils';
+import type { PlacementTestCompleteResponseDto, PlacementTestStatusDto } from '../types/placementTest';
+import { resolveMediaUrl } from '../utils/apiBase';
 import type { JLPTLevel, LearnerProfile } from '../types/profile';
 import { useExploreJourney } from './explore/exploreStore';
-import { LearnerIntelligenceRadarCard } from '../components/roleplay/LearnerIntelligenceRadarCard';
 import { PracticeConfirmation } from '../components/jcap/PracticeConfirmation';
 import { usePhoneViewport } from '../hooks/usePhoneViewport';
 
@@ -29,6 +31,7 @@ export const LearnerProfileView: React.FC = () => {
   const [levelError, setLevelError] = useState<string | null>(null);
   const [roleplayCount, setRoleplayCount] = useState<number | null>(null);
   const [shadowingCount, setShadowingCount] = useState<number | null>(null);
+  const [placementStatus, setPlacementStatus] = useState<PlacementTestStatusDto | null>(null);
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -58,6 +61,10 @@ export const LearnerProfileView: React.FC = () => {
       .getHistory()
       .then((r) => r.success && r.data && setShadowingCount(r.data.length))
       .catch(() => {});
+    placementTestService
+      .getStatus()
+      .then((r) => r.success && r.data && setPlacementStatus(r.data))
+      .catch(() => {});
 
     const handleProfileUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<LearnerProfile>;
@@ -67,19 +74,13 @@ export const LearnerProfileView: React.FC = () => {
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
   }, []);
 
-  // Tự động cuộn mượt xuống Bản đồ Năng lực khi truy cập từ trang Kết quả (#radar-map hoặc #radar)
+  // Giữ tương thích ngược nếu người dùng mở liên kết cũ /profile#radar-map
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === '#radar' || hash === '#radar-map') {
-      const timer = setTimeout(() => {
-        const el = document.getElementById('radar-map') || document.getElementById('radar');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 350);
-      return () => clearTimeout(timer);
+      navigate('/profile/competency', { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   /** Đổi mục tiêu JLPT ngay tại trang (cùng API với trang Chỉnh sửa hồ sơ) */
   const changeLevel = async (level: string) => {
@@ -150,7 +151,7 @@ export const LearnerProfileView: React.FC = () => {
           >
             <div className="relative">
               {profile.profilePictureUrl ? (
-                <img src={profile.profilePictureUrl} alt={profile.fullName} className="h-[104px] w-[104px] rounded-full object-cover" />
+                <img src={resolveMediaUrl(profile.profilePictureUrl)} alt={profile.fullName} className="h-[104px] w-[104px] rounded-full object-cover" />
               ) : (
                 <span className="inline-flex h-[104px] w-[104px] items-center justify-center rounded-full bg-sora text-[40px] font-bold text-on-sora">
                   {avatarInitial}
@@ -208,6 +209,114 @@ export const LearnerProfileView: React.FC = () => {
               </div>
             </section>
 
+            {/* Đánh giá đầu vào (Placement Test) & Lịch sử xếp lớp riêng */}
+            {(() => {
+              const ptState = placementStatus?.placementTestStatus ?? profile.placementTestStatus ?? 'NotStarted';
+              const activeSessionId = placementStatus?.activeSessionId ?? null;
+              const allowRetake = placementStatus?.allowRetakeForTesting ?? false;
+              const canStartOrRetake = placementStatus?.canStartOrRetake ?? (ptState !== 'Completed' || allowRetake || activeSessionId !== null);
+              const estLevel = placementStatus?.initialEstimatedLevel ?? profile.initialEstimatedLevel;
+              const confTier = placementStatus?.initialConfidenceTier ?? profile.initialConfidenceTier;
+              const completedAt = placementStatus?.placementTestCompletedAtUtc ?? profile.placementTestCompletedAtUtc;
+              const snapshotJson = placementStatus?.initialProficiencySnapshotJson ?? profile.initialProficiencySnapshotJson;
+
+              let parsedSnapshot: PlacementTestCompleteResponseDto | null = null;
+              if (snapshotJson) {
+                try {
+                  parsedSnapshot = JSON.parse(snapshotJson) as PlacementTestCompleteResponseDto;
+                } catch {
+                  parsedSnapshot = null;
+                }
+              }
+
+              const statusBadge =
+                ptState === 'Completed'
+                  ? { tone: 'success' as const, label: 'Đã hoàn thành' }
+                  : activeSessionId
+                  ? { tone: 'info' as const, label: 'Đang làm dở' }
+                  : ptState === 'Skipped'
+                  ? { tone: 'neutral' as const, label: 'Đã bỏ qua' }
+                  : ptState === 'InsufficientEvidence'
+                  ? { tone: 'warning' as const, label: 'Chưa đủ dữ liệu' }
+                  : { tone: 'neutral' as const, label: 'Chưa thực hiện' };
+
+              return (
+                <section aria-labelledby="placement-h" className="flex flex-col gap-3.5 rounded-jc-lg border border-line bg-paper-50 px-6 py-[22px]">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 id="placement-h" className="m-0 text-[17px] font-semibold leading-6">
+                          Đánh giá đầu vào (Placement Test)
+                        </h2>
+                        <Badge tone={statusBadge.tone}>{statusBadge.label}</Badge>
+                      </div>
+                      <p className="m-0 text-sm leading-[22px] text-sumi-muted">
+                        Phỏng vấn tình huống Khách sạn Sakura (0 Credit) giúp ước lượng năng lực giao tiếp ban đầu từ N5 đến N3.
+                      </p>
+                    </div>
+                  </div>
+
+                  {estLevel && (
+                    <div className="grid grid-cols-1 gap-3 rounded-jc-md border border-line bg-paper-100/70 p-3.5 sm:grid-cols-3">
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-sumi-muted">Trình độ ước lượng</span>
+                        <span className="mt-0.5 inline-block text-xl font-black text-ai font-mono">{estLevel}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-sumi-muted">Độ tin cậy / Điểm</span>
+                        <span className="mt-0.5 block text-sm font-bold text-sumi">
+                          {confTier || '—'}
+                          {parsedSnapshot?.overallScore != null ? ` • ${parsedSnapshot.overallScore}/100` : ''}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-sumi-muted">Lần cập nhật gần nhất</span>
+                        <span className="mt-0.5 block text-xs font-medium text-sumi">
+                          {completedAt ? formatDateTime(completedAt) : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSessionId && (
+                    <div className="rounded-jc-md border border-blue-200 bg-blue-50/70 px-3.5 py-2.5 text-xs text-blue-900">
+                      Bạn đang có một phiên đánh giá chưa hoàn thành (#{activeSessionId}). Bạn có thể <strong>tiếp tục ngay tại điểm đang dừng</strong> hoặc <strong>huỷ bài đang dở để làm lại từ đầu</strong> (bài dở sẽ không lưu vào lịch sử).
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
+                    {activeSessionId ? (
+                      <>
+                        <Button variant="primary" size="sm" icon="play_arrow" onClick={() => navigate('/placement-test')}>
+                          Tiếp tục bài đang dở
+                        </Button>
+                        <Button variant="secondary" size="sm" icon="restart_alt" onClick={() => navigate('/placement-test?reset=1')}>
+                          Làm lại bài mới (Huỷ bài cũ)
+                        </Button>
+                      </>
+                    ) : canStartOrRetake ? (
+                      <Button
+                        variant={ptState === 'Completed' ? 'secondary' : 'primary'}
+                        size="sm"
+                        icon={ptState === 'Completed' ? 'restart_alt' : 'play_arrow'}
+                        onClick={() => navigate(ptState === 'Completed' ? '/placement-test?reset=1' : '/placement-test')}
+                      >
+                        {ptState === 'Completed' ? 'Làm lại bài đánh giá' : 'Bắt đầu đánh giá đầu vào (0 Credit)'}
+                      </Button>
+                    ) : null}
+
+                    <Button variant="ghost" size="sm" icon="history" onClick={() => navigate('/placement-test/history')}>
+                      Xem lịch sử xếp lớp
+                    </Button>
+                  </div>
+
+                  {parsedSnapshot?.disclaimer && (
+                    <p className="m-0 text-[11px] italic text-sumi-faint">{parsedSnapshot.disclaimer}</p>
+                  )}
+                </section>
+              );
+            })()}
+
             {/* Thông tin tài khoản */}
             <section aria-labelledby="info-h" className="flex flex-col rounded-jc-lg border border-line bg-paper-50 px-6 py-2">
               <h2 id="info-h" className="mb-1.5 mt-3.5 text-[17px] font-semibold leading-6">
@@ -256,10 +365,30 @@ export const LearnerProfileView: React.FC = () => {
           </div>
         </div>
 
-        {/* Báo cáo Năng lực Hội thoại AI ngầm (TikTok-style Linguistic Radar) */}
-        <section id="radar" aria-label="Năng lực Kaiwa ngầm" className="w-full scroll-mt-20">
-          <div id="radar-map" className="scroll-mt-24" />
-          <LearnerIntelligenceRadarCard />
+        {/* Thẻ liên kết gọn sang trang Năng lực cá nhân chuyên biệt */}
+        <section
+          aria-label="Năng lực cá nhân"
+          className="flex flex-wrap items-center justify-between gap-4 rounded-jc-lg border border-line bg-paper-50 px-6 py-4 shadow-2xs"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ai/25 bg-ai-soft font-serif text-lg font-black text-ai select-none"
+              aria-hidden="true"
+            >
+              総
+            </div>
+            <div className="min-w-0">
+              <h2 className="m-0 text-[16px] font-semibold leading-6 text-sumi">
+                Năng lực cá nhân
+              </h2>
+              <p className="m-0 text-[13px] leading-5 text-sumi-muted">
+                Xem chỉ số phản xạ, độ chuẩn trợ từ, kính ngữ và lộ trình hội thoại thích ứng.
+              </p>
+            </div>
+          </div>
+          <Button variant="secondary" size="sm" icon="psychology" onClick={() => navigate('/profile/competency')}>
+            Mở Năng lực cá nhân
+          </Button>
         </section>
 
         {/* Chân trang tài khoản & Đăng xuất */}

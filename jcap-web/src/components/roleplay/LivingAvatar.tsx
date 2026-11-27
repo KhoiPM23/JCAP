@@ -235,10 +235,7 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
   return (
     <div className="flex flex-col items-center select-none shrink-0">
       <div className={`relative shrink-0 aspect-square ${getDimensions()}`}>
-        {/* Vòng hào quang tương tác khi nói / nghe */}
-        {avatarState === 'speaking' && (
-          <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 animate-ping opacity-40 pointer-events-none" />
-        )}
+        {/* Vòng hào quang tương tác tinh gọn khi nói / nghe */}
         {avatarState === 'listening' && (
           <div className="absolute -inset-1 rounded-full border-2 border-emerald-400 animate-pulse pointer-events-none" />
         )}

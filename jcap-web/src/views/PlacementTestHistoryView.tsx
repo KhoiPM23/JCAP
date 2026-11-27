@@ -7,6 +7,7 @@ import { formatDateTime } from '../utils/dateUtils';
 import type {
   PlacementTestHistoryItemDto,
   PlacementTestHistoryDetailDto,
+  PlacementTestStatusDto,
 } from '../types/placementTest';
 
 export const PlacementTestHistoryView: React.FC = () => {
@@ -17,18 +18,22 @@ export const PlacementTestHistoryView: React.FC = () => {
   const [sessions, setSessions] = useState<PlacementTestHistoryItemDto[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [detail, setDetail] = useState<PlacementTestHistoryDetailDto | null>(null);
+  const [ptStatus, setPtStatus] = useState<PlacementTestStatusDto | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(true);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [retaking, setRetaking] = useState<boolean>(false);
 
-  // Load history sessions list
+  // Load history sessions list + current Placement Test status
   useEffect(() => {
     let isMounted = true;
     const fetchHistory = async () => {
       setLoadingList(true);
       setError(null);
-      const res = await placementTestService.getHistoryList();
+      const [res, statusRes] = await Promise.all([
+        placementTestService.getHistoryList(),
+        placementTestService.getStatus(),
+      ]);
       if (!isMounted) return;
       if (res.success && res.data) {
         setSessions(res.data);
@@ -37,6 +42,9 @@ export const PlacementTestHistoryView: React.FC = () => {
         }
       } else {
         setError(res.message || 'Không thể tải lịch sử kiểm tra xếp lớp.');
+      }
+      if (statusRes.success && statusRes.data) {
+        setPtStatus(statusRes.data);
       }
       setLoadingList(false);
     };
@@ -97,10 +105,10 @@ export const PlacementTestHistoryView: React.FC = () => {
         <div>
           <button
             type="button"
-            onClick={() => navigate('/scenarios')}
+            onClick={() => navigate('/profile')}
             className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--sumi-faint)] hover:text-[var(--ai)] transition cursor-pointer"
           >
-            <span>←</span> Quay lại Thư viện Kịch bản
+            <span>←</span> Quay lại Hồ sơ
           </button>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="m-0 text-2xl font-black tracking-tight text-[var(--sumi)] font-sans sm:text-3xl">
@@ -109,28 +117,47 @@ export const PlacementTestHistoryView: React.FC = () => {
             <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-extrabold text-blue-800">
               {sessions.length} phiên đã lưu
             </span>
-            <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-xs font-extrabold text-amber-900">
-              🧪 MÔI TRƯỜNG KIỂM THỬ NỘI BỘ
-            </span>
           </div>
           <p className="mt-1 text-sm text-[var(--sumi-muted)]">
-            Xem lại chi tiết từng lượt nói, bằng chứng Can-do và căn cứ AI xếp hạng trình độ N5–N3.
-            <span className="ml-1 text-xs font-semibold text-amber-800">(Dữ liệu phục vụ kiểm thử đối soát kỹ thuật, không phải bản deploy chính thức cho học viên)</span>
+            Xem lại chi tiết từng lượt hội thoại, bằng chứng Can-do và nhận xét đánh giá trình độ N5–N3.
           </p>
         </div>
 
-        {/* Retake Bypass Button */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={mobile ? () => setConfirmRetake(true) : handleRetake}
-            disabled={retaking}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] px-4 py-2.5 text-sm font-bold text-[var(--on-ai)] shadow-sm hover:bg-[var(--ai-hover)] transition cursor-pointer disabled:opacity-50"
-            title="Bắt đầu một phiên Placement Test mới để kiểm thử tiếp"
-          >
-            <span>✨</span>
-            <span>{retaking ? 'Đang khởi tạo…' : 'Làm bài kiểm tra mới (Retake)'}</span>
-          </button>
+        {/* Resume / Retake Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {ptStatus?.activeSessionId && (
+            <button
+              type="button"
+              onClick={() => navigate('/placement-test')}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--ai)] bg-[var(--ai-soft)] px-4 py-2.5 text-sm font-bold text-[var(--ai)] shadow-xs hover:bg-[var(--ai)]/15 transition cursor-pointer"
+              title="Tiếp tục phiên kiểm tra đang làm dở"
+            >
+              <span>▶</span>
+              <span>Tiếp tục bài đang dở</span>
+            </button>
+          )}
+          {(ptStatus?.canStartOrRetake ?? true) && (
+            <button
+              type="button"
+              onClick={mobile ? () => setConfirmRetake(true) : handleRetake}
+              disabled={retaking}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] px-4 py-2.5 text-sm font-bold text-[var(--on-ai)] shadow-sm hover:bg-[var(--ai-hover)] transition cursor-pointer disabled:opacity-50"
+              title={
+                ptStatus?.activeSessionId
+                  ? 'Huỷ bài đang dở (không lưu vào lịch sử) và làm lại từ đầu'
+                  : 'Bắt đầu một phiên Placement Test mới'
+              }
+            >
+              <span>✨</span>
+              <span>
+                {retaking
+                  ? 'Đang khởi tạo…'
+                  : ptStatus?.activeSessionId
+                  ? 'Làm lại bài mới (Huỷ bài cũ)'
+                  : 'Làm lại bài đánh giá'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -400,7 +427,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
                     <div>
                       <h3 className="text-base font-bold text-[var(--sumi)] flex items-center gap-2">
-                        <span>🔍</span> Thanh tra Bằng chứng & Nhận xét Từng Lượt nói (Turn Evidence Inspector)
+                        <span>🔍</span> Chi tiết Hội thoại &amp; Nhận xét Từng Lượt nói
                       </h3>
                       <p className="mt-0.5 text-xs text-[var(--sumi-muted)]">
                         Chi tiết từng phát ngôn, căn cứ xếp hạng N5/N4/N3 và nhận xét của AI.
@@ -433,7 +460,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                           {/* Message Header */}
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-2 text-xs font-bold">
-                              <span>{isAi ? '🏨 Lễ tân (Yamada)' : '👤 Bạn (Tanaka)'}</span>
+                              <span>{isAi ? '🏨 Lễ tân (Yamada)' : '👤 Bạn'}</span>
                               {evidence && (
                                 <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-black text-blue-800">
                                   {evidence.eventCode}
@@ -445,13 +472,9 @@ export const PlacementTestHistoryView: React.FC = () => {
                             </span>
                           </div>
 
-                          {/* Message Body (Japanese + Furigana) */}
+                          {/* Message Body */}
                           <div className="text-base font-medium text-[var(--sumi)] leading-relaxed">
-                            {msg.furiganaHtml ? (
-                              <span dangerouslySetInnerHTML={{ __html: msg.furiganaHtml }} />
-                            ) : (
-                              <span>{msg.japaneseText}</span>
-                            )}
+                            <span>{msg.japaneseText}</span>
                           </div>
 
                           {msg.vietnameseMeaning && (

@@ -1,5 +1,6 @@
 export type FlashcardContentType = 'Vocabulary' | 'Grammar';
 export type FlashcardSessionSource = 'TopicSet' | 'Bookmark' | 'DueReview';
+export type FlashcardStudyMode = 'All' | 'DueOnly' | 'NewOnly';
 export type FlashcardSrsState = 'New' | 'Learning' | 'Due';
 export type FlashcardRating = 'Again' | 'Good' | 'Easy';
 
@@ -25,6 +26,7 @@ export interface FlashcardQuota {
   totalDueCardsToday?: number;
   dueVocabularyCount?: number;
   dueGrammarCount?: number;
+  totalLearnedCards?: number;
 }
 
 export interface FlashcardSetSummary {
@@ -72,6 +74,7 @@ export interface StartFlashcardSessionRequest {
   contentType?: FlashcardContentType | 'Mixed';
   jlptLevelFilter?: string | null;
   isExtraPractice?: boolean;
+  studyMode?: FlashcardStudyMode;
 }
 
 export interface FlashcardSession {
@@ -88,6 +91,12 @@ export interface FlashcardSession {
   requeuedCount: number;
   startedAt: string;
   cards: FlashcardCardItem[];
+  quota?: FlashcardQuota | null;
+  nextDueAtWhenEmpty?: string | null;
+  totalEligibleInSource?: number;
+  emptyReason?: 'QuotaExhausted' | 'NoDueCards' | 'AllCompleted' | 'NoCards' | null;
+  remainingNewCardsInSource?: number;
+  learnedCardsInSource?: number;
 }
 
 export interface RateFlashcardRequest {
@@ -106,8 +115,10 @@ export interface FlashcardRateResult {
   easeFactor: number;
   nextReviewAt?: string | null;
   requeuedInSession: boolean;
+  requeueInSession?: boolean;
   remainingCardsCount: number;
   isSessionCompleted: boolean;
+  nextIntervalPreview?: SrsIntervalPreview;
 }
 
 export interface FlashcardSessionSummary {

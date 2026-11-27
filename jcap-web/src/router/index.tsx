@@ -2,59 +2,65 @@ import React from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
 import { rememberRoleplaySession } from '../components/jcap/shell/recentRoleplay';
 import { useAuth } from '../contexts/AuthContext';
+import { shouldBypassPublicRouteRedirect } from '../utils/authSession';
 import { PrivateRoute } from '../components/PrivateRoute';
 import { AdminDesktopGate } from '../components/AdminDesktopGate';
 import { MainLayout } from '../layouts/MainLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { usePhoneViewport } from '../hooks/usePhoneViewport';
 
-// Views
+// Core Auth Views (lightweight, kept eager for fast first paint)
 import { LoginView } from '../views/LoginView';
 import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
-import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
-import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
-import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
-import { PlacementTestRoomView } from '../views/PlacementTestRoomView';
-import { PlacementTestHistoryView } from '../views/PlacementTestHistoryView';
-import { LearnerProfileView } from '../views/LearnerProfileView';
-import { StampBookView } from '../views/explore/StampBookView';
-import { UpdateProfileView } from '../views/UpdateProfileView';
-import { CreditPackagesView } from '../views/CreditPackagesView';
-import { SubscriptionQuotaView } from '../views/SubscriptionQuotaView';
-import { CreditHistoryView } from '../views/CreditHistoryView';
-import { PaymentReturnView } from '../views/PaymentReturnView';
-import { DevShowcaseView } from '../views/DevShowcaseView';
-import { VoiceVoxTestView } from '../views/VoiceVoxTestView';
-import { AdminDashboardView } from '../views/admin/AdminDashboardView';
-import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
-import { LearnerDashboardView } from '../views/LearnerDashboardView';
-import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
-import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
-import { LearnerShadowingPracticeView } from '../views/shadowing/LearnerShadowingPracticeView';
-import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
-import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
-import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
-import { AdminUserManagementView } from '../views/admin/AdminUserManagementView';
-import { AdminLearningView } from '../views/admin/learning/AdminLearningView';
-import { AdminExploreView } from '../views/admin/AdminExploreView';
-import { AdminExplorePrefectureView } from '../views/admin/AdminExplorePrefectureView';
-import { AdminExploreSpotEditorView } from '../views/admin/AdminExploreSpotEditorView';
-import { ChangePasswordView } from '../views/ChangePasswordView';
-import { ConversationHistoryView } from '../views/ConversationHistoryView';
-import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
-import { SettingsView } from '../views/SettingsView';
-import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
-import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
-import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
-import { FlashcardTestView } from '../views/self-study/FlashcardTestView';
-import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
-import { LearnerFeedbackView } from '../views/LearnerFeedbackView';
-import { AdminFeedbackView } from '../views/admin/AdminFeedbackView';
-import { AdminNotificationView } from '../views/admin/AdminNotificationView';
-import { CommunityForumView } from '../views/CommunityForumView';
+import type { Scenario } from '../views/ScenarioListView';
+
+// Route-level code splitting: tách các view nặng (FE-03, Admin, Shadowing, Flashcard, Forum...) thành chunk riêng
+const ScenarioListView = React.lazy(() => import('../views/ScenarioListView').then((m) => ({ default: m.ScenarioListView })));
+const ScenarioDetailsView = React.lazy(() => import('../views/ScenarioDetailsView').then((m) => ({ default: m.ScenarioDetailsView })));
+const RoleplayPracticeView = React.lazy(() => import('../views/RoleplayPracticeView').then((m) => ({ default: m.RoleplayPracticeView })));
+const ConversationResultDetailView = React.lazy(() => import('../views/ConversationResultDetailView').then((m) => ({ default: m.ConversationResultDetailView })));
+const LearnerCompetencyView = React.lazy(() => import('../views/LearnerCompetencyView').then((m) => ({ default: m.LearnerCompetencyView })));
+const PlacementTestRoomView = React.lazy(() => import('../views/PlacementTestRoomView').then((m) => ({ default: m.PlacementTestRoomView })));
+const PlacementTestHistoryView = React.lazy(() => import('../views/PlacementTestHistoryView').then((m) => ({ default: m.PlacementTestHistoryView })));
+const LearnerProfileView = React.lazy(() => import('../views/LearnerProfileView').then((m) => ({ default: m.LearnerProfileView })));
+const StampBookView = React.lazy(() => import('../views/explore/StampBookView').then((m) => ({ default: m.StampBookView })));
+const UpdateProfileView = React.lazy(() => import('../views/UpdateProfileView').then((m) => ({ default: m.UpdateProfileView })));
+const CreditPackagesView = React.lazy(() => import('../views/CreditPackagesView').then((m) => ({ default: m.CreditPackagesView })));
+const SubscriptionQuotaView = React.lazy(() => import('../views/SubscriptionQuotaView').then((m) => ({ default: m.SubscriptionQuotaView })));
+const CreditHistoryView = React.lazy(() => import('../views/CreditHistoryView').then((m) => ({ default: m.CreditHistoryView })));
+const PaymentReturnView = React.lazy(() => import('../views/PaymentReturnView').then((m) => ({ default: m.PaymentReturnView })));
+const DevShowcaseView = React.lazy(() => import('../views/DevShowcaseView').then((m) => ({ default: m.DevShowcaseView })));
+const VoiceVoxTestView = React.lazy(() => import('../views/VoiceVoxTestView').then((m) => ({ default: m.VoiceVoxTestView })));
+const AdminDashboardView = React.lazy(() => import('../views/admin/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
+const AdminCreditPackagesView = React.lazy(() => import('../views/admin/AdminCreditPackagesView').then((m) => ({ default: m.AdminCreditPackagesView })));
+const LearnerDashboardView = React.lazy(() => import('../views/LearnerDashboardView').then((m) => ({ default: m.LearnerDashboardView })));
+const LearnerShadowingListView = React.lazy(() => import('../views/shadowing/LearnerShadowingListView').then((m) => ({ default: m.LearnerShadowingListView })));
+const LearnerShadowingDetailView = React.lazy(() => import('../views/shadowing/LearnerShadowingDetailView').then((m) => ({ default: m.LearnerShadowingDetailView })));
+const LearnerShadowingPracticeView = React.lazy(() => import('../views/shadowing/LearnerShadowingPracticeView').then((m) => ({ default: m.LearnerShadowingPracticeView })));
+const AdminShadowingListView = React.lazy(() => import('../views/admin/AdminShadowingListView').then((m) => ({ default: m.AdminShadowingListView })));
+const AdminScenarioListView = React.lazy(() => import('../views/admin/AdminScenarioListView').then((m) => ({ default: m.AdminScenarioListView })));
+const AdminScenarioEditorView = React.lazy(() => import('../views/admin/AdminScenarioEditorView').then((m) => ({ default: m.AdminScenarioEditorView })));
+const AdminUserManagementView = React.lazy(() => import('../views/admin/AdminUserManagementView').then((m) => ({ default: m.AdminUserManagementView })));
+const AdminLearningView = React.lazy(() => import('../views/admin/learning/AdminLearningView').then((m) => ({ default: m.AdminLearningView })));
+const AdminExploreView = React.lazy(() => import('../views/admin/AdminExploreView').then((m) => ({ default: m.AdminExploreView })));
+const AdminExplorePrefectureView = React.lazy(() => import('../views/admin/AdminExplorePrefectureView').then((m) => ({ default: m.AdminExplorePrefectureView })));
+const AdminExploreSpotEditorView = React.lazy(() => import('../views/admin/AdminExploreSpotEditorView').then((m) => ({ default: m.AdminExploreSpotEditorView })));
+const ChangePasswordView = React.lazy(() => import('../views/ChangePasswordView').then((m) => ({ default: m.ChangePasswordView })));
+const ResultsView = React.lazy(() => import('../views/results/ResultsView').then((m) => ({ default: m.ResultsView })));
+const SettingsView = React.lazy(() => import('../views/SettingsView').then((m) => ({ default: m.SettingsView })));
+const FlashcardSetsView = React.lazy(() => import('../views/self-study/FlashcardSetsView').then((m) => ({ default: m.FlashcardSetsView })));
+const FlashcardSetDetailView = React.lazy(() => import('../views/self-study/FlashcardSetDetailView').then((m) => ({ default: m.FlashcardSetDetailView })));
+const FlashcardSessionView = React.lazy(() => import('../views/self-study/FlashcardSessionView').then((m) => ({ default: m.FlashcardSessionView })));
+const FlashcardTestView = React.lazy(() => import('../views/self-study/FlashcardTestView').then((m) => ({ default: m.FlashcardTestView })));
+const FlashcardQuizHistoryView = React.lazy(() => import('../views/self-study/FlashcardQuizHistoryView').then((m) => ({ default: m.FlashcardQuizHistoryView })));
+const FlashcardReviewHistoryView = React.lazy(() => import('../views/self-study/FlashcardReviewHistoryView').then((m) => ({ default: m.FlashcardReviewHistoryView })));
+const LearnerFeedbackView = React.lazy(() => import('../views/LearnerFeedbackView').then((m) => ({ default: m.LearnerFeedbackView })));
+const AdminFeedbackView = React.lazy(() => import('../views/admin/AdminFeedbackView').then((m) => ({ default: m.AdminFeedbackView })));
+const AdminNotificationView = React.lazy(() => import('../views/admin/AdminNotificationView').then((m) => ({ default: m.AdminNotificationView })));
+const CommunityForumView = React.lazy(() => import('../views/CommunityForumView').then((m) => ({ default: m.CommunityForumView })));
 
 // Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
 const JapanMapView = React.lazy(() =>
@@ -73,6 +79,13 @@ const LearningContentDetailView = React.lazy(() => import('../views/learning/Lea
 /** Redirects if already authenticated (Admin -> /admin/dashboard, Learner -> /scenarios) */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
+
+  // Luôn cho phép mở /login?confirmed=..., /login?reset=true và /reset-password để hoàn tất luồng xác thực
+  if (shouldBypassPublicRouteRedirect(location.pathname, location.search)) {
+    return <>{children}</>;
+  }
+
   if (isAuthenticated) {
     let userRole = user?.role;
     if (!userRole) {
@@ -208,7 +221,12 @@ const ForgotPasswordRoute: React.FC = () => {
 
 const ResetPasswordRoute: React.FC = () => {
   const navigate = useNavigate();
-  return <ResetPasswordView onBackToLogin={() => navigate('/login')} />;
+  return (
+    <ResetPasswordView
+      onResetSuccess={() => navigate('/login?reset=true', { replace: true })}
+      onBackToLogin={() => navigate('/login', { replace: true })}
+    />
+  );
 };
 
 const RegisterRoute: React.FC = () => {
@@ -295,7 +313,14 @@ export const AppRouter: React.FC = () => {
   }
 
   return (
-    <Routes>
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[var(--paper-100)]">
+          <div className="w-10 h-10 border-4 border-[var(--line)] border-t-[var(--ai)] rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <Routes>
       {/* Public routes wrapped in AuthLayout */}
       <Route element={<AuthLayout />}>
         <Route
@@ -394,16 +419,7 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       />
-      {/* Placement Test History & Evidence Inspector */}
-      <Route
-        path="/placement-test/history"
-        element={
-          <PrivateRoute>
-            <PlacementTestHistoryView />
-          </PrivateRoute>
-        }
-      />
-      {/* Placement Test Interactive Practice Room */}
+      {/* Placement Test Interactive Practice Room (Fullscreen) */}
       <Route
         path="/placement-test"
         element={
@@ -484,14 +500,18 @@ export const AppRouter: React.FC = () => {
         <Route path="/shadowing/dialogues/:id" element={<LearnerShadowingDetailView />} />
         <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
-        <Route path="/roleplay/results" element={<ConversationHistoryView />} />
+        {/* Kết quả: Hội thoại AI và Shadowing, chuyển bằng nút nhỏ trong trang */}
+        <Route path="/roleplay/results" element={<ResultsView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
+        {/* Lịch sử hoàn thành Placement Test (tách riêng, giữ thanh bên điều hướng) */}
+        <Route path="/placement-test/history" element={<PlacementTestHistoryView />} />
 
         {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
         <Route path="/flashcards" element={<FlashcardSetsView />} />
         <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
+        <Route path="/flashcards/test/history" element={<FlashcardQuizHistoryView />} />
 
         {/* Kho học liệu (Learning Topics & Content) */}
         <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>
@@ -503,6 +523,7 @@ export const AppRouter: React.FC = () => {
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />
+        <Route path="/profile/competency" element={<LearnerCompetencyView />} />
 
         {/* UC08: Cap nhat ho so hoc vien */}
         <Route path="/profile/edit" element={<UpdateProfileView />} />
@@ -530,12 +551,19 @@ export const AppRouter: React.FC = () => {
         <Route path="/forum" element={<CommunityForumView />} />
       </Route>
 
-      {/* Temporary Development-Only Showcase Route */}
-      <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
-      <Route path="/voicevox-test" element={<VoiceVoxTestView />} />
+      {/* Development-Only Showcase & Diagnostics Routes */}
+      <Route
+        path="/dev/ui-foundation"
+        element={import.meta.env.DEV ? <DevShowcaseView /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/voicevox-test"
+        element={import.meta.env.DEV ? <VoiceVoxTestView /> : <Navigate to="/" replace />}
+      />
 
       {/* Wildcard */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </React.Suspense>
   );
 };

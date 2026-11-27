@@ -2,15 +2,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import { getDemoSetDetail } from './demoFlashcardData';
-import type { FlashcardSetDetail, FlashcardCardItem } from '../../types/flashcard';
+import { FlashcardStudyQuotaModal } from './FlashcardStudyQuotaModal';
+import type { FlashcardSetDetail, FlashcardCardItem, FlashcardQuota } from '../../types/flashcard';
 
 export const FlashcardSetDetailView: React.FC = () => {
   const { topicId, contentType } = useParams<{ topicId: string; contentType: string }>();
   const navigate = useNavigate();
 
   const [detail, setDetail] = useState<FlashcardSetDetail | null>(null);
+  const [quota, setQuota] = useState<FlashcardQuota | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [quotaModalOpen, setQuotaModalOpen] = useState<boolean>(false);
+  const [unlocking, setUnlocking] = useState<boolean>(false);
+  const [modalUnlockError, setModalUnlockError] = useState<string | null>(null);
+  const [modalUnlockSuccess, setModalUnlockSuccess] = useState<string | null>(null);
 
   // Filters & Search
   const [statusFilter, setStatusFilter] = useState<'All' | 'Due' | 'Learning' | 'New' | 'Bookmarked'>('All');
@@ -23,8 +29,16 @@ export const FlashcardSetDetailView: React.FC = () => {
   const currentContentType = contentType?.toLowerCase() === 'grammar' ? 'Grammar' : 'Vocabulary';
   const isGrammar = currentContentType === 'Grammar';
   const hasDue = (detail?.summary?.dueCards ?? 0) > 0;
-  const isCompletedToday = !hasDue && (detail?.summary?.learnedCards ?? 0) === (detail?.summary?.totalCards ?? 0) && (detail?.summary?.totalCards ?? 0) > 0;
-  const isPartiallyLearned = !hasDue && !isCompletedToday && (detail?.summary?.learnedCards ?? 0) > 0;
+  const hasNew = (detail?.summary?.newCards ?? 0) > 0;
+  const isCompletedToday = !hasDue && !hasNew && (detail?.summary?.totalCards ?? 0) > 0;
+  const isPartiallyLearned = hasNew && (detail?.summary?.learnedCards ?? 0) > 0;
+  const learningCardsCount = useMemo(() => {
+    if (detail && Array.isArray(detail.cards)) {
+      return detail.cards.filter((c) => c.srsState === 'Learning').length;
+    }
+    return Math.max(0, (detail?.summary?.learnedCards ?? 0) - (detail?.summary?.dueCards ?? 0));
+  }, [detail]);
+  const studyBaseUrl = `/flashcards/study/${isDemo ? 'demo' : currentTopicId}/${currentContentType.toLowerCase()}`;
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -38,17 +52,65 @@ export const FlashcardSetDetailView: React.FC = () => {
         return;
       }
 
-      const res = await flashcardService.getSetDetail(currentTopicId, currentContentType);
+      const [res, quotaRes] = await Promise.all([
+        flashcardService.getSetDetail(currentTopicId, currentContentType),
+        flashcardService.getDailyQuota(),
+      ]);
       if (res.success && res.data) {
         setDetail(res.data);
       } else {
         setErrorMessage(res.message || 'Không thể tải thông tin chi tiết bộ thẻ.');
       }
+      if (quotaRes.success && quotaRes.data) {
+        setQuota(quotaRes.data);
+      }
       setLoading(false);
     };
 
     loadDetail();
+
+    const handleProfileUpdated = (e: any) => {
+      if (typeof e.detail?.creditBalance === 'number') {
+        setQuota((prev) => (prev ? { ...prev, userCreditBalance: e.detail.creditBalance } : null));
+      }
+    };
+    window.addEventListener('jcap_profile_updated', handleProfileUpdated);
+    return () => {
+      window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
+    };
   }, [currentTopicId, currentContentType, isDemo]);
+
+  const handleUnlockExtraInModal = async () => {
+    setUnlocking(true);
+    setModalUnlockError(null);
+    setModalUnlockSuccess(null);
+
+    const res = await flashcardService.unlockExtraNewCards();
+    if (res.success && res.data) {
+      setQuota(res.data);
+      setModalUnlockSuccess(
+        res.message || `Đã mở thêm ${res.data.unlockBatchSize} thẻ mới (-${res.data.unlockCreditCost} Credits)!`
+      );
+    } else {
+      setModalUnlockError(res.message || 'Không thể mở thêm thẻ mới.');
+    }
+    setUnlocking(false);
+  };
+
+  const handleRequestNewCardsStudy = () => {
+    if (isDemo) {
+      navigate(studyBaseUrl);
+      return;
+    }
+    const totalNew = detail?.summary?.newCards ?? 0;
+    if (quota && (quota.remainingNewCardsToday <= 0 || totalNew > quota.remainingNewCardsToday)) {
+      setModalUnlockError(null);
+      setModalUnlockSuccess(null);
+      setQuotaModalOpen(true);
+      return;
+    }
+    navigate(`${studyBaseUrl}?studyMode=new`);
+  };
 
   // Audio Playback simulation or speech synthesis
   const handlePlayAudio = (text: string) => {
@@ -225,7 +287,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                   </div>
                   <div className="bg-success-soft border border-success/30 rounded-xl p-2">
                     <div className="text-[10px] font-bold text-success uppercase">Đã nhớ</div>
-                    <div className="text-base font-black text-success">{detail.summary.learnedCards}</div>
+                    <div className="text-base font-black text-success">{learningCardsCount}</div>
                   </div>
                   <div className="bg-paper-200 border border-line rounded-xl p-2">
                     <div className="text-[10px] font-bold text-sumi-muted uppercase">Chưa học</div>
@@ -233,19 +295,44 @@ export const FlashcardSetDetailView: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={() =>
-                    navigate(`/flashcards/study/${isDemo ? 'demo' : currentTopicId}/${currentContentType.toLowerCase()}${isCompletedToday ? '?extraPractice=true' : ''}`)
-                  }
-                  className={`w-full py-3 px-4 rounded-xl text-on-ai font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer ${
-                    isGrammar
-                      ? 'bg-purple-600 hover:bg-purple-700'
-                      : 'bg-ai hover:bg-ai-hover'
-                  }`}
-                >
-                  <span>{isCompletedToday ? '↻' : '▶'}</span>
-                  <span>{hasDue ? 'Ôn tập ngay' : isCompletedToday ? 'Ôn thêm tự do' : isPartiallyLearned ? 'Tiếp tục ôn' : `Bắt đầu học bộ ${isGrammar ? 'ngữ pháp' : 'từ vựng'} này`}</span>
-                </button>
+                {hasDue && (
+                  <button
+                    onClick={() => navigate(`${studyBaseUrl}?studyMode=due`)}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                    title="Ôn lại các thẻ đã đến hạn trong chủ đề này (miễn phí, không tốn hạn mức thẻ mới)"
+                  >
+                    <span>🔥</span>
+                    <span>Ôn đến hạn ({detail.summary.dueCards} thẻ)</span>
+                  </button>
+                )}
+
+                {hasNew && (
+                  <button
+                    onClick={handleRequestNewCardsStudy}
+                    className={`w-full py-3 px-4 rounded-xl text-on-ai font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer ${
+                      isGrammar
+                        ? 'bg-purple-600 hover:bg-purple-700'
+                        : 'bg-ai hover:bg-ai-hover'
+                    }`}
+                  >
+                    <span>▶</span>
+                    <span>
+                      {isPartiallyLearned
+                        ? `Học tiếp (${detail.summary.newCards} thẻ mới)`
+                        : `Bắt đầu học bộ ${isGrammar ? 'ngữ pháp' : 'từ vựng'} này`}
+                    </span>
+                  </button>
+                )}
+
+                {isCompletedToday && (
+                  <button
+                    onClick={() => navigate(`${studyBaseUrl}?extraPractice=true`)}
+                    className="w-full py-3 px-4 rounded-xl bg-ai-soft hover:bg-ai-soft/80 text-ai border border-ai/30 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>↻</span>
+                    <span>Ôn thêm tự do</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -291,7 +378,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                       : 'bg-paper-100 text-success border border-success/30 hover:bg-success-soft'
                   }`}
                 >
-                  🟢 Đã nhớ ({detail.summary.learnedCards})
+                  🟢 Đã nhớ ({learningCardsCount})
                 </button>
                 <button
                   onClick={() => { setStatusFilter('New'); setCurrentPage(1); }}
@@ -492,21 +579,39 @@ export const FlashcardSetDetailView: React.FC = () => {
                     >
                       ❮
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={`w-7 h-7 rounded-md font-bold transition-all cursor-pointer ${
-                          currentPage === p
-                            ? isGrammar
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-ai text-on-ai'
-                            : 'border border-line bg-paper-100 hover:bg-paper-200 text-sumi'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                      if (
+                        totalPages > 7 &&
+                        p !== 1 &&
+                        p !== totalPages &&
+                        Math.abs(p - currentPage) > 1
+                      ) {
+                        if (p === 2 || p === totalPages - 1) {
+                          return (
+                            <span key={`ellipsis-${p}`} className="px-1.5 text-sumi-faint text-xs select-none">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p)}
+                          className={`w-7 h-7 rounded-md font-bold transition-all cursor-pointer ${
+                            currentPage === p
+                              ? isGrammar
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-ai text-on-ai'
+                              : 'border border-line bg-paper-100 hover:bg-paper-200 text-sumi'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      );
+                    })}
                     <button
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
@@ -520,6 +625,27 @@ export const FlashcardSetDetailView: React.FC = () => {
             </div>
           </>
         )}
+
+      <FlashcardStudyQuotaModal
+        isOpen={quotaModalOpen}
+        setTitle={detail?.summary?.setTitle || ''}
+        totalNewCards={detail?.summary?.newCards || 0}
+        learnedCardsCount={detail?.summary?.learnedCards || 0}
+        quota={quota}
+        unlocking={unlocking}
+        unlockError={modalUnlockError}
+        unlockSuccess={modalUnlockSuccess}
+        onUnlockExtra={handleUnlockExtraInModal}
+        onContinue={() => {
+          setQuotaModalOpen(false);
+          navigate(`${studyBaseUrl}?studyMode=new`);
+        }}
+        onExtraPractice={() => {
+          setQuotaModalOpen(false);
+          navigate(`${studyBaseUrl}?extraPractice=true`);
+        }}
+        onClose={() => setQuotaModalOpen(false)}
+      />
     </div>
   );
 };

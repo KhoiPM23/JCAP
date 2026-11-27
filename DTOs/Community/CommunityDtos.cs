@@ -59,22 +59,18 @@ namespace JCAP.DTOs.Community
 
     public class CreateCommunityPostRequest
     {
+        [MaxLength(40)]
         public string? Channel { get; set; } = "QA_JAPANESE";
 
-        [Required]
+        [Required(ErrorMessage = "Tiêu đề bài viết không được để trống.")]
+        [MaxLength(300, ErrorMessage = "Tiêu đề bài viết không được vượt quá 300 ký tự.")]
         public string Title { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Nội dung bài viết không được để trống.")]
+        [MaxLength(10000, ErrorMessage = "Nội dung bài viết không được vượt quá 10.000 ký tự.")]
         public string Content { get; set; } = string.Empty;
 
         public bool IsAnonymous { get; set; }
-
-        public string? AuthorId { get; set; }
-        public string? AuthorEmail { get; set; }
-        public string? AuthorName { get; set; }
-        public string? AuthorLevel { get; set; }
-        public string? AuthorRole { get; set; }
-        public string? AuthorAvatar { get; set; }
 
         public List<CommunityAttachmentDto>? Attachments { get; set; }
     }
@@ -83,17 +79,10 @@ namespace JCAP.DTOs.Community
     {
         public string? ParentCommentId { get; set; }
 
-        [Required]
+        [MaxLength(5000, ErrorMessage = "Nội dung bình luận không được vượt quá 5.000 ký tự.")]
         public string Content { get; set; } = string.Empty;
 
         public bool IsAnonymous { get; set; }
-
-        public string? AuthorId { get; set; }
-        public string? AuthorEmail { get; set; }
-        public string? AuthorName { get; set; }
-        public string? AuthorLevel { get; set; }
-        public string? AuthorRole { get; set; }
-        public string? AuthorAvatar { get; set; }
 
         public List<CommunityAttachmentDto>? Attachments { get; set; }
     }

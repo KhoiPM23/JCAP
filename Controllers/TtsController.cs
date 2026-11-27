@@ -67,7 +67,9 @@ namespace JCAP.Controllers
                     Response.Headers["X-Viseme-Timeline"] = visemesJson;
                     Response.Headers["Access-Control-Expose-Headers"] = "X-Viseme-Timeline, Content-Disposition";
                 }
-                Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+                // Đây là POST, nội dung câu nằm trong body: proxy/CDN cache theo URL sẽ trả cùng một file cho mọi câu.
+                // Không cho lớp trung gian nào lưu lại; trình duyệt đã tự cache theo câu ở voicevoxService (IndexedDB).
+                Response.Headers.CacheControl = "no-store";
                 return File(wavBytes, "audio/wav", "voicevox_sample.wav");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

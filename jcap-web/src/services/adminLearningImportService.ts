@@ -1,4 +1,5 @@
 import type { LearningImportReport } from '../types/adminLearning';
+import { resolveApiUrl } from '../utils/apiBase.ts';
 
 function authorization(): Record<string, string> {
   const token = localStorage.getItem('jcap_token');
@@ -11,7 +12,7 @@ async function failure(response: Response): Promise<never> {
 }
 export const adminLearningImportService = {
   async template() {
-    const response = await fetch('/api/admin/learning/import/template', { headers: authorization() });
+    const response = await fetch(resolveApiUrl('/api/admin/learning/import/template'), { headers: authorization() });
     if (!response.ok) return failure(response);
     const url = URL.createObjectURL(await response.blob());
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'JCAP_Learning_Import_v1.xlsx';
@@ -21,7 +22,7 @@ export const adminLearningImportService = {
   async upload(file: File, fileHash?: string): Promise<LearningImportReport> {
     const body = new FormData(); body.append('file', file);
     if (fileHash) body.append('fileHash', fileHash);
-    const response = await fetch(`/api/admin/learning/import/${fileHash ? 'confirm' : 'preview'}`, { method: 'POST', headers: authorization(), body });
+    const response = await fetch(resolveApiUrl(`/api/admin/learning/import/${fileHash ? 'confirm' : 'preview'}`), { method: 'POST', headers: authorization(), body });
     if (!response.ok) return failure(response);
     const json = await response.json();
     if (!json.success) throw new Error(json.message || 'Không xử lý được file.');

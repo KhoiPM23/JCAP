@@ -43,9 +43,10 @@ public class AdversarialRoleplayStressTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "これをお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
-        Assert.Contains("切符", result.JapaneseReply);
-        Assert.Contains("行き先", result.JapaneseReply);
+        Assert.Contains("駅", result.JapaneseReply);
+        Assert.DoesNotContain("ご希望でしょうか", result.JapaneseReply);
         Assert.Contains("ga đến", result.LinguisticFeedback.Summary);
         Assert.Empty(result.CompletedMissionIds); // Phải chặn không cho qua nhiệm vụ khi nói mơ hồ
     }
@@ -69,6 +70,7 @@ public class AdversarialRoleplayStressTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "これをお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.Contains("質問について", result.JapaneseReply);
         Assert.Empty(result.CompletedMissionIds);
@@ -93,8 +95,10 @@ public class AdversarialRoleplayStressTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "ひとつお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
-        Assert.Contains("商品をお教えいただけますか", result.JapaneseReply);
+        Assert.Contains("教えてください", result.JapaneseReply);
+        Assert.DoesNotContain("いただけますか", result.JapaneseReply);
         Assert.Contains("tên sản phẩm", result.LinguisticFeedback.Summary);
     }
 
@@ -117,6 +121,7 @@ public class AdversarialRoleplayStressTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "とんこつラーメンを一杯ください。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.Contains("カフェ", result.JapaneseReply);
         Assert.Contains("thực đơn quán cà phê", result.LinguisticFeedback.Summary);
@@ -141,6 +146,7 @@ public class AdversarialRoleplayStressTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "ピザをお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.Contains("医療機関", result.JapaneseReply);
         Assert.Contains("cơ sở y tế", result.LinguisticFeedback.Summary);
@@ -165,6 +171,7 @@ public class AdversarialRoleplayStressTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "Cháu giúp cụ qua đường nhé", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("PreFlightGuard", result.LinguisticFeedback.EvaluationSource);
         Assert.Equal("Error", result.LinguisticFeedback.Status);
         Assert.Contains("日本語", result.JapaneseReply);

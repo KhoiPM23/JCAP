@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { creditService } from '../../services/creditService';
+import { resolveMediaUrl } from '../../utils/apiBase';
 import type { User } from '../../types/auth';
 
 export interface HeaderProps {
@@ -166,9 +167,9 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
             
             {/* Avatar Dropdown */}
             <div className="relative group cursor-pointer">
-              {user.avatarUrl ? (
+              {resolveMediaUrl(user.avatarUrl) ? (
                 <img
-                  src={user.avatarUrl}
+                  src={resolveMediaUrl(user.avatarUrl)}
                   alt={user.fullName || user.email}
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-transparent group-hover:ring-[#0878EE] transition-all"
                   onError={(e) => {

@@ -1,4 +1,5 @@
-import { cleanJapaneseForTts } from '../utils/japaneseSanitizer';
+import { cleanJapaneseForTts, splitJapaneseSentencesForTts } from '../utils/japaneseSanitizer';
+import { resolveApiUrl } from '../utils/apiBase';
 import { voicevoxService, type VoiceOption } from './voicevoxService';
 
 /**
@@ -12,6 +13,7 @@ class ScenarioVoiceService {
   private currentAudio: HTMLAudioElement | null = null;
   private isSpeechCancelled = false;
   private currentPlaySessionId = 0;
+  private cancelPendingChunkPlayback: (() => void) | null = null;
 
   // MediaRecorder audio capture for Whisper STT Engine
   private mediaRecorder: MediaRecorder | null = null;
@@ -117,6 +119,11 @@ class ScenarioVoiceService {
   public stopAllAudio(): void {
     this.isSpeechCancelled = true;
     this.currentPlaySessionId++; // Invalidate any in-flight synthesis promises immediately
+    if (this.cancelPendingChunkPlayback) {
+      const cancelChunk = this.cancelPendingChunkPlayback;
+      this.cancelPendingChunkPlayback = null;
+      cancelChunk();
+    }
 
     if (this.visemeAnimFrame !== null) {
       cancelAnimationFrame(this.visemeAnimFrame);
@@ -216,6 +223,18 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Tính thời gian chờ tổng hợp VOICEVOX phù hợp độ dài câu trên CPU (20s–40s),
+   * đồng bộ với VoiceVoxService.SynthesisInternalTimeout ở Backend.
+   * Lưu ý: nếu VOICEVOX offline, Backend trả HTTP 503 ngay < 50ms nên timeout dài không làm chậm fallback.
+   */
+  private resolveSynthesisTimeoutMs(text: string, timeoutMs?: number): number {
+    if (typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+      return Math.max(5000, Math.round(timeoutMs));
+    }
+    return Math.min(40000, Math.max(20000, text.length * 320));
+  }
+
+  /**
    * Phát giọng AI: ưu tiên VOICEVOX TTS (theo giọng đã chọn trong Cài đặt), nếu offline tự động fallback sang Web Speech API
    */
   public async playAiSpeech(
@@ -224,7 +243,8 @@ class ScenarioVoiceService {
     onEnd?: () => void,
     rate?: number,
     onStart?: () => void,
-    onViseme?: (viseme: any) => void
+    onViseme?: (viseme: any) => void,
+    timeoutMs?: number
   ): Promise<void> {
     this.stopAllAudio();
     const playSessionId = ++this.currentPlaySessionId;
@@ -245,7 +265,8 @@ class ScenarioVoiceService {
     }
 
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, 25000);
+      const resolvedTimeoutMs = this.resolveSynthesisTimeoutMs(cleanText, timeoutMs);
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, resolvedTimeoutMs);
       // Kiểm tra request có bị hủy hoặc bị thay thế bởi request mới hơn trong lúc fetch mạng không
       if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) {
         return;
@@ -343,6 +364,256 @@ class ScenarioVoiceService {
         this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       } else {
         console.warn('[Scenario Voice] VOICEVOX synthesis failed or delayed. Suppressing Web Speech to prevent robotic override.');
+        onEnd?.();
+      }
+    }
+  }
+
+  /**
+   * Phát giọng AI theo cơ chế cuốn chiếu từng câu (Sentence Streaming):
+   * - Tách đoạn thoại dài theo dấu ngắt câu (đồng bộ 1:1 với Backend pre-synthesis).
+   * - Tổng hợp & phát câu đầu tiên trước (~3-6s thay vì chờ 20s cho cả đoạn dài).
+   * - Trong lúc câu hiện tại đang phát, tổng hợp sẵn câu kế tiếp ở nền để nối tiếp mượt mà.
+   */
+  public async playAiSpeechStreamed(
+    text: string,
+    voiceId?: number,
+    onEnd?: () => void,
+    rate?: number,
+    onStart?: () => void,
+    onViseme?: (viseme: any) => void,
+    timeoutMs?: number
+  ): Promise<void> {
+    const cleanText = cleanJapaneseForTts(text);
+    if (!cleanText) {
+      onEnd?.();
+      return;
+    }
+
+    const chunks = splitJapaneseSentencesForTts(cleanText);
+    if (chunks.length <= 1) {
+      return this.playAiSpeech(cleanText, voiceId, onEnd, rate, onStart, onViseme, timeoutMs);
+    }
+
+    this.stopAllAudio();
+    const playSessionId = ++this.currentPlaySessionId;
+    this.isSpeechCancelled = false;
+    this.onVisemeCallback = onViseme || null;
+
+    const resolvedVoiceId =
+      typeof voiceId === 'number' && !Number.isNaN(voiceId)
+        ? voiceId
+        : this.getSelectedVoiceId();
+    const resolvedRate = rate ?? this.getSpeechRate();
+
+    const isActive = () => !this.isSpeechCancelled && playSessionId === this.currentPlaySessionId;
+
+    const fetchChunkUrl = (chunk: string): Promise<string> => {
+      const chunkTimeoutMs = this.resolveSynthesisTimeoutMs(chunk, timeoutMs);
+      return voicevoxService.getAudioUrl(chunk, resolvedVoiceId, chunkTimeoutMs);
+    };
+
+    const startVisemeLoop = (chunkText: string) => {
+      if (!onViseme) return;
+      const visemes = voicevoxService.getVisemes(chunkText, resolvedVoiceId);
+      if (!visemes || visemes.length === 0) return;
+
+      const step = () => {
+        if (!this.currentAudio || this.currentAudio.paused || this.currentAudio.ended || !isActive()) {
+          onViseme('closed');
+          return;
+        }
+        const currentT = this.currentAudio.currentTime;
+        let activeV = 'closed';
+        for (let idx = 0; idx < visemes.length; idx++) {
+          if (visemes[idx].t <= currentT) {
+            activeV = visemes[idx].v;
+          } else {
+            break;
+          }
+        }
+        onViseme(activeV);
+        this.visemeAnimFrame = requestAnimationFrame(step);
+      };
+      this.visemeAnimFrame = requestAnimationFrame(step);
+    };
+
+    let hasNotifiedStart = false;
+
+    const playSingleChunk = (
+      audioUrl: string,
+      chunkText: string,
+      onResumeTail?: () => void
+    ): Promise<'ended' | 'error' | 'cancelled' | 'autoplay_blocked'> => {
+      return new Promise((resolve) => {
+        if (!isActive()) {
+          resolve('cancelled');
+          return;
+        }
+
+        let settled = false;
+        const finish = (outcome: 'ended' | 'error' | 'cancelled' | 'autoplay_blocked') => {
+          if (settled) return;
+          settled = true;
+          if (this.cancelPendingChunkPlayback === cancelThisChunk) {
+            this.cancelPendingChunkPlayback = null;
+          }
+          resolve(outcome);
+        };
+
+        const cancelThisChunk = () => {
+          finish('cancelled');
+        };
+        this.cancelPendingChunkPlayback = cancelThisChunk;
+
+        const audio = new Audio(audioUrl);
+        audio.playbackRate = resolvedRate;
+        this.currentAudio = audio;
+
+        let waitingForAutoplayResume = false;
+
+        audio.onplay = () => {
+          if (!isActive()) return;
+          if (!hasNotifiedStart) {
+            hasNotifiedStart = true;
+            onStart?.();
+          }
+          startVisemeLoop(chunkText);
+        };
+
+        audio.onended = () => {
+          if (this.visemeAnimFrame !== null) {
+            cancelAnimationFrame(this.visemeAnimFrame);
+            this.visemeAnimFrame = null;
+          }
+          onViseme?.('closed');
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          if (!isActive()) {
+            finish('cancelled');
+            return;
+          }
+          if (waitingForAutoplayResume) {
+            waitingForAutoplayResume = false;
+            onResumeTail?.();
+            return;
+          }
+          finish('ended');
+        };
+
+        audio.onerror = () => {
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          finish(isActive() ? 'error' : 'cancelled');
+        };
+
+        void audio.play().catch((err: any) => {
+          if (!isActive()) {
+            finish('cancelled');
+            return;
+          }
+          if (err && (err.name === 'NotAllowedError' || err.name === 'AbortError')) {
+            console.warn('[Scenario Voice] Streamed audio blocked by browser Autoplay policy. Awaiting user interaction.');
+            waitingForAutoplayResume = true;
+            if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+              const resumeOnInteraction = () => {
+                window.removeEventListener('pointerdown', resumeOnInteraction);
+                window.removeEventListener('keydown', resumeOnInteraction);
+                if (isActive() && this.currentAudio === audio) {
+                  audio.play().catch(() => {
+                    if (isActive()) {
+                      onEnd?.();
+                    }
+                  });
+                }
+              };
+              window.addEventListener('pointerdown', resumeOnInteraction, { once: true });
+              window.addEventListener('keydown', resumeOnInteraction, { once: true });
+            }
+            finish('autoplay_blocked');
+            return;
+          }
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          finish('error');
+        });
+      });
+    };
+
+    const playSequenceFrom = async (startIndex: number, initialUrl: string): Promise<void> => {
+      let currentUrl: string | null = initialUrl;
+
+      for (let i = startIndex; i < chunks.length; i++) {
+        if (!isActive() || !currentUrl) return;
+
+        // Tổng hợp trước câu tiếp theo song song trong lúc câu hiện tại đang phát
+        const nextUrlPromise: Promise<string | null> =
+          i + 1 < chunks.length
+            ? fetchChunkUrl(chunks[i + 1]).catch((err) => {
+                console.warn(`[Scenario Voice] Prefetch chunk #${i + 1} failed:`, err);
+                return null;
+              })
+            : Promise.resolve(null);
+
+        const outcome = await playSingleChunk(currentUrl, chunks[i], () => {
+          void (async () => {
+            if (!isActive()) return;
+            if (i + 1 < chunks.length) {
+              const resumedNextUrl = await nextUrlPromise;
+              if (!isActive()) return;
+              if (resumedNextUrl) {
+                await playSequenceFrom(i + 1, resumedNextUrl);
+                return;
+              }
+            }
+            if (isActive()) {
+              onEnd?.();
+            }
+          })();
+        });
+
+        if (outcome === 'autoplay_blocked' || outcome === 'cancelled' || !isActive()) {
+          return;
+        }
+
+        if (outcome === 'error' && i === 0) {
+          if (voicevoxService.isAvailable() !== true) {
+            this.speakWithWebSpeech(cleanText, onEnd, resolvedRate, onStart);
+          } else {
+            onEnd?.();
+          }
+          return;
+        }
+
+        if (i + 1 < chunks.length) {
+          const nextUrl = await nextUrlPromise;
+          if (!isActive()) return;
+          if (!nextUrl) {
+            onEnd?.();
+            return;
+          }
+          currentUrl = nextUrl;
+        }
+      }
+
+      if (isActive()) {
+        onEnd?.();
+      }
+    };
+
+    try {
+      const firstChunkUrl = await fetchChunkUrl(chunks[0]);
+      if (!isActive()) return;
+      await playSequenceFrom(0, firstChunkUrl);
+    } catch {
+      if (!isActive()) return;
+      if (voicevoxService.isAvailable() !== true) {
+        this.speakWithWebSpeech(cleanText, onEnd, resolvedRate, onStart);
+      } else {
+        console.warn('[Scenario Voice] VOICEVOX streamed synthesis failed or delayed. Suppressing Web Speech to prevent robotic override.');
         onEnd?.();
       }
     }
@@ -523,6 +794,31 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Làm ấm trước luồng micro (Pre-warm MediaStream) để khi người dùng bấm Nói,
+   * MediaRecorder bắt đầu thu âm ngay tức khắc (< 5ms), không bị hụt chữ đầu câu.
+   */
+  public async warmUpMicrophone(): Promise<boolean> {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      return false;
+    }
+    if (this.audioStream && this.audioStream.getAudioTracks().some((t) => t.readyState === 'live' && t.enabled)) {
+      return true;
+    }
+    try {
+      this.audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Bắt đầu ghi âm audio stream từ micro cho Whisper STT Engine
    */
   public async startAudioRecording(): Promise<boolean> {
@@ -530,15 +826,18 @@ class ScenarioVoiceService {
       return false;
     }
     try {
-      this.stopAudioRecordingSync();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-      this.audioStream = stream;
+      this.stopAudioRecordingSync(false);
+      let stream = this.audioStream;
+      if (!stream || !stream.getAudioTracks().some((t) => t.readyState === 'live' && t.enabled)) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+        this.audioStream = stream;
+      }
       this.audioChunks = [];
       this.recordingStartedAt = Date.now();
 
@@ -552,11 +851,11 @@ class ScenarioVoiceService {
         }
       };
 
-      recorder.start(100);
+      recorder.start(50);
       return true;
     } catch (err) {
       console.warn('[Scenario STT] Failed to start MediaRecorder:', err);
-      this.stopAudioRecordingSync();
+      this.stopAudioRecordingSync(true);
       return false;
     }
   }
@@ -569,7 +868,7 @@ class ScenarioVoiceService {
     const startedAt = this.recordingStartedAt;
 
     if (!recorder || recorder.state === 'inactive') {
-      this.stopAudioRecordingSync();
+      this.stopAudioRecordingSync(false);
       return null;
     }
 
@@ -578,7 +877,7 @@ class ScenarioVoiceService {
         const mime = recorder.mimeType || 'audio/webm';
         const durationSeconds = Math.max(0.1, (Date.now() - startedAt) / 1000);
         const blob = new Blob(this.audioChunks, { type: mime });
-        this.stopAudioRecordingSync();
+        this.stopAudioRecordingSync(false);
         if (blob.size === 0) {
           resolve(null);
         } else {
@@ -589,25 +888,47 @@ class ScenarioVoiceService {
       try {
         recorder.stop();
       } catch {
-        this.stopAudioRecordingSync();
+        this.stopAudioRecordingSync(false);
         resolve(null);
       }
     });
   }
 
   /**
-   * Dọn dẹp luồng micro lập tức (giải phóng mic phần cứng)
+   * Hủy ngay việc thu âm hiện tại và loại bỏ toàn bộ audio chunk (không mã hóa/gửi STT).
    */
-  public stopAudioRecordingSync(): void {
+  public cancelAudioRecording(): void {
+    const recorder = this.mediaRecorder;
+    if (recorder) {
+      recorder.ondataavailable = null;
+      recorder.onstop = null;
+      if (recorder.state !== 'inactive') {
+        try {
+          recorder.stop();
+        } catch {
+          // ignore
+        }
+      }
+    }
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    this.recordingStartedAt = 0;
+  }
+
+  /**
+   * Dọn dẹp luồng micro (nếu releaseHardware = true thì đóng hẳn phần cứng micro khi rời phòng)
+   */
+  public stopAudioRecordingSync(releaseHardware = false): void {
     if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       try {
+        this.mediaRecorder.onstop = null;
         this.mediaRecorder.stop();
       } catch {
         // ignore
       }
     }
     this.mediaRecorder = null;
-    if (this.audioStream) {
+    if (releaseHardware && this.audioStream) {
       try {
         this.audioStream.getTracks().forEach((t) => t.stop());
       } catch {
@@ -625,7 +946,7 @@ class ScenarioVoiceService {
     if (this.isAutoStartingWhisper) return;
     this.isAutoStartingWhisper = true;
     try {
-      await fetch('/api/stt/start-engine', { method: 'POST' });
+      await fetch(resolveApiUrl('/api/stt/start-engine'), { method: 'POST' });
     } catch {
       // ignore
     } finally {
@@ -657,11 +978,11 @@ class ScenarioVoiceService {
     const formData = new FormData();
     formData.append('file', audioBlob, `recording.${ext}`);
 
-    // Tier 1: Gọi qua Backend proxy /api/stt/transcribe với timeout nhanh (2500ms)
+    // Tier 1: Gọi qua Backend proxy /api/stt/transcribe với timeout mở rộng (6000ms cho Whisper cold start / câu dài)
     try {
       const controller1 = new AbortController();
-      const timeout1 = setTimeout(() => controller1.abort(), 2500);
-      const res = await fetch('/api/stt/transcribe?language=ja', {
+      const timeout1 = setTimeout(() => controller1.abort(), 6000);
+      const res = await fetch(resolveApiUrl('/api/stt/transcribe?language=ja'), {
         method: 'POST',
         body: formData,
         signal: controller1.signal,
@@ -700,7 +1021,7 @@ class ScenarioVoiceService {
       const ext = audioBlob.type.includes('ogg') ? 'ogg' : audioBlob.type.includes('wav') ? 'wav' : 'webm';
       const formData = new FormData();
       formData.append('file', audioBlob, `recording.${ext}`);
-      const res = await fetch('/api/stt/save-audio', {
+      const res = await fetch(resolveApiUrl('/api/stt/save-audio'), {
         method: 'POST',
         body: formData,
       });
@@ -717,6 +1038,22 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Xóa bản thu âm nháp trên server nếu người học xóa/hủy trước khi gửi lượt thoại
+   */
+  public async deleteTempAudio(audioUrl?: string | null): Promise<void> {
+    if (!audioUrl || !audioUrl.startsWith('/audio/roleplay/')) return;
+    try {
+      const token = localStorage.getItem('jcap_token');
+      await fetch(resolveApiUrl(`/api/stt/audio?url=${encodeURIComponent(audioUrl)}`), {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+    } catch {
+      // Best-effort cleanup
+    }
+  }
+
+  /**
    * Kiểm tra xem Whisper Engine có sẵn sàng phục vụ không
    */
   public async isWhisperAvailable(): Promise<boolean> {
@@ -727,7 +1064,7 @@ class ScenarioVoiceService {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 1500);
-      const res = await fetch('/api/stt/health', { signal: controller.signal })
+      const res = await fetch(resolveApiUrl('/api/stt/health'), { signal: controller.signal })
         .finally(() => clearTimeout(timeout));
       if (res.ok) {
         const json = await res.json();

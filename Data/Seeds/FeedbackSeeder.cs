@@ -10,17 +10,27 @@ namespace JCAP.Data.Seeds
 {
     public static class FeedbackSeeder
     {
+        private static readonly HashSet<string> DemoLearnerEmails = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "learner1@jcap.com",
+            "learner2@jcap.com",
+            "learner3@jcap.com"
+        };
+
+        private static readonly HashSet<string> DemoAdminEmails = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "admin1@jcap.com",
+            "admin2@jcap.com",
+            "admin3@jcap.com"
+        };
+
+        /// <summary>
+        /// Chỉ nạp dữ liệu mẫu cho môi trường Development và chỉ gắn vào các tài khoản mẫu trong AccountSeedData.
+        /// Không tạo bảng bằng SQL ngoài migration và không chèn dữ liệu mẫu vào tài khoản người dùng thật.
+        /// </summary>
         public static async Task SeedAsync(IServiceProvider serviceProvider)
         {
             var context = serviceProvider.GetRequiredService<AppDbContext>();
-            await EnsureReadyAsync(context);
-        }
-
-        public static async Task EnsureReadyAsync(AppDbContext context)
-        {
-            // Đảm bảo bảng Feedback và bảng Community Forum tồn tại trong SQL Server
-            await EnsureTablesExistAsync(context);
-
             await SeedFeedbackTicketsIfEmptyAsync(context);
             await SeedCommunityPostsIfEmptyAsync(context);
         }
@@ -32,112 +42,102 @@ namespace JCAP.Data.Seeds
                 return;
             }
 
-            var learners = await context.Users
-                .Where(u => u.Role != "Admin")
+            var demoLearners = await context.Users
+                .Where(u => u.Email != null && DemoLearnerEmails.Contains(u.Email))
                 .OrderBy(u => u.CreatedAt)
                 .ToListAsync();
 
-            if (learners.Count == 0)
+            if (demoLearners.Count == 0)
             {
                 return;
             }
 
-            var learner2 = learners.FirstOrDefault(u =>
+            var learner1 = demoLearners.FirstOrDefault(u =>
+                string.Equals(u.Email, "learner1@jcap.com", StringComparison.OrdinalIgnoreCase));
+            var learner2 = demoLearners.FirstOrDefault(u =>
                 string.Equals(u.Email, "learner2@jcap.com", StringComparison.OrdinalIgnoreCase));
-            var learner3 = learners.FirstOrDefault(u =>
-                string.Equals(u.Email, "learner3@jcap.com", StringComparison.OrdinalIgnoreCase));
-
-            var primaryLearners = learners
-                .Where(u => u.Id != learner2?.Id && u.Id != learner3?.Id)
-                .ToList();
-
-            if (primaryLearners.Count == 0)
-            {
-                primaryLearners.Add(learners[0]);
-            }
 
             var now = DateTime.UtcNow;
             var ticketsToAdd = new List<FeedbackTicket>();
 
-            foreach (var primary in primaryLearners)
+            if (learner1 != null)
             {
-                var t1 = new FeedbackTicket
+                ticketsToAdd.AddRange(new[]
                 {
-                    UserId = primary.Id,
-                    AnonymousCode = "#SUP-8492",
-                    Title = "AI chấm sót từ vựng mục tiêu 「予約 (yoyaku)」 dù phát âm đã nhận diện đúng",
-                    Category = "AI_ASSESSMENT",
-                    Status = "IN_PROGRESS",
-                    AdminSeenAt = now.AddHours(-5),
-                    CreatedAt = now.AddHours(-6),
-                    UpdatedAt = now.AddHours(-1),
-                    Messages = new List<FeedbackMessage>
+                    new FeedbackTicket
                     {
-                        new FeedbackMessage
+                        UserId = learner1.Id,
+                        AnonymousCode = "#SUP-8492",
+                        Title = "AI chấm sót từ vựng mục tiêu 「予約 (yoyaku)」 dù phát âm đã nhận diện đúng",
+                        Category = "AI_ASSESSMENT",
+                        Status = "IN_PROGRESS",
+                        AdminSeenAt = now.AddHours(-5),
+                        CreatedAt = now.AddHours(-6),
+                        UpdatedAt = now.AddHours(-1),
+                        Messages = new List<FeedbackMessage>
                         {
-                            SenderRole = "LEARNER",
-                            Content = "Chào Admin, khi mình luyện kịch bản \"Đặt bàn nhà hàng Izakaya (N4)\", ở lượt nói thứ 2 mình nói câu 「金曜日の夜七時に予約をお願いします」. Hệ thống STT nhận diện đúng chữ 予約 nhưng nhiệm vụ số 1 vẫn chưa được tính hoàn thành.",
-                            CreatedAt = now.AddHours(-6)
-                        },
-                        new FeedbackMessage
+                            new FeedbackMessage
+                            {
+                                SenderRole = "LEARNER",
+                                Content = "Chào Admin, khi mình luyện kịch bản \"Đặt bàn nhà hàng Izakaya (N4)\", ở lượt nói thứ 2 mình nói câu 「金曜日の夜七時に予約をお願いします」. Hệ thống STT nhận diện đúng chữ 予約 nhưng nhiệm vụ số 1 vẫn chưa được tính hoàn thành.",
+                                CreatedAt = now.AddHours(-6)
+                            },
+                            new FeedbackMessage
+                            {
+                                SenderRole = "ADMIN",
+                                Content = "Chào bạn! Admin đã kiểm tra lại cấu hình kịch bản Izakaya N4. Đội ngũ đã cập nhật lại điều kiện chấm nhiệm vụ chấp nhận cả cấu trúc danh từ 「予約をお願いします」. Bạn thử tạo lượt hội thoại mới rồi phản hồi lại giúp Admin nhé!",
+                                CreatedAt = now.AddHours(-4)
+                            }
+                        }
+                    },
+                    new FeedbackTicket
+                    {
+                        UserId = learner1.Id,
+                        AnonymousCode = "#SUG-5194",
+                        Title = "Đề xuất thêm tốc độ đọc mẫu 0.75x cho các bài luyện Shadowing cấp độ N3",
+                        Category = "SUGGESTION",
+                        Status = "PENDING",
+                        AdminSeenAt = null,
+                        CreatedAt = now.AddMinutes(-35),
+                        UpdatedAt = now.AddMinutes(-35),
+                        Messages = new List<FeedbackMessage>
                         {
-                            SenderRole = "ADMIN",
-                            Content = "Chào bạn! Admin đã kiểm tra lại cấu hình kịch bản Izakaya N4. Đội ngũ đã cập nhật lại điều kiện chấm nhiệm vụ chấp nhận cả cấu trúc danh từ 「予約をお願いします」. Bạn thử tạo lượt hội thoại mới rồi phản hồi lại giúp Admin nhé!",
-                            CreatedAt = now.AddHours(-4)
+                            new FeedbackMessage
+                            {
+                                SenderRole = "LEARNER",
+                                Content = "Ở các bài hội thoại Shadowing N3, tốc độ nói tự nhiên của nhân vật AI khá nhanh với người mới lên N3. Mong đội ngũ phát triển bổ sung thêm nút nghe mẫu tốc độ 0.75x trước khi bấm thu âm.",
+                                CreatedAt = now.AddMinutes(-35)
+                            }
+                        }
+                    },
+                    new FeedbackTicket
+                    {
+                        UserId = learner1.Id,
+                        AnonymousCode = "#SUP-1108",
+                        Title = "Đã thanh toán gói Credit qua QR PayOS nhưng chờ 2 phút mới cộng vào ví",
+                        Category = "PAYMENT_CREDIT",
+                        Status = "CLOSED",
+                        AdminSeenAt = now.AddDays(-2),
+                        CreatedAt = now.AddDays(-2).AddHours(-2),
+                        UpdatedAt = now.AddDays(-1),
+                        ClosedAt = now.AddDays(-1),
+                        Messages = new List<FeedbackMessage>
+                        {
+                            new FeedbackMessage
+                            {
+                                SenderRole = "LEARNER",
+                                Content = "Mình vừa quét mã VietQR mua gói Credit, ngân hàng báo trừ tiền thành công nhưng số dư chưa nhảy ngay.",
+                                CreatedAt = now.AddDays(-2).AddHours(-2)
+                            },
+                            new FeedbackMessage
+                            {
+                                SenderRole = "ADMIN",
+                                Content = "Admin đã đối soát mã đơn PayOS và cộng bù đủ Credit vào ví của bạn, đồng thời nâng cấp cơ chế đồng bộ tự động ngay khi thanh toán.",
+                                CreatedAt = now.AddDays(-1)
+                            }
                         }
                     }
-                };
-
-                var t2 = new FeedbackTicket
-                {
-                    UserId = primary.Id,
-                    AnonymousCode = "#SUG-5194",
-                    Title = "Đề xuất thêm tốc độ đọc mẫu 0.75x cho các bài luyện Shadowing cấp độ N3",
-                    Category = "SUGGESTION",
-                    Status = "PENDING",
-                    AdminSeenAt = null,
-                    CreatedAt = now.AddMinutes(-35),
-                    UpdatedAt = now.AddMinutes(-35),
-                    Messages = new List<FeedbackMessage>
-                    {
-                        new FeedbackMessage
-                        {
-                            SenderRole = "LEARNER",
-                            Content = "Ở các bài hội thoại Shadowing N3, tốc độ nói tự nhiên của nhân vật AI khá nhanh với người mới lên N3. Mong đội ngũ phát triển bổ sung thêm nút nghe mẫu tốc độ 0.75x trước khi bấm thu âm.",
-                            CreatedAt = now.AddMinutes(-35)
-                        }
-                    }
-                };
-
-                var t3 = new FeedbackTicket
-                {
-                    UserId = primary.Id,
-                    AnonymousCode = "#SUP-1108",
-                    Title = "Đã thanh toán gói Credit qua QR PayOS nhưng chờ 2 phút mới cộng vào ví",
-                    Category = "PAYMENT_CREDIT",
-                    Status = "CLOSED",
-                    AdminSeenAt = now.AddDays(-2),
-                    CreatedAt = now.AddDays(-2).AddHours(-2),
-                    UpdatedAt = now.AddDays(-1),
-                    ClosedAt = now.AddDays(-1),
-                    Messages = new List<FeedbackMessage>
-                    {
-                        new FeedbackMessage
-                        {
-                            SenderRole = "LEARNER",
-                            Content = "Mình vừa quét mã VietQR mua gói Credit, ngân hàng báo trừ tiền thành công nhưng số dư chưa nhảy ngay.",
-                            CreatedAt = now.AddDays(-2).AddHours(-2)
-                        },
-                        new FeedbackMessage
-                        {
-                            SenderRole = "ADMIN",
-                            Content = "Admin đã đối soát mã đơn PayOS và cộng bù đủ Credit vào ví của bạn, đồng thời nâng cấp cơ chế đồng bộ tự động ngay khi thanh toán.",
-                            CreatedAt = now.AddDays(-1)
-                        }
-                    }
-                };
-
-                ticketsToAdd.AddRange(new[] { t1, t2, t3 });
+                });
             }
 
             if (learner2 != null)
@@ -164,6 +164,11 @@ namespace JCAP.Data.Seeds
                 });
             }
 
+            if (ticketsToAdd.Count == 0)
+            {
+                return;
+            }
+
             context.FeedbackTickets.AddRange(ticketsToAdd);
             await context.SaveChangesAsync();
         }
@@ -175,13 +180,18 @@ namespace JCAP.Data.Seeds
                 return;
             }
 
-            var users = await context.Users.OrderBy(u => u.CreatedAt).ToListAsync();
-            if (users.Count == 0) return;
+            var demoEmails = DemoLearnerEmails.Concat(DemoAdminEmails).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var demoUsers = await context.Users
+                .Where(u => u.Email != null && demoEmails.Contains(u.Email))
+                .OrderBy(u => u.CreatedAt)
+                .ToListAsync();
 
-            var admin = users.FirstOrDefault(u => u.Role == "Admin") ?? users[0];
-            var learners = users.Where(u => u.Role != "Admin").ToList();
+            if (demoUsers.Count == 0) return;
+
+            var admin = demoUsers.FirstOrDefault(u => u.Email != null && DemoAdminEmails.Contains(u.Email)) ?? demoUsers[0];
+            var learners = demoUsers.Where(u => u.Email != null && DemoLearnerEmails.Contains(u.Email)).ToList();
             var learner1 = learners.FirstOrDefault(u => string.Equals(u.Email, "learner1@jcap.com", StringComparison.OrdinalIgnoreCase))
-                ?? learners.FirstOrDefault() ?? users[0];
+                ?? learners.FirstOrDefault() ?? demoUsers[0];
             var learner2 = learners.FirstOrDefault(u => string.Equals(u.Email, "learner2@jcap.com", StringComparison.OrdinalIgnoreCase))
                 ?? (learners.Count > 1 ? learners[1] : learner1);
             var learner3 = learners.FirstOrDefault(u => string.Equals(u.Email, "learner3@jcap.com", StringComparison.OrdinalIgnoreCase))
@@ -246,7 +256,6 @@ namespace JCAP.Data.Seeds
             context.CommunityPosts.AddRange(post1, post2, post3);
             await context.SaveChangesAsync();
 
-            // Thêm bình luận chéo giữa các học viên và Admin
             var c1 = new CommunityComment
             {
                 CommunityPostId = post1.Id,
@@ -289,142 +298,6 @@ namespace JCAP.Data.Seeds
 
             context.CommunityComments.AddRange(c1, c2, c3);
             await context.SaveChangesAsync();
-        }
-
-        private static async Task EnsureTablesExistAsync(AppDbContext context)
-        {
-            const string sql = @"
-IF OBJECT_ID(N'[dbo].[FeedbackTickets]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[FeedbackTickets] (
-        [Id] int NOT NULL IDENTITY,
-        [UserId] nvarchar(450) NOT NULL,
-        [AnonymousCode] nvarchar(30) NOT NULL,
-        [Title] nvarchar(300) NOT NULL,
-        [Category] nvarchar(50) NOT NULL,
-        [Status] nvarchar(30) NOT NULL,
-        [AdminSeenAt] datetime2 NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        [UpdatedAt] datetime2 NOT NULL,
-        [ClosedAt] datetime2 NULL,
-        CONSTRAINT [PK_FeedbackTickets] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_FeedbackTickets_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [dbo].[AspNetUsers] ([Id]) ON DELETE NO ACTION
-    );
-    CREATE INDEX [IX_FeedbackTickets_UserId_UpdatedAt] ON [dbo].[FeedbackTickets] ([UserId], [UpdatedAt]);
-    CREATE INDEX [IX_FeedbackTickets_Status_UpdatedAt] ON [dbo].[FeedbackTickets] ([Status], [UpdatedAt]);
-END
-
-IF OBJECT_ID(N'[dbo].[FeedbackMessages]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[FeedbackMessages] (
-        [Id] int NOT NULL IDENTITY,
-        [FeedbackTicketId] int NOT NULL,
-        [SenderRole] nvarchar(20) NOT NULL,
-        [Content] nvarchar(max) NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_FeedbackMessages] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_FeedbackMessages_FeedbackTickets_FeedbackTicketId] FOREIGN KEY ([FeedbackTicketId]) REFERENCES [dbo].[FeedbackTickets] ([Id]) ON DELETE CASCADE
-    );
-    CREATE INDEX [IX_FeedbackMessages_TicketId_CreatedAt] ON [dbo].[FeedbackMessages] ([FeedbackTicketId], [CreatedAt]);
-END
-
-IF OBJECT_ID(N'[dbo].[FeedbackAttachments]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[FeedbackAttachments] (
-        [Id] int NOT NULL IDENTITY,
-        [FeedbackMessageId] int NOT NULL,
-        [FileName] nvarchar(260) NOT NULL,
-        [FileSize] bigint NOT NULL,
-        [FileType] nvarchar(20) NOT NULL,
-        [MimeType] nvarchar(120) NOT NULL,
-        [CloudinaryUrl] nvarchar(max) NOT NULL,
-        [CloudinaryPublicId] nvarchar(300) NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_FeedbackAttachments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_FeedbackAttachments_FeedbackMessages_FeedbackMessageId] FOREIGN KEY ([FeedbackMessageId]) REFERENCES [dbo].[FeedbackMessages] ([Id]) ON DELETE CASCADE
-    );
-    CREATE INDEX [IX_FeedbackAttachments_MessageId] ON [dbo].[FeedbackAttachments] ([FeedbackMessageId]);
-END
-
-IF OBJECT_ID(N'[dbo].[CommunityPosts]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[CommunityPosts] (
-        [Id] int NOT NULL IDENTITY,
-        [AuthorUserId] nvarchar(450) NOT NULL,
-        [AuthorDisplayName] nvarchar(150) NOT NULL,
-        [AuthorAvatarUrl] nvarchar(500) NULL,
-        [AuthorLevel] nvarchar(20) NOT NULL,
-        [AuthorRole] nvarchar(20) NOT NULL,
-        [IsAnonymous] bit NOT NULL,
-        [Channel] nvarchar(40) NOT NULL,
-        [Title] nvarchar(300) NOT NULL,
-        [Content] nvarchar(max) NOT NULL,
-        [IsPinned] bit NOT NULL,
-        [IsSolved] bit NOT NULL,
-        [Upvotes] int NOT NULL,
-        [Views] int NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        [UpdatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_CommunityPosts] PRIMARY KEY ([Id])
-    );
-    CREATE INDEX [IX_CommunityPosts_Pinned_CreatedAt] ON [dbo].[CommunityPosts] ([IsPinned], [CreatedAt]);
-END
-IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_CommunityPosts_AspNetUsers_AuthorUserId')
-BEGIN
-    ALTER TABLE [dbo].[CommunityPosts] DROP CONSTRAINT [FK_CommunityPosts_AspNetUsers_AuthorUserId];
-END
-
-IF OBJECT_ID(N'[dbo].[CommunityComments]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[CommunityComments] (
-        [Id] int NOT NULL IDENTITY,
-        [CommunityPostId] int NOT NULL,
-        [ParentCommentId] int NULL,
-        [AuthorUserId] nvarchar(450) NOT NULL,
-        [AuthorDisplayName] nvarchar(150) NOT NULL,
-        [AuthorAvatarUrl] nvarchar(500) NULL,
-        [AuthorLevel] nvarchar(20) NOT NULL,
-        [AuthorRole] nvarchar(20) NOT NULL,
-        [IsAnonymous] bit NOT NULL,
-        [Content] nvarchar(max) NOT NULL,
-        [Upvotes] int NOT NULL,
-        [IsAcceptedAnswer] bit NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_CommunityComments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_CommunityComments_CommunityPosts_CommunityPostId] FOREIGN KEY ([CommunityPostId]) REFERENCES [dbo].[CommunityPosts] ([Id]) ON DELETE CASCADE
-    );
-    CREATE INDEX [IX_CommunityComments_PostId_CreatedAt] ON [dbo].[CommunityComments] ([CommunityPostId], [CreatedAt]);
-END
-
-IF OBJECT_ID(N'[dbo].[CommunityAttachments]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[CommunityAttachments] (
-        [Id] int NOT NULL IDENTITY,
-        [CommunityPostId] int NULL,
-        [CommunityCommentId] int NULL,
-        [FileName] nvarchar(260) NOT NULL,
-        [FileSize] bigint NOT NULL,
-        [FileType] nvarchar(20) NOT NULL,
-        [Url] nvarchar(max) NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_CommunityAttachments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_CommunityAttachments_CommunityPosts_CommunityPostId] FOREIGN KEY ([CommunityPostId]) REFERENCES [dbo].[CommunityPosts] ([Id]) ON DELETE CASCADE
-    );
-END
-
-IF OBJECT_ID(N'[dbo].[CommunityPostUpvotes]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[CommunityPostUpvotes] (
-        [Id] int NOT NULL IDENTITY,
-        [CommunityPostId] int NOT NULL,
-        [UserId] nvarchar(450) NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_CommunityPostUpvotes] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_CommunityPostUpvotes_CommunityPosts_CommunityPostId] FOREIGN KEY ([CommunityPostId]) REFERENCES [dbo].[CommunityPosts] ([Id]) ON DELETE CASCADE
-    );
-    CREATE UNIQUE INDEX [IX_CommunityPostUpvotes_PostId_UserId] ON [dbo].[CommunityPostUpvotes] ([CommunityPostId], [UserId]);
-END";
-            await context.Database.ExecuteSqlRawAsync(sql);
         }
     }
 }
