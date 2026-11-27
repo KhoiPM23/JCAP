@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { DefaultAvatarImage } from './DefaultAvatarImage';
+import { PracticePanel } from '../jcap/PracticePanel';
+import { Button as JcapButton, Icon, IconButton } from '../jcap';
+import { usePhoneViewport } from '../../hooks/usePhoneViewport';
 
 interface RoleSelectionModalProps {
   isOpen: boolean;
@@ -10,6 +13,7 @@ interface RoleSelectionModalProps {
   dialogueTitle: string;
   roleAName: string;
   roleBName: string;
+  currentRole?: 'A' | 'B';
   onConfirm: (selectedRole: 'A' | 'B') => void;
 }
 
@@ -19,13 +23,71 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
   dialogueTitle,
   roleAName,
   roleBName,
+  currentRole,
   onConfirm,
 }) => {
   const [selectedRole, setSelectedRole] = useState<'A' | 'B'>('A');
+  const [mobileChoice, setMobileChoice] = useState<'A' | 'B' | null>(null);
+  const mobile = usePhoneViewport();
 
   const handleStart = () => {
     onConfirm(selectedRole);
   };
+
+  if (mobile) {
+    const roles = [{ id: 'A', name: roleAName }, { id: 'B', name: roleBName }] as const;
+    const chosenRole = mobileChoice ?? currentRole ?? 'A';
+    const willChangeRole = currentRole !== undefined && chosenRole !== currentRole;
+    const dismiss = () => {
+      setMobileChoice(null);
+      onClose();
+    };
+
+    return (
+      <PracticePanel mobile open={isOpen} label="Chọn vai luyện nói" onDismiss={dismiss}>
+        <div className="px-4 pb-4 pt-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold">Chọn vai luyện nói</h2>
+            <IconButton icon="close" label="Đóng chọn vai" className="min-h-11 min-w-11" onClick={dismiss} />
+          </div>
+          <p className="mb-4 break-words text-sm text-sumi-muted">{dialogueTitle}</p>
+          <div role="group" aria-label="Vai trong bài hội thoại" className="grid gap-2">
+            {roles.map(({ id, name }) => {
+              const selected = chosenRole === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setMobileChoice(id)}
+                  className={`flex min-h-16 w-full items-center gap-3 rounded-xl border px-3 py-2 text-left ${selected ? 'border-ai bg-ai-soft' : 'border-line bg-paper-50'}`}
+                >
+                  <span className="size-10 shrink-0 overflow-hidden rounded-full bg-paper-200">
+                    <DefaultAvatarImage alt="" className="size-full object-cover" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-medium text-sumi-muted">Vai {id}</span>
+                    <span className="block break-words text-sm font-bold">{name}</span>
+                  </span>
+                  {selected && <Icon name="check_circle" size={22} className="shrink-0 text-ai" />}
+                </button>
+              );
+            })}
+          </div>
+          {willChangeRole && <p role="status" className="mt-3 text-sm text-warning">Đổi vai sẽ bắt đầu bài luyện từ đầu.</p>}
+          <JcapButton variant="primary" size="lg" block className="mt-4" onClick={() => {
+            if (currentRole === chosenRole) dismiss();
+            else {
+              setMobileChoice(null);
+              onConfirm(chosenRole);
+            }
+          }}>
+            {willChangeRole ? 'Đổi vai và luyện lại' : currentRole ? 'Giữ vai hiện tại' : 'Bắt đầu luyện'}
+          </JcapButton>
+        </div>
+      </PracticePanel>
+    );
+  }
 
   return (
     <Modal

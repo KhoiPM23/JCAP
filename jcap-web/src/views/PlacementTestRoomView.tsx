@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PracticePanel } from '../components/jcap/PracticePanel';
+import { PracticeConfirmation } from '../components/jcap/PracticeConfirmation';
+import { usePracticeViewport } from '../hooks/usePracticeViewport';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import {
   MicIcon,
@@ -56,6 +59,8 @@ const ALL_PLACEMENT_EVENTS = [
 ];
 
 export const PlacementTestRoomView: React.FC = () => {
+  const { mobile, room } = usePracticeViewport();
+  const [pendingAction, setPendingAction] = useState<'restart' | 'finish' | null>(null);
   const navigate = useNavigate();
 
   // 1. Trạng thái phiên kiểm tra
@@ -94,8 +99,8 @@ export const PlacementTestRoomView: React.FC = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   // 4. State điều khiển hiển thị & Nhập liệu
-  const [isLeftOpen, setIsLeftOpen] = useState(true);
-  const [isRightOpen, setIsRightOpen] = useState(true); // Bật mặc định để tester quan sát tiêu chí chấm trực tiếp
+  const [isLeftOpen, setIsLeftOpen] = useState(!mobile);
+  const [isRightOpen, setIsRightOpen] = useState(!mobile);
   const [isHandsFreeMode, setIsHandsFreeMode] = useState(false);
   const [showTranslation, setShowTranslation] = useState(true);
   const [showFurigana, setShowFurigana] = useState(true);
@@ -725,7 +730,8 @@ export const PlacementTestRoomView: React.FC = () => {
   return (
     <div
       data-theme="phong-luyen"
-      className="flex h-screen flex-col overflow-hidden bg-[var(--paper-100)] text-[var(--sumi)] font-sans"
+      ref={room}
+      className={`flex h-screen flex-col overflow-hidden bg-[var(--paper-100)] text-[var(--sumi)] font-sans${mobile ? ' jx-mobile-practice' : ''}`}
     >
       {/* ========================================================================= */}
       {/* 1. TOP HEADER BAR                                                         */}
@@ -738,12 +744,13 @@ export const PlacementTestRoomView: React.FC = () => {
             onClick={() => setShowLeaveModal(true)}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs font-semibold text-[var(--sumi-faint)] transition hover:border-[var(--ai)] hover:text-[var(--ai)] hover:shadow-xs whitespace-nowrap active:scale-95 cursor-pointer"
             title="Tạm dừng và rời phòng"
+            aria-label="Rời phòng"
           >
             <span>←</span>
             <span className="hidden sm:inline">Rời phòng</span>
           </button>
 
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
+          <div className="jx-practice-room-name flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
             <div className="shrink-0 p-1 rounded-full border border-stone-200 bg-white shadow-2xs aspect-square flex items-center justify-center">
               <LivingAvatar
                 size="sm"
@@ -783,11 +790,14 @@ export const PlacementTestRoomView: React.FC = () => {
         </div>
 
         {/* Right: Controls chuẩn Scenario */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="jx-practice-tools flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Nút Làm lại bài mới (Dành cho Tester thử lại kịch bản sạch) */}
           <button
             type="button"
-            onClick={() => void loadPlacementSession(true)}
+            onClick={() => {
+              if (mobile) setPendingAction('restart');
+              else void loadPlacementSession(true);
+            }}
             className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-[var(--line)] bg-white px-2 sm:px-2.5 py-1.5 text-xs font-semibold text-[var(--sumi)] hover:border-[var(--ai)] hover:text-[var(--ai)] transition active:scale-95 cursor-pointer shadow-2xs"
             title="Bắt đầu lại bài kiểm tra từ đầu (Reset)"
           >
@@ -823,7 +833,10 @@ export const PlacementTestRoomView: React.FC = () => {
           {/* Toggle Cột Bối cảnh bên trái */}
           <button
             type="button"
-            onClick={() => setIsLeftOpen(!isLeftOpen)}
+            onClick={() => {
+              if (mobile && !isLeftOpen) setIsRightOpen(false);
+              setIsLeftOpen(!isLeftOpen);
+            }}
             className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition cursor-pointer ${
               isLeftOpen
                 ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
@@ -838,7 +851,10 @@ export const PlacementTestRoomView: React.FC = () => {
           {/* Toggle Cột Tiêu chí đánh giá lượt bên phải (Rubric Inspector) */}
           <button
             type="button"
-            onClick={() => setIsRightOpen(!isRightOpen)}
+            onClick={() => {
+              if (mobile && !isRightOpen) setIsLeftOpen(false);
+              setIsRightOpen(!isRightOpen);
+            }}
             className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition cursor-pointer ${
               isRightOpen
                 ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
@@ -870,7 +886,7 @@ export const PlacementTestRoomView: React.FC = () => {
             </button>
 
             {isSettingsOpen && (
-              <div className="absolute right-0 top-full mt-2 z-[200] w-72 rounded-2xl border border-[var(--line)] bg-white p-4 shadow-xl ring-1 ring-black/5 animate-fade-in text-xs space-y-3">
+              <div className="jx-practice-settings absolute right-0 top-full mt-2 z-[200] w-72 rounded-2xl border border-[var(--line)] bg-white p-4 shadow-xl ring-1 ring-black/5 animate-fade-in text-xs space-y-3">
                 <div className="flex items-center justify-between border-b border-[var(--line)] pb-2">
                   <span className="font-bold text-[var(--sumi)] text-sm">Cài đặt hiển thị</span>
                   <button
@@ -938,7 +954,10 @@ export const PlacementTestRoomView: React.FC = () => {
           ) : (
             <button
               type="button"
-              onClick={() => void handleConcludeAndFetchResult()}
+              onClick={() => {
+                if (mobile) setPendingAction('finish');
+                else void handleConcludeAndFetchResult();
+              }}
               className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-red-200 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 whitespace-nowrap cursor-pointer active:scale-95"
               title="Hoàn tất bài thi sớm để xem bảng điểm và trình độ ước tính"
             >
@@ -949,13 +968,26 @@ export const PlacementTestRoomView: React.FC = () => {
         </div>
       </header>
 
-      {/* ========================================================================= */}
-      {/* 2. BODY WORKSPACE (3-COLUMN LAYOUT)                                       */}
-      {/* ========================================================================= */}
+      {mobile && pendingAction && (
+        <PracticeConfirmation
+          title={pendingAction === 'restart' ? 'Làm lại bài kiểm tra?' : 'Kết thúc sớm bài kiểm tra?'}
+          description={pendingAction === 'restart' ? 'Bạn sẽ bắt đầu lại từ câu đầu tiên.' : 'Bạn sẽ dừng bài kiểm tra và xem kết quả hiện tại.'}
+          confirmLabel={pendingAction === 'restart' ? 'Làm lại từ đầu' : 'Kết thúc sớm'}
+          onCancel={() => setPendingAction(null)}
+          onConfirm={() => {
+            setPendingAction(null);
+            if (pendingAction === 'restart') void loadPlacementSession(true);
+            else void handleConcludeAndFetchResult();
+          }}
+        />
+      )}
+
+      {/* 2. BODY WORKSPACE (3-COLUMN LAYOUT) */}
       <div className="relative flex flex-1 overflow-hidden">
         {/* ============================================================ */}
         {/* 2.A. LEFT SIDEBAR: BỐI CẢNH ĐẶT PHÒNG KHÁCH SẠN             */}
         {/* ============================================================ */}
+        <PracticePanel mobile={mobile} open={isLeftOpen} label="Bối cảnh tình huống" onDismiss={() => setIsLeftOpen(false)}>
         <aside
           className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
             isLeftOpen
@@ -1139,9 +1171,10 @@ export const PlacementTestRoomView: React.FC = () => {
             </div>
           </div>
         </aside>
+        </PracticePanel>
 
         {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn */}
-        <button
+        {!mobile && <button
           type="button"
           onClick={() => setIsLeftOpen(true)}
           className={`absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[var(--ai)]/30 bg-white px-3 py-2.5 text-xs font-bold text-[var(--ai)] shadow-md hover:bg-[var(--ai-soft)] hover:pr-4 transition-all duration-300 ease-in-out cursor-pointer ${
@@ -1154,7 +1187,7 @@ export const PlacementTestRoomView: React.FC = () => {
           <ListTodoIcon className="w-3.5 h-3.5" />
           <span>Bối cảnh phòng</span>
           <span>▶</span>
-        </button>
+        </button>}
 
         {/* ============================================================ */}
         {/* 2.B. CENTER COLUMN: UNIFIED SCENARIO CHAT STREAM             */}
@@ -1360,7 +1393,7 @@ export const PlacementTestRoomView: React.FC = () => {
           {/* ============================================================ */}
           {/* 2.C. BOTTOM STICKY INPUT BAR                                 */}
           {/* ============================================================ */}
-          <div className="border-t border-[var(--line)] bg-[var(--paper-50)]/95 backdrop-blur-sm p-3 sm:p-4 shadow-lg">
+          <div className="jx-practice-composer border-t border-[var(--line)] bg-[var(--paper-50)]/95 backdrop-blur-sm p-3 sm:p-4 shadow-lg">
             <div className="mx-auto w-full max-w-[800px] space-y-2">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2 sm:gap-3">
                 {/* Button Micro thu âm (ở bên trái, chuẩn RoleplayPracticeView) */}
@@ -1462,6 +1495,7 @@ export const PlacementTestRoomView: React.FC = () => {
                 {/* ============================================================ */}
         {/* 2.D. RIGHT DRAWER: LIVE ASSESSMENT RUBRIC INSPECTOR          */}
         {/* ============================================================ */}
+        <PracticePanel mobile={mobile} open={isRightOpen && (!mobile || !isLeftOpen)} label="Tiêu chí chấm" onDismiss={() => setIsRightOpen(false)}>
         <aside
           className={`shrink-0 border-l border-[var(--line)] bg-white flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
             isRightOpen ? 'w-80 lg:w-96 opacity-100 shadow-md' : 'w-0 border-l-0 opacity-0 pointer-events-none'
@@ -1762,6 +1796,7 @@ export const PlacementTestRoomView: React.FC = () => {
             </div>
           </div>
         </aside>
+        </PracticePanel>
       </div>
 
       {/* ========================================================================= */}

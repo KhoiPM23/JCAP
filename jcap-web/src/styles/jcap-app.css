@@ -261,8 +261,44 @@
 .jx-mobile-more a > span:nth-child(2) { flex: 1; }
 .jx-mobile-sign-out { margin-top: 6px; color: var(--danger); }
 .jx-app.is-mobile :is(.jx-mobile-header, .jx-mobile-nav, .jx-mobile-more) :focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+.jx-mobile-practice {
+  height: var(--jx-practice-height, 100dvh);
+  min-height: 0;
+  overflow: hidden;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+}
+.jx-mobile-practice > header:not(.jx-rm-bar) { height: auto; flex-wrap: wrap; gap: 4px; padding-block: 4px; }
+.jx-mobile-practice > header:not(.jx-rm-bar) > :first-child { flex: 1 1 100%; margin-right: 0; }
+.jx-mobile-practice .jx-practice-room-name > :first-child { display: none; }
+.jx-mobile-practice .jx-practice-tools { width: 100%; flex-wrap: wrap; }
+.jx-mobile-practice > header button, .jx-mobile-practice .jx-practice-tools > a { min-height: 44px; min-width: 44px; justify-content: center; }
+.jx-mobile-practice .jx-practice-tools > div:has(.jx-practice-settings) { position: static; }
+.jx-mobile-practice .jx-practice-settings { right: 8px; width: min(320px, calc(100vw - 16px)); max-height: 62dvh; overflow-y: auto; }
+.jx-mobile-practice .jx-practice-composer { max-height: 55%; overflow-y: auto; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+.jx-mobile-practice .jx-practice-composer :is(input, textarea) { font-size: 16px; }
+.jx-mobile-practice .jx-practice-composer :is(input, button[type="submit"], form > div:first-child > button) { min-height: 44px; }
+.jx-practice-panel {
+  position: fixed; inset: auto 0 0; margin: 0 auto; width: min(100%, 640px); max-width: none;
+  max-height: 80dvh; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 0 env(safe-area-inset-bottom, 0px); border: 1px solid var(--line); border-radius: 20px 20px 0 0;
+  background: var(--paper-50); color: var(--sumi);
+}
+.jx-practice-panel::backdrop { background: var(--scrim); }
+.jx-practice-panel > aside { width: 100%; max-width: none; height: min(72dvh, 640px); border: 0; }
+.jx-practice-panel > aside > :not(.pointer-events-none) { width: 100%; max-width: none; }
+.jx-mobile-shadowing .jx-rm-bar { gap: 6px; padding-inline: 8px; }
+.jx-mobile-shadowing .jx-rm-crumb { flex: 1; }
+.jx-mobile-shadowing .jx-rm-crumb > :not(.jx-rm-title), .jx-mobile-shadowing .jx-rm-div { display: none; }
+.jx-mobile-shadowing .jx-rm-title { padding-inline: 0; font-size: 14px; }
+.jx-mobile-shadowing .jx-shadow-workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.jx-mobile-shadowing .jx-shadow-dialogue { width: 100%; flex: 1; min-height: 0; overflow: hidden; }
+.jx-mobile-shadowing .jx-shadow-context { padding: 8px; }
+.jx-mobile-shadowing .jx-shadow-sentence-actions { flex-wrap: wrap; gap: 8px; }
+.jx-mobile-shadowing .jx-shadow-sentence-actions button { min-height: 44px; min-width: 44px; justify-content: center; }
 .jx-app.is-mobile .jx-page :is(input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]), textarea, select) { font-size: 16px; }
-.jx-app.is-mobile :is(.jx-mobile-nav, .jx-mobile-header, .jx-mobile-more) :is(a, button) { touch-action: manipulation; }
+.jx-app.is-mobile :is(.jx-mobile-nav, .jx-mobile-header, .jx-mobile-more) :is(a, button),
+.jx-mobile-practice :is(header, .jx-shadow-sentence-actions, .jx-practice-composer, .jx-practice-panel) button { touch-action: manipulation; }
 .jx-app.is-mobile .jm-back, .jx-app.is-mobile .jm-panel-bottom button[aria-label^="Đóng"] { min-height: 44px; min-width: 44px; }
 
 @media (prefers-reduced-motion: reduce) {
