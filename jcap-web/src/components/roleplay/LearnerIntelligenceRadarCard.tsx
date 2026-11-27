@@ -1881,9 +1881,14 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                          <span className="px-1.5 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-extrabold font-mono border border-[var(--ai)]/20 uppercase">
-                            {item.recommendedLevel}
-                          </span>
+                          {item.supportedJLPTLevels.map((lv) => (
+                            <span
+                              key={lv}
+                              className="px-1.5 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-extrabold font-mono border border-[var(--ai)]/20 uppercase"
+                            >
+                              {lv}
+                            </span>
+                          ))}
                           {item.topicName && (
                             <span className="text-[11px] font-medium text-[var(--sumi-muted)] truncate">
                               · {item.topicName}
