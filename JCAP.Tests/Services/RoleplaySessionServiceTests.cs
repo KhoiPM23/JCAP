@@ -1525,8 +1525,87 @@ public class RoleplaySessionServiceTests
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
         Assert.True(result.Data!.HasActiveSubscription);
+        Assert.Equal(50, result.Data.RemainingSubscriptionQuota);
+        Assert.False(result.Data.IsSubscriptionQuotaExhausted);
+        Assert.Null(result.Data.CreditWarningMessage);
         Assert.Equal(9808, result.Data.ResultId);
         Assert.Equal(33, result.Data.CreditBalance);
+    }
+
+    [Fact]
+    public async Task GetSessionDetailsAsync_EvaluatesCreditWarnings_ForZeroLowAndSubUsers()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, _) = SeedBasicScenario(dbContext);
+
+        // 1. Sub user with 0 coins but remaining subscription quota > 5 -> NO warning
+        var subUserWithZeroCoin = new ApplicationUser
+        {
+            Id = "user-sub-0coin",
+            CreditBalance = 0,
+            SubscriptionPlanId = "plan-pro",
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(10)
+        };
+        // 2. Sub user with low subscription quota (used 47/50 -> 3 remaining) -> warns low sub token
+        var subUserLowToken = new ApplicationUser
+        {
+            Id = "user-sub-lowtoken",
+            CreditBalance = 0,
+            SubscriptionPlanId = "plan-pro",
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(10)
+        };
+        dbContext.CreditTransactions.Add(new CreditTransaction
+        {
+            UserId = subUserLowToken.Id,
+            Amount = -47,
+            Type = "Deduct",
+            Status = "Paid",
+            CoveredBySubscription = true,
+            Description = "[Gói tháng] Đã dùng 47 token",
+            CreatedAt = DateTime.UtcNow.AddHours(-1)
+        });
+        // 3. Non-sub user with 5 coins -> warns low coin balance
+        var nonSubLowCoin = new ApplicationUser
+        {
+            Id = "user-nonsub-5coin",
+            CreditBalance = 5
+        };
+
+        dbContext.RoleplaySessions.AddRange(
+            new RoleplaySession { Id = 8081, UserId = subUserWithZeroCoin.Id, ScenarioLevelConfigurationId = levelConfig.Id, Status = "Active" },
+            new RoleplaySession { Id = 8082, UserId = subUserLowToken.Id, ScenarioLevelConfigurationId = levelConfig.Id, Status = "Active" },
+            new RoleplaySession { Id = 8083, UserId = nonSubLowCoin.Id, ScenarioLevelConfigurationId = levelConfig.Id, Status = "Active" }
+        );
+        await dbContext.SaveChangesAsync();
+
+        var store = new Mock<IUserStore<ApplicationUser>>();
+        var userManagerMock = new Mock<UserManager<ApplicationUser>>(
+            store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        userManagerMock.Setup(m => m.FindByIdAsync(subUserWithZeroCoin.Id)).ReturnsAsync(subUserWithZeroCoin);
+        userManagerMock.Setup(m => m.FindByIdAsync(subUserLowToken.Id)).ReturnsAsync(subUserLowToken);
+        userManagerMock.Setup(m => m.FindByIdAsync(nonSubLowCoin.Id)).ReturnsAsync(nonSubLowCoin);
+
+        var service = CreateRoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            new Mock<IAiRoleplayService>().Object,
+            new Mock<ILogger<RoleplaySessionService>>().Object);
+
+        var res1 = await service.GetSessionDetailsAsync(subUserWithZeroCoin.Id, 8081);
+        Assert.True(res1.Success);
+        Assert.Equal(50, res1.Data!.RemainingSubscriptionQuota);
+        Assert.Null(res1.Data.CreditWarningMessage); // 0 coin nhưng còn nhiều token gói tháng -> không báo gì hết
+
+        var res2 = await service.GetSessionDetailsAsync(subUserLowToken.Id, 8082);
+        Assert.True(res2.Success);
+        Assert.Equal(3, res2.Data!.RemainingSubscriptionQuota);
+        Assert.NotNull(res2.Data.CreditWarningMessage);
+        Assert.Contains("3 token", res2.Data.CreditWarningMessage);
+
+        var res3 = await service.GetSessionDetailsAsync(nonSubLowCoin.Id, 8083);
+        Assert.True(res3.Success);
+        Assert.NotNull(res3.Data!.CreditWarningMessage);
+        Assert.Contains("5 xu", res3.Data.CreditWarningMessage);
     }
 
     [Fact]

@@ -443,9 +443,13 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
 
         var user = await _userManager.FindByIdAsync(userId);
-        bool hasActiveSubscription = user != null
+        bool isAdmin = user != null && await IsAdminUserAsync(user);
+        bool hasActiveSubscription = !isAdmin && user != null
             && user.SubscriptionExpiresAt.HasValue
             && user.SubscriptionExpiresAt.Value > DateTime.UtcNow;
+
+        var (remainingQuota, isQuotaExhausted, creditWarningMessage) =
+            await EvaluateCreditAndQuotaStatusAsync(user, isAdmin, hasActiveSubscription, cancellationToken);
 
         int? completedResultId = null;
         if (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase))
@@ -479,6 +483,9 @@ public class RoleplaySessionService : IRoleplaySessionService
             CreditBalance = user?.CreditBalance ?? 0,
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             HasActiveSubscription = hasActiveSubscription,
+            RemainingSubscriptionQuota = remainingQuota,
+            IsSubscriptionQuotaExhausted = isQuotaExhausted,
+            CreditWarningMessage = creditWarningMessage,
             ResultId = completedResultId,
             CreatedAt = session.CreatedAt,
             RecommendedAiVoiceId = voiceResolution.RecommendedAiVoiceId,
@@ -1576,6 +1583,8 @@ public class RoleplaySessionService : IRoleplaySessionService
         // 7. Tạo response trả về cho frontend
         // Lấy credit balance mới nhất (đã được cập nhật sau deduct)
         int latestCreditBalance = userForDeduct.CreditBalance;
+        var (postTurnRemainingQuota, postTurnQuotaExhausted, postTurnWarningMessage) =
+            await EvaluateCreditAndQuotaStatusAsync(userForDeduct, isAdmin, hasActiveSubscription, cancellationToken);
 
         var responseDto = new RoleplayTurnResponseDto
         {
@@ -1615,6 +1624,10 @@ public class RoleplaySessionService : IRoleplaySessionService
             SessionStatus = session.Status,
             CreditBalance = latestCreditBalance,
             CreditsSpentThisTurn = creditsSpentThisTurn,
+            HasActiveSubscription = hasActiveSubscription,
+            RemainingSubscriptionQuota = postTurnRemainingQuota,
+            IsSubscriptionQuotaExhausted = postTurnQuotaExhausted,
+            CreditWarningMessage = postTurnWarningMessage,
             DetectedIssues = detectedIssues.ToList(),
             SpeedScale = ddaDecision.SpeedScale,
             ShouldOfferEncouragement = ddaDecision.ShouldOfferEncouragement,
@@ -2002,6 +2015,97 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
 
         return (true, string.Empty);
+    }
+
+    private const int LowCreditWarningThreshold = 5;
+    private const int LowSubscriptionQuotaWarningThreshold = 5;
+
+    /// <summary>
+    /// Tính toán hạn mức token gói tháng còn lại và thông báo cảnh báo số dư / hạn mức cho phòng hội thoại:
+    /// - Nếu có gói tháng và token gói tháng chưa hết (> 5 token): KHÔNG cảnh báo gì kể cả khi CreditBalance = 0 xu.
+    /// - Nếu có gói tháng và token gói tháng sắp hết (1..5 token): Cảnh báo gói tháng sắp hết token.
+    /// - Nếu không có gói tháng (hoặc gói tháng đã hết token) và CreditBalance còn 1..5 xu: Cảnh báo sắp hết xu.
+    /// - Nếu không có gói tháng (hoặc gói tháng đã hết token) và CreditBalance &lt;= 0: Thông báo không đủ tiền để trò chuyện.
+    /// </summary>
+    private async Task<(int? RemainingQuota, bool IsQuotaExhausted, string? WarningMessage)> EvaluateCreditAndQuotaStatusAsync(
+        ApplicationUser? user,
+        bool isAdmin,
+        bool hasActiveSubscription,
+        CancellationToken cancellationToken = default)
+    {
+        if (user == null || isAdmin)
+        {
+            return (null, false, null);
+        }
+
+        if (hasActiveSubscription)
+        {
+            var now = DateTime.UtcNow;
+            var fiveHoursAgo = now.AddHours(-5);
+            var sevenDaysAgo = now.AddDays(-7);
+            var plan = SubscriptionPlanCatalog.FindOrDefault(user.SubscriptionPlanId);
+
+            var subDeductQuery = _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == user.Id
+                    && t.Type == "Deduct"
+                    && (t.CoveredBySubscription || (t.Description != null && t.Description.StartsWith("[Gói tháng]"))));
+
+            var used5h = await subDeductQuery
+                .Where(t => t.CreatedAt >= fiveHoursAgo)
+                .SumAsync(t => -t.Amount, cancellationToken);
+
+            var usedWeek = await subDeductQuery
+                .Where(t => t.CreatedAt >= sevenDaysAgo)
+                .SumAsync(t => -t.Amount, cancellationToken);
+
+            int rem5h = Math.Max(0, plan.FiveHourQuota - used5h);
+            int remWeek = Math.Max(0, plan.WeeklyQuota - usedWeek);
+            int remainingQuota = Math.Min(rem5h, remWeek);
+            bool isExhausted = remainingQuota <= 0;
+
+            if (!isExhausted)
+            {
+                // Khi token gói tháng vẫn còn (> 5), tuyệt đối không thông báo gì kể cả khi CreditBalance == 0 xu
+                if (remainingQuota <= LowSubscriptionQuotaWarningThreshold)
+                {
+                    return (remainingQuota, false,
+                        $"Gói tháng ({plan.Name}) của bạn sắp hết token trong chu kỳ này (còn {remainingQuota} token).");
+                }
+
+                return (remainingQuota, false, null);
+            }
+
+            // Gói tháng đã hết sạch token trong chu kỳ -> kiểm tra xu lẻ dự phòng (CreditBalance)
+            if (user.CreditBalance <= 0)
+            {
+                return (0, true,
+                    $"Bạn đã dùng hết hạn ngạch token của {plan.Name} và số dư xu dự phòng là 0 xu. Vui lòng chờ hạn ngạch hồi phục hoặc nạp thêm Credit để trò chuyện.");
+            }
+
+            if (user.CreditBalance <= LowCreditWarningThreshold)
+            {
+                return (0, true,
+                    $"Token gói tháng đã hết, hệ thống đang dùng xu dự phòng và bạn sắp hết xu (chỉ còn {user.CreditBalance} xu). Vui lòng nạp thêm Credit.");
+            }
+
+            return (0, true, null);
+        }
+
+        // Không có gói tháng -> chỉ dùng CreditBalance
+        if (user.CreditBalance <= 0)
+        {
+            return (null, false,
+                "Bạn chưa có đủ Credit (0 xu). Mặc dù bước khởi tạo kịch bản là miễn phí, việc trò chuyện với AI có tính phí — vui lòng nạp thêm Credit hoặc đăng ký Gói tháng để bắt đầu hội thoại.");
+        }
+
+        if (user.CreditBalance <= LowCreditWarningThreshold)
+        {
+            return (null, false,
+                $"Số dư Credit của bạn sắp hết (chỉ còn {user.CreditBalance} xu). Vui lòng nạp thêm Credit hoặc đăng ký Gói tháng để cuộc trò chuyện không bị gián đoạn.");
+        }
+
+        return (null, false, null);
     }
 
     internal static int ComputeMoraCount(string? japaneseText, string? furiganaHtml = null)
