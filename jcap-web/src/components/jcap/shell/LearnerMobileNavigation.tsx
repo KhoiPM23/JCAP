@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Icon, Logo } from '..';
 import { LearnerNotificationBell } from '../../learner/LearnerNotificationBell';
+import { PracticeConfirmation } from '../PracticeConfirmation';
 import { useLearnerAccount } from './useLearnerAccount';
 
 const tabs = [
@@ -34,6 +35,7 @@ export function LearnerMobileNavigation() {
   const { credit } = useLearnerAccount();
   const sheet = useRef<HTMLDialogElement>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const extra = moreLinks.find(item => [item.to, ...(item.aliases ?? [])].some(path => matches(location.pathname, path)));
   const tab = location.pathname === '/' ? tabs[0] : tabs.find(item => item.paths.some(path => matches(location.pathname, path)));
   const title = extra?.label ?? tab?.label ?? 'Tổng quan';
@@ -77,13 +79,27 @@ export function LearnerMobileNavigation() {
               </Link>
             ))}
           </nav>
-          <button type="button" className="jx-mobile-sign-out" disabled={signingOut} onClick={async () => {
-            setSigningOut(true);
-            await logout();
-            navigate('/login', { replace: true });
+          <button type="button" className="jx-mobile-sign-out" disabled={signingOut} onClick={() => {
+            sheet.current?.close();
+            setConfirmSignOut(true);
           }}><Icon name="logout" size={22} />{signingOut ? 'Đang đăng xuất…' : 'Đăng xuất'}</button>
         </div>
       </dialog>
+      {confirmSignOut && (
+        <PracticeConfirmation
+          title="Đăng xuất khỏi JCAP?"
+          description="Bạn cần đăng nhập lại để tiếp tục học."
+          cancelLabel="Ở lại"
+          confirmLabel="Đăng xuất"
+          onCancel={() => setConfirmSignOut(false)}
+          onConfirm={async () => {
+            setConfirmSignOut(false);
+            setSigningOut(true);
+            await logout();
+            navigate('/login', { replace: true });
+          }}
+        />
+      )}
     </>
   );
 }

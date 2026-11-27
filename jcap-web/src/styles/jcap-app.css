@@ -373,6 +373,13 @@
   .jx-mobile-records .jx-record-row td:last-child > div { flex-wrap: wrap; justify-content: flex-start; }
   .jx-shadow-records td:nth-child(4) { grid-column: 1 / -1; grid-row: 1; }
   .jx-shadow-records td:nth-child(4) span { white-space: normal; }
+
+  .jx-settings-nav { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex-basis: 100%; }
+  .jx-settings-nav a { padding-inline: 8px; }
+  .jx-settings-page section { padding: 16px; }
+  .jx-settings-page .jc-seg { width: 100%; }
+  .jx-settings-page .jc-seg__opt { flex: 1; padding-inline: 6px; }
+  .jx-settings-toast { top: calc(var(--jx-mobile-top) + 8px); right: 8px; max-width: calc(100% - 16px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
