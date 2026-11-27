@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
+import { TypewriterText } from '../components/roleplay/TypewriterText';
 import {
   MicIcon,
   VolumeIcon,
@@ -107,6 +108,7 @@ export const PlacementTestRoomView: React.FC = () => {
   const [isRecordingMic, setIsRecordingMic] = useState(false);
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
   const [synthesizingMessageId, setSynthesizingMessageId] = useState<number | null>(null);
+  const [streamingAiMessageId, setStreamingAiMessageId] = useState<number | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const isMicActiveRef = useRef(false);
@@ -311,6 +313,7 @@ export const PlacementTestRoomView: React.FC = () => {
     scenarioVoiceService.stopAllAudio();
     setPlayingMessageId(null);
     setSynthesizingMessageId(null);
+    setStreamingAiMessageId(null);
     isCompletingRef.current = false;
     hasCompletedResultRef.current = false;
     setIsLoading(true);
@@ -337,6 +340,9 @@ export const PlacementTestRoomView: React.FC = () => {
           setMessages(res.data.messageHistory);
         } else if (res.data.openingMessage) {
           setMessages([res.data.openingMessage]);
+        }
+        if (!res.data.isResumed && res.data.openingMessage?.id) {
+          setStreamingAiMessageId(res.data.openingMessage.id);
         }
         turnStartTimeRef.current = Date.now();
         if (reset && searchParams.get('reset') === '1') {
@@ -405,7 +411,7 @@ export const PlacementTestRoomView: React.FC = () => {
 
       const ensurePlaybackEndSafetyTimer = () => {
         if (playbackEndSafetyTimer !== null || hasFinished) return;
-        const estimatedMaxPlaybackMs = Math.min(40000, Math.max(15000, text.length * 450));
+        const estimatedMaxPlaybackMs = Math.min(75000, Math.max(20000, text.length * 550));
         playbackEndSafetyTimer = window.setTimeout(() => {
           finishNow();
         }, estimatedMaxPlaybackMs);
@@ -444,7 +450,7 @@ export const PlacementTestRoomView: React.FC = () => {
       }
 
       scenarioVoiceService
-        .playAiSpeech(
+        .playAiSpeechStreamed(
           text,
           speakerId,
           () => {
@@ -462,7 +468,9 @@ export const PlacementTestRoomView: React.FC = () => {
               setPlayingMessageId(msgId);
             }
             ensurePlaybackEndSafetyTimer();
-          }
+          },
+          undefined,
+          35000
         )
         .then(() => {
           // Nếu trình duyệt chặn autoplay khiến onStart chưa bắn ngay, gỡ nhãn "Đang chuẩn bị giọng..." sau 1.5s
@@ -501,6 +509,7 @@ export const PlacementTestRoomView: React.FC = () => {
     committedTranscriptRef.current = '';
     const userText = inputText.trim();
     setInputText('');
+    setStreamingAiMessageId(null);
     setIsSending(true);
     setStrikeWarning(null);
 
@@ -533,8 +542,11 @@ export const PlacementTestRoomView: React.FC = () => {
       if (res.success && res.data) {
         const turnData = res.data;
 
-        // 1. Hiển thị NGAY LẬP TỨC cả bản dịch lượt nói học viên lẫn câu trả lời của AI (Zero perceived latency)
+        // 1. Hiển thị NGAY LẬP TỨC cả bản dịch lượt nói học viên lẫn câu trả lời của AI (kèm hiệu ứng gõ chữ mượt như Scenario)
         setMessages((prev) => [...prev.slice(0, -1), turnData.userMessage, turnData.aiMessage]);
+        if (turnData.aiMessage?.id) {
+          setStreamingAiMessageId(turnData.aiMessage.id);
+        }
 
         // Cập nhật trạng thái sự kiện & tiêu chí chấm điểm trực tiếp ngay khi nhận phản hồi
         setCurrentEvent(turnData.currentEvent);
@@ -1296,16 +1308,32 @@ export const PlacementTestRoomView: React.FC = () => {
 
                       {/* Japanese Utterance */}
                       <div className="text-base font-medium leading-relaxed tracking-wide min-h-[1.75rem]">
-                        <p>{msg.japaneseText}</p>
+                        {isAi && streamingAiMessageId === msg.id ? (
+                          <p>
+                            <TypewriterText
+                              text={msg.japaneseText}
+                              baseSpeedMs={20}
+                              onComplete={() =>
+                                setStreamingAiMessageId((prev) => (prev === msg.id ? null : prev))
+                              }
+                            />
+                          </p>
+                        ) : (
+                          <p>{msg.japaneseText}</p>
+                        )}
                       </div>
 
                       {/* Vietnamese Meaning */}
                       {showTranslation && msg.vietnameseMeaning && (
                         <div
-                          className={`mt-2 border-t pt-2 text-xs leading-relaxed transition-all duration-300 ${
+                          className={`mt-2 border-t pt-2 text-xs leading-relaxed transition-all duration-500 ease-out ${
                             isAi
                               ? 'border-[var(--line)] text-[var(--sumi-muted)]'
                               : 'border-white/20 text-white/90'
+                          } ${
+                            isAi && streamingAiMessageId === msg.id
+                              ? 'opacity-0 translate-y-1 pointer-events-none'
+                              : 'opacity-100 translate-y-0'
                           }`}
                         >
                           {msg.vietnameseMeaning}
