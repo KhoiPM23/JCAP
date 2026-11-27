@@ -389,6 +389,12 @@
   .jx-practice-panel > .jx-phone-overlay { position: static; padding: 0; background: none; backdrop-filter: none; }
   .jx-practice-panel > .jx-phone-overlay > div { max-width: none; border: 0; border-radius: 0; overflow: visible; box-shadow: none; }
   .jx-practice-panel > .jx-phone-overlay > div:has(> form) > div:first-child { position: sticky; top: 0; z-index: 1; background-color: var(--paper-50); }
+  .jx-forum-page .jx-mobile-wrap { overflow-x: visible; }
+  .jx-support-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .jx-app.is-mobile .sb-top > div:first-child { flex-basis: 100%; }
+  .jx-app.is-mobile .sb-top :is(button, a), .jx-app.is-mobile .sb-tab { min-height: 44px; }
+  .jx-app.is-mobile .sb-ovp { width: 100%; max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain; }
 }
 
 @media (prefers-reduced-motion: reduce) {

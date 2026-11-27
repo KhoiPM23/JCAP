@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { PracticePanel } from '../components/jcap/PracticePanel';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import {
   type ForumChannel,
   type ForumAttachment,
@@ -30,6 +32,7 @@ export const CommunityForumView: React.FC = () => {
   const navigate = useNavigate();
   const { user, userLevel } = useAuth();
   const isAdmin = user?.role === 'Admin';
+  const mobile = usePhoneViewport() && !isAdmin;
   const currentUserName = user?.fullName || user?.email?.split('@')[0] || 'Học viên JCAP';
   const currentLevel = isAdmin ? 'ADMIN' : userLevel || 'N5';
 
@@ -392,7 +395,7 @@ export const CommunityForumView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto w-full space-y-4 pb-10 font-sans text-slate-900">
+    <div className="jx-touch-page jx-forum-page max-w-4xl mx-auto w-full space-y-4 pb-10 font-sans text-slate-900">
       {/* Header gọn 1 hàng */}
       <div className="bg-white rounded-2xl border border-slate-200/90 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -457,7 +460,7 @@ export const CommunityForumView: React.FC = () => {
 
       {/* Thanh lọc Kênh (Pills) + Tìm kiếm & Sắp xếp */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="jx-mobile-wrap flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <button
             type="button"
             onClick={() => setActiveChannel('ALL')}
@@ -974,7 +977,8 @@ export const CommunityForumView: React.FC = () => {
 
       {/* Modal Đăng bài thảo luận mới */}
       {isComposeOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <PracticePanel mobile={mobile} open label="Tạo chủ đề thảo luận" onDismiss={() => setIsComposeOpen(false)}>
+        <div className="jx-phone-overlay fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden">
             <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
               <h3 className="text-sm font-bold text-[#071A44]">
@@ -983,6 +987,7 @@ export const CommunityForumView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsComposeOpen(false)}
+                aria-label="Đóng soạn bài thảo luận"
                 className="w-7 h-7 rounded-lg hover:bg-slate-200/70 text-slate-500 font-bold cursor-pointer"
               >
                 ✕
@@ -1121,6 +1126,7 @@ export const CommunityForumView: React.FC = () => {
             </form>
           </div>
         </div>
+        </PracticePanel>
       )}
 
       {/* Lightbox xem ảnh */}

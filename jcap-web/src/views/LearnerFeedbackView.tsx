@@ -1,5 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
+import { PracticePanel } from '../components/jcap/PracticePanel';
 import {
   type FeedbackCategory,
   type FeedbackStatus,
@@ -37,6 +39,8 @@ const SUPPORT_CATEGORIES: FeedbackCategory[] = [
 
 export const LearnerFeedbackView: React.FC = () => {
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
+  const ticketDetailRef = useRef<HTMLDivElement>(null);
 
   // 2 nhóm chức năng tách biệt theo định hướng Mentor:
   // - SUPPORT: Hỗ trợ sự cố kỹ thuật / thanh toán / tài liệu (tương tác 1-1 với Admin)
@@ -269,7 +273,7 @@ export const LearnerFeedbackView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto w-full space-y-4 font-sans text-slate-900">
+    <div className="jx-touch-page max-w-6xl mx-auto w-full space-y-4 font-sans text-slate-900">
       {/* Header gọn 1 hàng + Chuyển đổi 2 nhóm chức năng rõ ràng */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -358,7 +362,7 @@ export const LearnerFeedbackView: React.FC = () => {
               </div>
 
               {/* Bộ lọc trạng thái gọn */}
-              <div className="grid grid-cols-4 gap-1 bg-slate-200/60 p-1 rounded-xl text-[11px] font-semibold">
+              <div className="jx-support-filters grid grid-cols-4 gap-1 bg-slate-200/60 p-1 rounded-xl text-[11px] font-semibold">
                 <button
                   type="button"
                   onClick={() => setStatusFilter('ALL')}
@@ -420,7 +424,14 @@ export const LearnerFeedbackView: React.FC = () => {
                     <button
                       key={ticket.id}
                       type="button"
-                      onClick={() => setSelectedTicketId(ticket.id)}
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        setSelectedTicketId(ticket.id);
+                        if (mobile) {
+                          ticketDetailRef.current?.focus({ preventScroll: true });
+                          ticketDetailRef.current?.scrollIntoView({ block: 'start' });
+                        }
+                      }}
                       className={`w-full text-left p-3.5 transition flex flex-col gap-1.5 cursor-pointer ${
                         isSelected
                           ? 'bg-blue-50/70 border-l-4 border-l-[#0878EE]'
@@ -461,7 +472,7 @@ export const LearnerFeedbackView: React.FC = () => {
           </div>
 
           {/* CỘT PHẢI (8/12): Chi tiết trao đổi xử lý sự cố với Admin */}
-          <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden flex flex-col">
+          <div ref={ticketDetailRef} tabIndex={mobile ? -1 : undefined} role="region" aria-label="Chi tiết phiếu hỗ trợ" className="jx-support-detail lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden flex flex-col">
             {!selectedTicket ? (
               <div className="p-12 text-center text-xs text-slate-500">
                 Chọn một phiếu ở cột bên trái để xem tiến độ xử lý của Admin.
@@ -740,7 +751,8 @@ export const LearnerFeedbackView: React.FC = () => {
 
       {/* Modal tạo phiếu yêu cầu Hỗ trợ sự cố */}
       {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <PracticePanel mobile={mobile} open label="Gửi yêu cầu hỗ trợ" onDismiss={() => setIsNewModalOpen(false)}>
+        <div className="jx-phone-overlay fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden">
             <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
               <h3 className="text-sm font-bold text-[#071A44]">
@@ -749,6 +761,7 @@ export const LearnerFeedbackView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsNewModalOpen(false)}
+                aria-label="Đóng tạo phiếu hỗ trợ"
                 className="w-7 h-7 rounded-lg hover:bg-slate-200/70 text-slate-500 font-bold cursor-pointer"
               >
                 ✕
@@ -868,6 +881,7 @@ export const LearnerFeedbackView: React.FC = () => {
             </form>
           </div>
         </div>
+        </PracticePanel>
       )}
 
       {/* Lightbox xem ảnh */}
