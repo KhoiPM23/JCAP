@@ -616,4 +616,49 @@ public class AdaptiveProfileServiceTests
         Assert.NotEqual("N3", consolidate.RecommendedLevel);
         Assert.Equal("N5", consolidate.RecommendedLevel);
     }
+
+    [Fact]
+    public async Task GetAdaptiveContextAsync_FailedN4Session_NeverRecommendsN3InAnyTier()
+    {
+        using var db = CreateInMemoryDbContext();
+        db.LearnerIntelligenceProfiles.Add(new LearnerIntelligenceProfile
+        {
+            UserId = "learner-fail-n4",
+            ThetaEstimate = 0.05,
+            CommunicativeProficiencyIndex = 62.0
+        });
+
+        var sFailedCurrent = new Scenario { Id = 1, Title = "Hỏi đường ga Shinjuku", IsActive = true };
+        sFailedCurrent.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 2001, ScenarioId = 1, JLPTLevel = "N4", Status = "Published" });
+
+        var sN3Unattempted = new Scenario { Id = 2, Title = "Lần đầu đi chợ", IsActive = true };
+        sN3Unattempted.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 2002, ScenarioId = 2, JLPTLevel = "N3", Status = "Published" });
+
+        var sN5A = new Scenario { Id = 3, Title = "Đi máy bay", IsActive = true };
+        sN5A.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 2003, ScenarioId = 3, JLPTLevel = "N5", Status = "Published" });
+
+        var sN5B = new Scenario { Id = 4, Title = "Gọi món Ramen", IsActive = true };
+        sN5B.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 2004, ScenarioId = 4, JLPTLevel = "N5", Status = "Published" });
+
+        var sN4Alt = new Scenario { Id = 5, Title = "Đặt phòng khách sạn", IsActive = true };
+        sN4Alt.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 2005, ScenarioId = 5, JLPTLevel = "N4", Status = "Published" });
+
+        db.Scenarios.AddRange(sFailedCurrent, sN3Unattempted, sN5A, sN5B, sN4Alt);
+        await db.SaveChangesAsync();
+
+        var service = new AdaptiveProfileService(db);
+        var ctx = await service.GetAdaptiveContextAsync(
+            "learner-fail-n4",
+            new JCAP.DTOs.Roleplay.AdaptiveContextQuery
+            {
+                ExcludeScenarioId = 1,
+                SessionPassed = false,
+                SessionLevel = "N4"
+            });
+
+        Assert.Equal(3, ctx.RecommendedScenarios.Count);
+        Assert.All(ctx.RecommendedScenarios, r => Assert.NotEqual("N3", r.RecommendedLevel));
+        var stretch = Assert.Single(ctx.RecommendedScenarios, r => r.Tier == "Stretch");
+        Assert.Equal("N4", stretch.RecommendedLevel);
+    }
 }

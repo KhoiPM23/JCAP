@@ -1937,16 +1937,11 @@ export const ConversationResultDetailView: React.FC = () => {
                       </span>
                     </>
                   ) : (
-                    <>
-                      <div className="my-auto">
-                        <span className="inline-flex items-center rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-bold text-amber-800">
-                          Chưa chấm âm học
-                        </span>
-                      </div>
-                      <p className="mt-auto text-[10px] text-[var(--sumi-muted)] leading-snug">
-                        Gõ phím / chưa có Whisper · Tổng điểm chuẩn hóa trên 3 trụ cột còn lại
-                      </p>
-                    </>
+                    <div className="my-auto">
+                      <span className="inline-flex items-center rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-bold text-amber-800">
+                        Chưa chấm âm học
+                      </span>
+                    </div>
                   )}
                 </div>
 

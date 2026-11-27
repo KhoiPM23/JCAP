@@ -1081,6 +1081,12 @@ public class AdaptiveProfileService : IAdaptiveProfileService
 
         int recRank = GetLevelRank(effectiveTargetDifficulty);
         int consolidateMaxRank = recRank >= 3 ? 2 : 1;
+        int stretchMaxRank = Math.Min(3, recRank + 1);
+        if (isTactical && query?.SessionPassed == false && !string.IsNullOrWhiteSpace(query.SessionLevel))
+        {
+            int failedRank = GetLevelRank(NormalizeJlptLevel(query.SessionLevel));
+            stretchMaxRank = Math.Min(stretchMaxRank, failedRank);
+        }
         DateTime nowUtc = DateTime.UtcNow;
 
         var scoredCandidates = scenarioRows.Select(s =>
@@ -1171,7 +1177,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 IsUnattempted = isUnattempted,
                 AttemptCount = hasHistory ? hist.AttemptCount : 0,
                 SupportsConsolidateLevel = levelList.Any(l => GetLevelRank(l) <= consolidateMaxRank),
-                SupportsStretchLevel = levelList.Any(l => GetLevelRank(l) > recRank)
+                SupportsStretchLevel = levelList.Any(l => GetLevelRank(l) > recRank && GetLevelRank(l) <= stretchMaxRank)
             };
         }).ToList();
 
@@ -1218,6 +1224,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             ScoredScenarioCandidate? stretch = scoredCandidates
                 .Where(c => !usedIds.Contains(c.Id))
                 .OrderByDescending(c => c.SupportsStretchLevel)
+                .ThenByDescending(c => c.PublishedLevels.Any(l => GetLevelRank(l) <= stretchMaxRank))
                 .ThenByDescending(c => c.IsUnattempted)
                 .ThenByDescending(c => c.RawScore)
                 .ThenBy(c => c.Id)
@@ -1228,9 +1235,14 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             {
                 usedIds.Add(stretch.Id);
                 string stretchLevel = stretch.PublishedLevels
-                    .Where(l => GetLevelRank(l) > recRank)
+                    .Where(l => GetLevelRank(l) > recRank && GetLevelRank(l) <= stretchMaxRank)
                     .OrderBy(GetLevelRank)
-                    .FirstOrDefault() ?? stretch.BestLevel;
+                    .FirstOrDefault()
+                    ?? stretch.PublishedLevels
+                        .Where(l => GetLevelRank(l) <= stretchMaxRank)
+                        .OrderByDescending(GetLevelRank)
+                        .FirstOrDefault()
+                    ?? stretch.BestLevel;
                 int stretchMatch = (int)Math.Clamp(Math.Round(stretch.RawScore), 60, Math.Max(60, coreMatch - 5));
                 stretchDto = BuildRecommendationDto(stretch, "Stretch", stretchLevel, thetaEff, stretchMatch, isTopPick: false, query);
             }
