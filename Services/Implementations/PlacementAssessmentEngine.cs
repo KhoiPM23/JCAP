@@ -475,9 +475,9 @@ namespace JCAP.Services.Implementations
                         bool aiStillAskingName = ContainsAny(aiReplyJapanese, "お名前", "名前を") && !aiAssignedRoom512;
                         bool userProvidedIdentityOrCheckIn = ContainsAny(
                             userText,
-                            "田中", "たなか", "タナカ", "申します", "予約", "チェックイン");
+                            "申します", "と言います", "といいます", "名前", "です", "予約", "チェックイン");
 
-                        if ((taskScore >= 80 && !aiStillAskingName) || aiAssignedRoom512 || (userProvidedIdentityOrCheckIn && !aiStillAskingName))
+                        if ((taskScore >= 60 && !aiStillAskingName) || aiAssignedRoom512 || (userProvidedIdentityOrCheckIn && !aiStillAskingName))
                         {
                             state.ReservationConfirmed = true;
                             RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
@@ -935,7 +935,7 @@ namespace JCAP.Services.Implementations
                 // Bước 2: Đưa ra câu hỏi lựa chọn ngắn A hoặc B
                 ja = state.CurrentEvent switch
                 {
-                    "EVT-01" => "お名前は「田中様」でよろしいですか？「はい」か「いいえ」でお答えください。",
+                    "EVT-01" => "チェックインですね。お名前を教えていただけますか？",
                     "EVT-02" => "この部屋で「いい」ですか？それとも「変えたい」ですか？",
                     "EVT-03" => "「デラックスにする」か「このままでいい」か、どちらがよろしいですか？",
                     "EVT-04" => "朝食は「おねがいします」か「けっこうです」、どちらですか？",
@@ -943,7 +943,7 @@ namespace JCAP.Services.Implementations
                 };
                 vi = state.CurrentEvent switch
                 {
-                    "EVT-01" => "Tên của quý khách có phải là Tanaka không ạ? Xin trả lời 'Vâng' hoặc 'Không'.",
+                    "EVT-01" => "Quý khách đến làm thủ tục nhận phòng phải không ạ? Quý khách cho tôi biết tên đặt phòng được không ạ?",
                     "EVT-02" => "Phòng này 'được' ạ? Hay quý khách 'muốn đổi' ạ?",
                     "EVT-03" => "Quý khách 'đổi sang Deluxe' hay 'giữ phòng này' ạ?",
                     "EVT-04" => "Bữa sáng quý khách 'đăng ký' hay 'thôi không cần' ạ?",
@@ -977,7 +977,7 @@ namespace JCAP.Services.Implementations
         {
             return $@"Bạn là Lễ tân khách sạn Sakura (ホテルさくら フロント係 - 山田), đóng vai giao tiếp trong bài Kiểm tra xếp lớp đầu vào (Placement Test) của nền tảng JCAP.
 Nhiệm vụ của bạn:
-1. Tiếp đón khách hàng (Tên khách: {userFullName} / 田中 様 / タナカ, đã đặt phòng Standard Room 3 đêm từ 10/11 - 13/11, có ghi chú 'Ưu tiên phòng yên tĩnh / 静かな部屋を希望').
+1. Tiếp đón khách hàng (Khách có thể tự do xưng bất kỳ tên nào — tên thật, tên tiếng Việt, Katakana hoặc tên tiếng Nhật; chấp nhận mọi tên hợp lệ mà khách nêu ra, TUYỆT ĐỐI KHÔNG bắt buộc tên 'Tanaka' hay một tên cố định nào; hãy ghi nhận đúng tên khách vừa xưng để xưng hô lịch sự kèm 「様」 ở các lượt sau. Khách đã đặt phòng Standard Room 3 đêm từ 10/11 - 13/11, có ghi chú 'Ưu tiên phòng yên tĩnh / 静かな部屋を希望').
    - Danh mục phòng cố định của khách sạn trong kịch bản (BẮT BUỘC giữ nhất quán số phòng xuyên suốt mọi lượt):
      + Phòng Standard xếp sẵn: Phòng 512 (スタンダードルームの512号室, tầng 5, ngay cạnh thang máy).
      + Phòng Deluxe nâng hạng thay thế: Phòng 801 (デラックスルームの801号室, tầng 8, xa thang máy, yên tĩnh, phụ phí +2,000 Yên/đêm = 6,000 Yên/3 đêm).
@@ -1045,7 +1045,7 @@ HƯỚNG DẪN ĐÁNH GIÁ (TURN ANALYSIS GUIDANCE):
      + ""Unfulfilled_Unclear"": Chưa trả lời được câu hỏi hoặc diễn đạt quá mơ hồ.
    - ""sentenceStructure"":
      + ""Complex_MultiClause"": Câu phức đa mệnh đề, điều kiện/giả định/nhượng bộ (〜なら, 〜のであれば, 〜となると, 〜ため, 〜はずなんですが) hoặc kết hợp mệnh đề với kính ngữ.
-     + ""Compound_LinkedClause"": Câu ghép nối mệnh đề (〜から, 〜ので, 〜が, 〜て) hoặc có mệnh đề định ngữ bổ nghĩa danh từ (3泊予約した田中).
+     + ""Compound_LinkedClause"": Câu ghép nối mệnh đề (〜から, 〜ので, 〜が, 〜て) hoặc có mệnh đề định ngữ bổ nghĩa danh từ (3泊予約したミン / 3泊予約した佐藤).
      + ""Simple_CompleteClause"": Câu đơn hoàn chỉnh có vị ngữ.
      + ""Fragment_WordOnly"": Từ đơn rời rạc hoặc cụm từ ngắn thiếu vị ngữ (như 'はい', '部屋、変えて').
    - ""grammarErrorSeverity"":
@@ -1472,10 +1472,10 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
   + 初級 (Sho - N5): Bài 1 ST1 (Nói thông tin cá nhân cơ bản và mục đích đến quầy).
   + 初中級 (Shochuu - N4): Bài 1 ST1 (Tự giới thiệu trang trọng kèm thông tin đặt chỗ).
   + 中級 (Chuu - N3): Bài 4 ST1/ST2 (Xác nhận chi tiết dịch vụ đã đặt trước và chủ động đề cập yêu cầu đặc biệt).
-- Tiêu chí phân bậc câu nói của học viên tại EVT-01:
-  + Mức N5: Xác nhận check-in và nêu tên bằng câu đơn ngắn (VD: 「チェックインをお願いします。田中です」).
-  + Mức N4: Nêu tên kèm chi tiết kỳ lưu trú (3 đêm) hoặc dùng khiêm nhường ngữ cơ bản (VD: 「今日から3泊予約した田中と申します。チェックインをお願いします」).
-  + Mức N3: Xác nhận đầy đủ thông tin đặt phòng kèm chủ động nhắc lại yêu cầu phòng yên tĩnh hoặc rào đón tự nhiên (VD: 「本日3泊で予約している田中と申します。予約時に静かな部屋をお願いしたんですが、確認していただけますか」).",
+- Tiêu chí phân bậc câu nói của học viên tại EVT-01 (chấp nhận mọi tên hợp lệ mà người học xưng, không ràng buộc tên cố định):
+  + Mức N5: Xác nhận check-in và nêu tên bằng câu đơn ngắn (VD: 「チェックインをお願いします。[Tên]です」).
+  + Mức N4: Nêu tên kèm chi tiết kỳ lưu trú (3 đêm) hoặc dùng khiêm nhường ngữ cơ bản (VD: 「今日から3泊予約した[Tên]と申します。チェックインをお願いします」).
+  + Mức N3: Xác nhận đầy đủ thông tin đặt phòng kèm chủ động nhắc lại yêu cầu phòng yên tĩnh hoặc rào đón tự nhiên (VD: 「本日3泊で予約している[Tên]と申します。予約時に静かな部屋をお願いしたんですが、確認していただけますか」).",
 
             "EVT-02" => @"- Tham chiếu giáo trình 『できる日本語』:
   + 初級 (Sho - N5): Bài 2 ST1 (Hỏi thông tin cơ bản tại quầy).
@@ -1519,8 +1519,8 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
         private static string GetConditionalDirectivesForEvent(PlacementAssessmentState state) => state.CurrentEvent switch
         {
             "EVT-01" => @"Sự kiện EVT-01 (Greeting & Reservation Confirmation):
-- Nhánh 1 (ConfirmReservation): CHỈ CHỌN KHI khách đã nêu tên (Tanaka / 田中 / タナカ) hoặc xác nhận đặt phòng check-in -> Lễ tân cảm ơn, xác nhận đặt phòng Standard 3 đêm (có lưu ý khách muốn phòng yên tĩnh), nhưng BẮT BUỘC thông báo rõ ngay trong câu trả lời rằng phòng trống hiện tại được xếp là Phòng 512 nằm ngay cạnh thang máy nên có thể hơi ồn (エレベーターのすぐ隣/近くのため音が気になる場合も…), rồi hỏi ý kiến khách xem phòng 512 này có ổn không hay muốn tìm phòng khác. **TUYỆT ĐỐI CHƯA nhắc tới Phòng Deluxe 801 hay phụ phí và CHƯA trao chìa khóa** (chuyển sang EVT-02).
-- Nhánh 2 (ConfirmReservationWithQuietRequest): Khách xác nhận tên (Tanaka / 田中 / タナカ) kèm chủ động nhắc lại yêu cầu phòng yên tĩnh -> Lễ tân xin lỗi và báo rõ phòng xếp hiện tại là Phòng 512 nằm ngay cạnh thang máy nên không thật sự yên tĩnh như yêu cầu đã đặt, hỏi ý kiến khách xem phòng 512 có ổn không hay muốn tìm phòng khác. **TUYỆT ĐỐI CHƯA đề xuất Phòng Deluxe 801 hay phụ phí ở bước này và CHƯA trao chìa khóa** (chuyển sang EVT-02).
+- Nhánh 1 (ConfirmReservation): CHỈ CHỌN KHI khách đã nêu tên (chấp nhận MỌI tên hợp lệ: tên Việt, Katakana, tên Nhật hay bất kỳ tên nào — TUYỆT ĐỐI KHÔNG bắt buộc phải là Tanaka) hoặc xác nhận đặt phòng check-in -> Lễ tân cảm ơn, gọi đúng tên khách vừa xưng kèm 「様」 (nếu có), xác nhận đặt phòng Standard 3 đêm (có lưu ý khách muốn phòng yên tĩnh), nhưng BẮT BUỘC thông báo rõ ngay trong câu trả lời rằng phòng trống hiện tại được xếp là Phòng 512 nằm ngay cạnh thang máy nên có thể hơi ồn (エレベーターのすぐ隣/近くのため音が気になる場合も…), rồi hỏi ý kiến khách xem phòng 512 này có ổn không hay muốn tìm phòng khác. **TUYỆT ĐỐI CHƯA nhắc tới Phòng Deluxe 801 hay phụ phí và CHƯA trao chìa khóa** (chuyển sang EVT-02).
+- Nhánh 2 (ConfirmReservationWithQuietRequest): Khách nêu tên (chấp nhận MỌI tên hợp lệ, không ràng buộc tên cố định) kèm chủ động nhắc lại yêu cầu phòng yên tĩnh -> Lễ tân xin lỗi, gọi đúng tên khách vừa xưng kèm 「様」 (nếu có) và báo rõ phòng xếp hiện tại là Phòng 512 nằm ngay cạnh thang máy nên không thật sự yên tĩnh như yêu cầu đã đặt, hỏi ý kiến khách xem phòng 512 có ổn không hay muốn tìm phòng khác. **TUYỆT ĐỐI CHƯA đề xuất Phòng Deluxe 801 hay phụ phí ở bước này và CHƯA trao chìa khóa** (chuyển sang EVT-02).
 - Nhánh 3 (GreetingOnlyOrIncomplete): Khách MỚI CHỈ chào hỏi ngắn (như おはよう, こんにちは) mà CHƯA nêu tên hoặc thông tin đặt phòng -> Lễ tân chào đáp lễ lịch sự và hỏi xin tên người đặt phòng (BẮT BUỘC đặt taskAchievement = Partial_IncompleteInfo, duy trì ở EVT-01).
 - Nhánh 4 (OffTopic): Khách nói nội dung không liên quan -> Lễ tân lịch sự hỏi lại xem có phải khách đến nhận phòng không.",
 
