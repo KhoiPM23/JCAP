@@ -51,7 +51,7 @@ export function LearningTopicContentsView() {
   const showTabs = !params.has('catalogKind');
   const unit = isVocabulary ? 'từ vựng' : 'mẫu ngữ pháp';
 
-  return <LearningPage>
+  return <LearningPage rememberScroll={!!data && !loading}>
     <div className="ll-page">
       <nav className="lc-breadcrumb" aria-label="Đường dẫn">
         <Link to={back}>Kho học liệu</Link>

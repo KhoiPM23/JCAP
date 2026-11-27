@@ -103,3 +103,10 @@
 @media(max-width:560px){.lc-tabs{gap:14px}.lc-tabs button{font-size:13px;gap:6px}.lc-tabs button>.jc-icon{display:none}.lc-tab-count{padding:0 5px;min-width:20px}.lc-page-numbers{display:none}}
 @media(pointer:coarse){.lc-pages>.jc-btn,.lc-tabs button{min-height:44px}}
 @media(max-width:560px){.lc-catalog-tabs a{min-height:44px;font-size:13px}.lc-catalog-tabs a>.jc-icon{display:none}}
+
+.jx-app.is-mobile .lc-page { padding-inline: 0; }
+.jx-app.is-mobile .lc-page input { font-size: 16px; }
+.jx-app.is-mobile .lc-page :is(.lc-tabs button, .lc-catalog-tabs a, .lc-pagination button, select) { min-height: 44px; }
+.jx-app.is-mobile .lc-search { padding-right: 3px; }
+.jx-app.is-mobile .lc-search button { min-width: 44px; min-height: 44px; justify-content: center; }
+.jx-app.is-mobile .lc-page :is(.lc-breadcrumb a, .ld-pagination a, .ld-reading-toggle) { display: inline-flex; align-items: center; min-height: 44px; }
