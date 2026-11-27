@@ -138,7 +138,7 @@ namespace JCAP.Services.Implementations
                     : null,
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = "Tanaka",
+                    GuestName = string.Empty,
                     ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                 }
             };
@@ -268,7 +268,7 @@ namespace JCAP.Services.Implementations
                         MessageHistory = history,
                         ContextPackage = new HotelContextPackageDto
                         {
-                            GuestName = "Tanaka",
+                            GuestName = string.Empty,
                             ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                         },
                         EventSummaries = existingState.EventSummaries
@@ -363,7 +363,7 @@ namespace JCAP.Services.Implementations
                 MessageHistory = [openingDto],
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = "Tanaka",
+                    GuestName = string.Empty,
                     ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                 }
             }, "Bắt đầu bài kiểm tra xếp lớp thành công.");
@@ -412,7 +412,7 @@ namespace JCAP.Services.Implementations
             }
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-            const string guestName = "Tanaka (田中)";
+            const string guestName = "";
 
             var state = !string.IsNullOrWhiteSpace(session.AssessmentStateJson)
                 ? JsonSerializer.Deserialize<PlacementAssessmentState>(session.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()

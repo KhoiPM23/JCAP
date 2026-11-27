@@ -245,11 +245,6 @@ export const LearnerProfileView: React.FC = () => {
                           Đánh giá đầu vào (Placement Test)
                         </h2>
                         <Badge tone={statusBadge.tone}>{statusBadge.label}</Badge>
-                        {allowRetake && (
-                          <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">
-                            🧪 TEST MODE (Cho phép làm lại)
-                          </span>
-                        )}
                       </div>
                       <p className="m-0 text-sm leading-[22px] text-sumi-muted">
                         Phỏng vấn tình huống Khách sạn Sakura (0 Credit) giúp ước lượng năng lực giao tiếp ban đầu từ N5 đến N3.
@@ -302,7 +297,7 @@ export const LearnerProfileView: React.FC = () => {
                         icon={ptState === 'Completed' ? 'restart_alt' : 'play_arrow'}
                         onClick={() => navigate(ptState === 'Completed' ? '/placement-test?reset=1' : '/placement-test')}
                       >
-                        {ptState === 'Completed' ? 'Làm lại để kiểm thử (Test)' : 'Bắt đầu đánh giá đầu vào (0 Credit)'}
+                        {ptState === 'Completed' ? 'Làm lại bài đánh giá' : 'Bắt đầu đánh giá đầu vào (0 Credit)'}
                       </Button>
                     ) : null}
 
