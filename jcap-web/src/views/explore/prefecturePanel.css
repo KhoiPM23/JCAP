@@ -9,6 +9,7 @@
 /* Lề hai bên của thẻ, vạch tiến độ và con dấu: bằng mép nút ở chân ngăn */
 .jm-pp { --pp-r: 16px; }
 .jm-pp.is-sheet { left: 0; right: 0; bottom: 0; height: 70%; border-radius: 22px 22px 0 0; }
+.jx-app.is-mobile .jm-pp.is-sheet { height: 62%; }
 .jm-pp-grab { display: block; flex: none; width: 40px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: var(--line-strong); opacity: .6; }
 .jm-pp :where(h2, h3, p, ol, ul) { margin: 0; padding: 0; }
 .jm-pp :where(ol, ul) { list-style: none; }

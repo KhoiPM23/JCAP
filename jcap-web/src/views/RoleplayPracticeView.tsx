@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom';
+import { PracticePanel } from '../components/jcap/PracticePanel';
+import { usePracticeViewport } from '../hooks/usePracticeViewport';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
@@ -122,6 +124,7 @@ const getScenarioThemePalette = (scenarioCode?: string, title?: string, sceneTyp
 };
 
 const RoleplayPracticeViewInternal: React.FC = () => {
+  const { mobile, room } = usePracticeViewport();
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
@@ -3162,7 +3165,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
   return (
-    <div data-theme="phong-luyen" className="flex h-screen flex-col overflow-hidden bg-[var(--paper-100)] text-[var(--sumi)] font-sans">
+    <div ref={room} data-theme="phong-luyen" className={`flex h-screen flex-col overflow-hidden bg-[var(--paper-100)] text-[var(--sumi)] font-sans${mobile ? ' jx-mobile-practice' : ''}`}>
       {/* Toast Notification */}
       {toastMessage && (
         <div
@@ -3195,13 +3198,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             onClick={() => setShowLeaveModal(true)}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] px-2.5 py-1.5 text-xs font-semibold text-[var(--sumi-faint)] transition hover:border-[var(--ai)] hover:text-[var(--ai)] hover:shadow-xs whitespace-nowrap active:scale-95"
             title="Tạm dừng và rời phòng luyện tập"
+            aria-label="Rời phòng"
           >
             <span>←</span>
             <span className="hidden sm:inline">Rời phòng</span>
           </button>
 
 
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
+          <div className="jx-practice-room-name flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
             <div className="shrink-0 p-1 rounded-full border border-stone-200 bg-white shadow-2xs aspect-square flex items-center justify-center">
               <LivingAvatar
                 size="sm"
@@ -3244,7 +3248,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
         {/* Center/Right: Compact Action Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="jx-practice-tools flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Combo Streak Badge (Game Feel / 連撃) */}
           {comboCount >= 2 && (
             <div
@@ -3319,6 +3323,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 : 'border-[var(--line)] bg-white text-[var(--sumi-muted)] hover:border-[var(--ai)]'
             }`}
             title="Ẩn/Hiện Danh sách nhiệm vụ kịch bản"
+            aria-label={`Nhiệm vụ (${completedMissionsCount}/${totalMissionsCount})`}
+            aria-expanded={isLeftOpen}
           >
             <ListTodoIcon className="w-3.5 h-3.5" />
             <span className="hidden lg:inline">Nhiệm vụ</span>
@@ -3351,7 +3357,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             {isSettingsOpen && (
               <div
                 ref={settingsRef}
-                className="absolute right-0 top-full mt-2 z-[200] w-80 rounded-3xl border border-stone-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] ring-1 ring-black/5 animate-fade-in text-xs space-y-4"
+                className="jx-practice-settings absolute right-0 top-full mt-2 z-[200] w-80 rounded-3xl border border-stone-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] ring-1 ring-black/5 animate-fade-in text-xs space-y-4"
               >
                 <div className="flex items-center justify-between border-b border-[var(--line)] pb-2.5">
                   <span className="font-bold text-[var(--sumi)] text-sm font-sans">Cài đặt hỗ trợ luyện tập</span>
@@ -3481,6 +3487,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         {/* ============================================================ */}
         {/* 1. LEFT SIDEBAR: Sổ tay Chiến thuật (Missions & Cheat Sheet) */}
         {/* ============================================================ */}
+        <PracticePanel mobile={mobile} open={isLeftOpen} label="Nhiệm vụ" onDismiss={() => setIsLeftOpen(false)}>
         <aside
           className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] washi-parchment relative flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
             isLeftOpen
@@ -3810,10 +3817,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             </div>
           </div>
         </aside>
+        </PracticePanel>
 
 
         {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn (Hiệu ứng bookmark thanh mảnh, không đè chữ) */}
-        <button
+        {!mobile && <button
           type="button"
           onClick={() => setIsLeftOpen(true)}
           className={`absolute top-4 left-0 z-30 flex items-center justify-center w-7 h-10 rounded-r-lg border border-l-0 border-[var(--line-strong)] bg-white/95 text-[var(--ai)] shadow-sm hover:bg-[var(--ai-soft)] hover:w-8 transition-all duration-200 ${
@@ -3824,7 +3832,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           title={`Mở rộng danh sách nhiệm vụ (${completedMissionsCount}/${totalMissionsCount})`}
         >
           <ListTodoIcon className="w-3.5 h-3.5" />
-        </button>
+        </button>}
 
 
         {/* ============================================================ */}
@@ -4263,7 +4271,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
           {/* HINT BAR & INPUT BAR */}
-          <footer className="shrink-0 border-t border-[var(--line)] bg-[var(--paper-50)] px-3 py-2 md:px-4 md:py-2.5 z-10 shadow-sm">
+          <footer className="jx-practice-composer shrink-0 border-t border-[var(--line)] bg-[var(--paper-50)] px-3 py-2 md:px-4 md:py-2.5 z-10 shadow-sm">
             <div className="mx-auto w-full max-w-[760px] space-y-1.5">
               {/* Mic Permission / Error Warning */}
               {micError && (
@@ -4753,6 +4761,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         {/* ============================================================ */}
         {/* 3. RIGHT SIDEBAR: Linguistic Feedback Panel                 */}
         {/* ============================================================ */}
+        <PracticePanel mobile={mobile} open={isRightOpen} label="Đánh giá lượt nói" onDismiss={() => setIsRightOpen(false)}>
         <aside
           className={`shrink-0 border-l border-[var(--line)] bg-[var(--paper-50)] flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
             isRightOpen
@@ -5053,6 +5062,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             </div>
           </div>
         </aside>
+        </PracticePanel>
       </div>
 
 

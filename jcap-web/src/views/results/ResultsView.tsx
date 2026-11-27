@@ -23,13 +23,14 @@ export const ResultsView: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pb-6">
+    <div className="jx-touch-page mx-auto flex w-full max-w-5xl flex-col gap-6 pb-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi">Kết quả</h1>
           <p className="m-0 text-[15px] leading-6 text-sumi-muted">Xem lại các buổi đã luyện và điểm của từng buổi.</p>
         </div>
         <SegmentedControl
+          className="jx-mobile-wrap"
           ariaLabel="Chọn loại kết quả"
           value={tab}
           onChange={changeTab}

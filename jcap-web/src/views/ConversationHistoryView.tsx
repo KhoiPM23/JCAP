@@ -84,7 +84,7 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
         </div>
 
         {/* Cụm Dấu Triện Hanko & Điểm số - Căn giữa trục tâm đồng nhất */}
-        <div className="flex items-center justify-between md:justify-end gap-3 sm:gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-stone-100 self-center">
+        <div className="jx-result-card-actions flex items-center justify-between md:justify-end gap-3 sm:gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-stone-100 self-center">
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {/* Dấu Triện Hanko (Passed / Failed Ink Seal) - Đồng bộ chuẩn Wabi-Sabi */}
             <ResultHankoStamp passed={result.passStatus} size="sm" />
@@ -192,7 +192,7 @@ export const ConversationHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-transparent text-slate-800 pb-6">
+    <div className="jx-touch-page relative bg-transparent text-slate-800 pb-6">
       <section className="mx-auto w-full max-w-5xl pb-6">
         {/* BANNER CHIẾN TÍCH ĐỐI THOẠI (RPG CHRONICLE HEADER) */}
         <header className="relative mb-8 overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-7 py-9 text-white shadow-xl md:px-10 border border-slate-700/50">
@@ -326,11 +326,12 @@ export const ConversationHistoryView: React.FC = () => {
               />
             </div>
 
-            <div className="inline-flex w-fit items-center gap-1 rounded-2xl border border-stone-200 bg-white p-1 shadow-2xs">
+            <div className="jx-mobile-wrap inline-flex w-fit items-center gap-1 rounded-2xl border border-stone-200 bg-white p-1 shadow-2xs">
               {(['all', 'N5', 'N4', 'N3'] as const).map((lv) => (
                 <button
                   key={lv}
                   type="button"
+                  aria-pressed={jlptFilter === lv}
                   onClick={() => {
                     ukiyoSound.playSubtleTap();
                     setJlptFilter(lv);

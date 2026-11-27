@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { PracticePanel } from '../../components/jcap/PracticePanel';
+import { PracticeConfirmation } from '../../components/jcap/PracticeConfirmation';
+import { usePracticeViewport } from '../../hooks/usePracticeViewport';
 import { Badge as JBadge, Button as JButton, Icon as JIcon, IconButton as JIconButton, JlptBadge as JJlptBadge, Logo as JLogo } from '../../components/jcap';
 import type { ShadowingSentenceItem } from '../../types/shadowing';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
@@ -18,6 +21,9 @@ import { DefaultAvatarImage } from '../../components/shadowing/DefaultAvatarImag
 import { useShadowingSession, displayRoleName } from '../../hooks/useShadowingSession';
 
 export const LearnerShadowingPracticeView: React.FC = () => {
+  const { mobile, room } = usePracticeViewport();
+  const [showContext, setShowContext] = useState(false);
+  const [confirmFinish, setConfirmFinish] = useState(false);
   const { themeFor } = useTheme();
   const { id } = useParams<{ id?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -235,7 +241,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   return (
     <div
       data-theme={themeFor('room')}
-      className="jx-room min-h-screen lg:h-screen lg:max-h-screen flex flex-col justify-between selection:bg-ai selection:text-white text-sumi font-sans lg:overflow-hidden"
+      ref={room}
+      className={`jx-room min-h-screen lg:h-screen lg:max-h-screen flex flex-col justify-between selection:bg-ai selection:text-white text-sumi font-sans lg:overflow-hidden${mobile ? ' jx-mobile-shadowing jx-mobile-practice' : ''}`}
     >
       {/* Styles for interactive tooltips & pulse animations */}
       <style>{`
@@ -297,9 +304,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
       {/* Thanh trên: logo, đường dẫn (kịch bản › bài), cấp độ của bài, cài đặt âm thanh */}
       <header className="jx-rm-bar">
-        <Link to={returnTo ?? '/shadowing'} aria-label="JCAP, về thư viện Shadowing" className="flex-none">
+        {mobile ? <JIconButton icon="arrow_back" label="Quay lại" onClick={handleBackToDialogueList} /> : <Link to={returnTo ?? '/shadowing'} aria-label="JCAP, về thư viện Shadowing" className="flex-none">
           <JLogo size={28} withName={false} />
-        </Link>
+        </Link>}
         <span className="jx-rm-div" aria-hidden="true" />
         <nav aria-label="Vị trí" className="jx-rm-crumb min-w-0">
           <button type="button" onClick={handleBackToDialogueList} title={dialogue.scenarioTitle}>
@@ -312,26 +319,29 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         </nav>
         {/* Cấp độ của bài: chỉ hiển thị, không đổi được ở đây */}
         <JJlptBadge level={(dialogue.jlptLevel || selectedLevel) as 'N5' | 'N4' | 'N3'} size="sm" />
-        <div className="flex-auto" />
+        {!mobile && <div className="flex-auto" />}
+        {mobile && <JIconButton icon="menu_book" label="Thông tin bài luyện" onClick={() => setShowContext(true)} />}
+        {mobile && <JIconButton icon="stop_circle" label="Kết thúc bài luyện" onClick={() => setConfirmFinish(true)} />}
         <JIconButton icon="tune" label="Cài đặt âm thanh" onClick={() => setIsAudioDeviceModalOpen(true)} />
       </header>
 
       {/* MAIN WORKSPACE CONTENT */}
       <main className="max-w-7xl w-full mx-auto py-3 px-4 sm:px-6 flex-1 flex flex-col min-h-0 lg:overflow-hidden">
         {/* Hàng lưới cao đúng bằng khung (minmax(0,1fr)): các cột không được cao hơn màn hình */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
+        <div className="jx-shadow-workspace grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
           {/* LEFT COLUMN: Context Panel (Hình 3) - Cố định vị trí, không cuộn theo đoạn chat */}
-          <section className="lg:col-span-4 flex flex-col gap-4 lg:h-full lg:overflow-y-auto pr-1">
+          <PracticePanel mobile={mobile} open={showContext} label="Thông tin bài luyện" onDismiss={() => setShowContext(false)}>
+          <section className="jx-shadow-context lg:col-span-4 flex flex-col gap-4 lg:h-full lg:overflow-y-auto pr-1">
             <div className="rounded-[28px] p-5 border border-line bg-paper-50 relative overflow-hidden" style={{ boxShadow: '0 10px 30px rgba(15,37,56,.06)' }}>
               {/* Quay lại / Kết thúc */}
-              <div className="flex items-center justify-between mb-4">
+              {mobile ? <div className="mb-3 flex justify-end"><JIconButton icon="close" label="Đóng thông tin bài luyện" onClick={() => setShowContext(false)} /></div> : <div className="flex items-center justify-between mb-4">
                 <JButton variant="secondary" size="sm" icon="arrow_back" onClick={handleBackToDialogueList}>
                   Quay lại
                 </JButton>
                 <JButton variant="danger" size="sm" icon="stop_circle" onClick={handleFinishDialogue}>
                   Kết thúc
                 </JButton>
-              </div>
+              </div>}
 
               {/* Ảnh bối cảnh + nhân vật đè góc */}
               <div className="relative pb-10">
@@ -369,6 +379,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   icon="swap_horiz"
                   onClick={() => {
                     stopAllAudio();
+                    setShowContext(false);
                     setIsRoleModalOpen(true);
                   }}
                 >
@@ -442,7 +453,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <button
                       type="button"
-                      onClick={() => setIsFullScriptModalOpen(true)}
+                      onClick={() => {
+                        setShowContext(false);
+                        setIsFullScriptModalOpen(true);
+                      }}
                       className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-paper-50 hover:bg-ai-soft border border-line-strong text-sumi hover:text-ai text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
                     >
                       Toàn bộ hội thoại
@@ -466,9 +480,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               </div>
             </div>
           </section>
+          </PracticePanel>
 
           {/* RIGHT COLUMN: Dialogue Stream & Mic Console */}
-          <section className="lg:col-span-8 flex flex-col justify-between lg:h-full min-h-0 lg:overflow-hidden gap-2">
+          <section className="jx-shadow-dialogue lg:col-span-8 flex flex-col justify-between lg:h-full min-h-0 lg:overflow-hidden gap-2">
             {/* Dialogue Stream - CHỈ PHẦN NÀY ĐƯỢC CUỘN */}
             <div ref={dialogueScrollRef} className="dialogue-scroll-container flex-1 overflow-y-auto min-h-0 pr-2 space-y-4 pb-2">
               {sentences.slice(0, currentSentenceIndex + 1).map((s, idx) => {
@@ -502,7 +517,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         </div>
 
                         {/* Nút hành động nằm NGOÀI bong bóng, góc dưới phía avatar (bên trái) */}
-                        <div className="flex items-center justify-start gap-1.5 mt-1.5 ml-1">
+                        <div className="jx-shadow-sentence-actions flex items-center justify-start gap-1.5 mt-1.5 ml-1">
                           <button
                             type="button"
                             onClick={() => toggleTranslation(s.id)}
@@ -597,9 +612,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       </div>
 
                       {/* Nút hành động nằm NGOÀI bong bóng, góc dưới bên phải (phía avatar) */}
-                      <div className="flex items-center justify-end gap-1.5 mt-1.5 w-full max-w-xl pr-10">
+                      <div className="jx-shadow-sentence-actions flex items-center justify-end gap-1.5 mt-1.5 w-full max-w-xl pr-10">
                         {/* 1. Mic: ghi âm / nghe lại giọng của bạn */}
-                        <button
+                        {(!mobile || hasRecordedAudio) && <button
                           type="button"
                           onClick={() => {
                             if (hasRecordedAudio) {
@@ -610,12 +625,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           }}
                           className="h-7 w-8 sm:w-9 rounded-full bg-paper-50 hover:bg-ai-soft text-ai border border-line-strong flex items-center justify-center transition-all shadow-2xs cursor-pointer"
                           title={hasRecordedAudio ? "Nghe lại giọng ghi âm của bạn" : "Bấm để ghi âm câu này"}
+                          aria-label={hasRecordedAudio ? 'Nghe lại bản thu' : 'Ghi âm câu này'}
                         >
                           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                             <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                             <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                           </svg>
-                        </button>
+                        </button>}
 
                         {/* 2. Nghe mẫu */}
                         <button
@@ -658,7 +674,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
             {/* ACTION CONSOLE (Recording & Evaluation) (Hình 4) - Cố định vị trí ở đáy */}
             {/* Cao tối đa 70% cột để khung hội thoại luôn còn chỗ; nhận xét dài thì cuộn bên trong */}
-            <div className="w-full flex-shrink-0 pt-2 pb-1 z-10 lg:max-h-[70%] lg:overflow-y-auto">
+            <div className="jx-practice-composer w-full flex-shrink-0 pt-2 pb-1 z-10 lg:max-h-[70%] lg:overflow-y-auto">
               <div
                 className="w-full rounded-[24px] border-2 border-dashed bg-paper-50 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
@@ -1165,6 +1181,19 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       </div>
     )}
 
+      {mobile && confirmFinish && practiceState !== 'completed' && (
+        <PracticeConfirmation
+          title="Kết thúc bài Shadowing?"
+          description="Bạn sẽ rời phần luyện và xem tổng kết các câu đã hoàn thành."
+          confirmLabel="Kết thúc bài luyện"
+          onCancel={() => setConfirmFinish(false)}
+          onConfirm={() => {
+            setConfirmFinish(false);
+            void handleFinishDialogue();
+          }}
+        />
+      )}
+
       <RoleSelectionModal
         isOpen={isRoleModalOpen}
         onClose={() => setIsRoleModalOpen(false)}
@@ -1172,6 +1201,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         dialogueTitle={dialogue.title}
         roleAName={displayRoleName(dialogue.speakerRoleA_Name)}
         roleBName={displayRoleName(dialogue.speakerRoleB_Name)}
+        currentRole={userRole}
         onConfirm={handleConfirmRoleChange}
       />
 

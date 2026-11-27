@@ -194,9 +194,12 @@
 .fm-composer .jc-modal__foot { align-items: center; }
 .fm-cp-why { flex: 1; min-width: 0; margin: 0; font-size: 13px; color: var(--sumi-muted); }
 .fm-toast { position: fixed; left: 50%; bottom: 28px; z-index: 80; transform: translateX(-50%); animation: fm-fade 0.2s ease both; }
-@media (max-width: 760px) {
-  .fm .jc-overlay { padding: 0; }
-  .fm .jc-overlay .fm-composer { max-width: none; height: 100%; max-height: none; border-radius: 0; }
+@media (max-width: 767px), (max-width: 1023px) and (max-height: 500px) and (pointer: coarse) {
+  .fm .jc-overlay { padding: 0; align-items: flex-end; }
+  .fm .jc-overlay .fm-composer { max-width: none; max-height: 92dvh; border-radius: 20px 20px 0 0; }
+  .jx-app.is-mobile .fm .fm-rc-list { flex-wrap: wrap; overflow-x: visible; }
+  .jx-app.is-mobile .fm :is(.fm-rc, .fm-act, .jc-seg__opt) { min-height: 44px; }
+  .fm-composer :is(input, textarea) { font-size: 16px; }
   .fm-composer .jc-modal__body { flex: 1; }
   .fm-cp-grid { grid-template-columns: 1fr; }
   .fm-composer .jc-modal__foot { flex-direction: column-reverse; align-items: stretch; }

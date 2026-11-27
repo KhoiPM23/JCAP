@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { PracticeConfirmation } from '../components/jcap/PracticeConfirmation';
+import { usePracticeViewport } from '../hooks/usePracticeViewport';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
 import {
@@ -50,6 +52,8 @@ export const PlacementTestRoomView: React.FC = () => {
   const [isHandsFreeMode, setIsHandsFreeMode] = useState(false);
   const [showTranslation, setShowTranslation] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { mobile, room } = usePracticeViewport();
+  const [pendingAction, setPendingAction] = useState<'restart' | 'finish' | null>(null);
   const [inputText, setInputText] = useState('');
   const [isRecordingMic, setIsRecordingMic] = useState(false);
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
@@ -613,8 +617,9 @@ export const PlacementTestRoomView: React.FC = () => {
 
   return (
     <div
+      ref={room}
       data-theme="phong-luyen"
-      className="flex h-screen flex-col overflow-hidden bg-[var(--paper-100)] text-[var(--sumi)] font-sans"
+      className={`flex h-screen flex-col overflow-hidden bg-[var(--paper-100)] text-[var(--sumi)] font-sans${mobile ? ' jx-mobile-practice' : ''}`}
     >
       {/* ========================================================================= */}
       {/* 1. TOP HEADER BAR                                                         */}
@@ -625,6 +630,7 @@ export const PlacementTestRoomView: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowLeaveModal(true)}
+            aria-label="Rời phòng"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs font-semibold text-[var(--sumi-faint)] transition hover:border-[var(--ai)] hover:text-[var(--ai)] hover:shadow-xs whitespace-nowrap active:scale-95 cursor-pointer"
             title="Tạm dừng và rời phòng"
           >
@@ -632,7 +638,7 @@ export const PlacementTestRoomView: React.FC = () => {
             <span className="hidden sm:inline">Rời phòng</span>
           </button>
 
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
+          <div className="jx-practice-room-name flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
             <div className="shrink-0 p-1 rounded-full border border-stone-200 bg-white shadow-2xs aspect-square flex items-center justify-center">
               <LivingAvatar
                 size="sm"
@@ -672,13 +678,13 @@ export const PlacementTestRoomView: React.FC = () => {
         </div>
 
         {/* Right: Controls chuẩn Scenario */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="jx-practice-tools flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Nút Làm lại bài mới (Huỷ phiên đang dở và khởi tạo lại từ EVT-01) */}
           {allowRetakeForTesting && (
             <button
               type="button"
               disabled={isLoading || isSending}
-              onClick={() => void loadPlacementSession(true)}
+              onClick={() => mobile ? setPendingAction('restart') : void loadPlacementSession(true)}
               className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-[var(--line)] bg-white px-2 sm:px-2.5 py-1.5 text-xs font-semibold text-[var(--sumi)] hover:border-[var(--ai)] hover:text-[var(--ai)] transition active:scale-95 cursor-pointer shadow-2xs disabled:opacity-50"
               title="Huỷ phiên đang làm dở và bắt đầu lại bài kiểm tra từ đầu (Reset)"
             >
@@ -733,7 +739,7 @@ export const PlacementTestRoomView: React.FC = () => {
             </button>
 
             {isSettingsOpen && (
-              <div className="absolute right-0 top-full mt-2 z-[200] w-72 rounded-2xl border border-[var(--line)] bg-white p-4 shadow-xl ring-1 ring-black/5 animate-fade-in text-xs space-y-3">
+              <div className="jx-practice-settings absolute right-0 top-full mt-2 z-[200] w-72 rounded-2xl border border-[var(--line)] bg-white p-4 shadow-xl ring-1 ring-black/5 animate-fade-in text-xs space-y-3">
                 <div className="flex items-center justify-between border-b border-[var(--line)] pb-2">
                   <span className="font-bold text-[var(--sumi)] text-sm">Cài đặt hiển thị</span>
                   <button
@@ -782,7 +788,7 @@ export const PlacementTestRoomView: React.FC = () => {
           ) : (
             <button
               type="button"
-              onClick={() => void handleConcludeAndFetchResult()}
+              onClick={() => mobile ? setPendingAction('finish') : void handleConcludeAndFetchResult()}
               className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-red-200 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 whitespace-nowrap cursor-pointer active:scale-95"
               title="Hoàn tất bài thi sớm để xem bảng điểm và trình độ ước tính"
             >
@@ -792,6 +798,19 @@ export const PlacementTestRoomView: React.FC = () => {
           )}
         </div>
       </header>
+      {mobile && pendingAction && (
+        <PracticeConfirmation
+          title={pendingAction === 'restart' ? 'Làm lại bài kiểm tra?' : 'Kết thúc sớm bài kiểm tra?'}
+          description={pendingAction === 'restart' ? 'Bài đang làm sẽ bị hủy. Bài mới bắt đầu từ câu đầu tiên.' : 'Bạn sẽ dừng bài kiểm tra và xem kết quả hiện tại.'}
+          confirmLabel={pendingAction === 'restart' ? 'Làm lại từ đầu' : 'Kết thúc sớm'}
+          onCancel={() => setPendingAction(null)}
+          onConfirm={() => {
+            setPendingAction(null);
+            if (pendingAction === 'restart') void loadPlacementSession(true);
+            else void handleConcludeAndFetchResult();
+          }}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* 2. BODY WORKSPACE (FOCUSED CHAT LAYOUT)                                   */}
@@ -1036,7 +1055,7 @@ export const PlacementTestRoomView: React.FC = () => {
           {/* ============================================================ */}
           {/* 2.C. BOTTOM STICKY INPUT BAR                                 */}
           {/* ============================================================ */}
-          <div className="border-t border-[var(--line)] bg-[var(--paper-50)]/95 backdrop-blur-sm p-3 sm:p-4 shadow-lg">
+          <div className="jx-practice-composer border-t border-[var(--line)] bg-[var(--paper-50)]/95 backdrop-blur-sm p-3 sm:p-4 shadow-lg">
             <div className="mx-auto w-full max-w-[800px] space-y-2">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2 sm:gap-3">
                 {/* Button Micro thu âm (ở bên trái, chuẩn RoleplayPracticeView) */}

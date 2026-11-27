@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import logoMark from '../assets/jcap-logo-mark.svg';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import '../views/auth/auth.css';
 
 // Hình bên trái vẽ bản đồ từ dữ liệu 47 tỉnh: tách chunk riêng, form vẫn hiện ngay khi hình chưa tải xong
@@ -20,10 +21,17 @@ const artTitle = (path: string) => {
 export const AuthLayout: React.FC = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
 
   return (
-    <div className="auth" data-theme="kham-pha">
-      <div className="au-art">
+    <div className={mobile ? 'auth au-mobile' : 'auth'} data-theme="kham-pha">
+      {mobile ? (
+        <header className="au-mobile-header">
+          <button type="button" className="home" onClick={() => navigate('/')} aria-label="Về trang giới thiệu JCAP">
+            <img src={logoMark} alt="" /> JCAP
+          </button>
+        </header>
+      ) : <div className="au-art">
         <React.Suspense fallback={null}>
           <AuthArt />
         </React.Suspense>
@@ -37,7 +45,7 @@ export const AuthLayout: React.FC = () => {
           <h2>{artTitle(pathname)}</h2>
           <p>Luyện nói qua những tình huống bạn sẽ gặp ở Nhật, cho người Việt từ N5 đến N3.</p>
         </div>
-      </div>
+      </div>}
       <main className="au-form">
         <Outlet />
       </main>

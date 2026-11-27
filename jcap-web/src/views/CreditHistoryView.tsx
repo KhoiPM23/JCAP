@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
+import { PracticePanel } from '../components/jcap/PracticePanel';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
 import { formatDateTime, parseDateTime } from '../utils/dateUtils';
@@ -11,6 +13,7 @@ const PENDING_TIMEOUT_MS = 10 * 60 * 1000; // Thời gian tự hủy đơn treo:
 export const CreditHistoryView: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
   const [data, setData] = useState<CreditHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -285,9 +288,9 @@ export const CreditHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 font-sans">
+    <div className="jx-touch-page jx-credit-page max-w-6xl mx-auto py-8 px-4 sm:px-6 font-sans">
       {/* Breadcrumb & Nút Thoát / Quay lại */}
-      <div className="w-full flex items-center justify-between gap-4 mb-8">
+      <div className="jx-mobile-wrap w-full flex items-center justify-between gap-4 mb-8">
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium">
           <Link to="/" className="hover:text-[#0878EE] transition">Trang chủ</Link>
           <span>/</span>
@@ -371,7 +374,7 @@ export const CreditHistoryView: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table role="table" aria-label="Các giao dịch Credit" className="jx-mobile-records jx-credit-records w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-[#E6EDF5] text-[#71809A] uppercase tracking-wider font-semibold">
                   <th className="py-3.5 px-6">Thời Gian</th>
@@ -383,7 +386,7 @@ export const CreditHistoryView: React.FC = () => {
                   <th className="py-3.5 px-6 text-center">Thao Tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E6EDF5]">
+              <tbody role="rowgroup" className="divide-y divide-[#E6EDF5]">
                 {data.transactions.map((tx: CreditTransaction) => {
                   const isPositive = tx.amount > 0;
                   const isPending =
@@ -391,14 +394,14 @@ export const CreditHistoryView: React.FC = () => {
                     getRemainingSeconds(tx.createdAt, nowMs) > 0;
 
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-4 px-6 text-[#071A44] font-medium whitespace-nowrap">
+                    <tr key={tx.id} role="row" className="jx-record-row hover:bg-slate-50/70 transition-colors">
+                      <td role="cell" className="py-4 px-6 text-[#071A44] font-medium whitespace-nowrap">
                         {formatDate(tx.createdAt)}
                       </td>
-                      <td className="py-4 px-6 text-[#475467] whitespace-nowrap">
+                      <td role="cell" className="py-4 px-6 text-[#475467] whitespace-nowrap">
                         {getTypeLabel(tx.type)}
                       </td>
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <td role="cell" className="py-4 px-6 text-right whitespace-nowrap">
                         {tx.type.toLowerCase() === 'subscription' ? (
                           <span className="font-bold text-xs text-[#0878EE] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
                             Hạn mức {tx.amount} Credits/tuần
@@ -416,18 +419,18 @@ export const CreditHistoryView: React.FC = () => {
                           </>
                         )}
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td role="cell" className="py-4 px-6 whitespace-nowrap">
                         {getStatusBadge(tx)}
                       </td>
-                      <td className="py-4 px-6 text-[#475467] max-w-xs truncate">
+                      <td role="cell" className="py-4 px-6 text-[#475467] max-w-xs truncate">
                         {formatDescription(tx.description)}
                       </td>
-                      <td className="py-4 px-6 text-[#71809A] font-mono text-[11px] whitespace-nowrap">
+                      <td role="cell" className="py-4 px-6 text-[#71809A] font-mono text-[11px] whitespace-nowrap">
                         {tx.payOsOrderCode ? `#${tx.payOsOrderCode}` : '—'}
                       </td>
-                      <td className="py-4 px-6 text-center whitespace-nowrap">
+                      <td role="cell" className="py-4 px-6 text-center whitespace-nowrap">
                         {isPending && tx.payOsOrderCode ? (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="jx-mobile-wrap flex items-center justify-center gap-2">
                             <button
                               type="button"
                               disabled={!!actionLoadingId}
@@ -500,7 +503,8 @@ export const CreditHistoryView: React.FC = () => {
 
       {/* Confirmation Modal for Hủy giao dịch nạp tiền */}
       {cancelTargetTx && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
+        <PracticePanel mobile={mobile} open label="Xác nhận hủy giao dịch" onDismiss={() => { if (!actionLoadingId) setCancelTargetTx(null); }}>
+        <div className="jx-phone-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-150">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-xl shrink-0">
@@ -551,6 +555,7 @@ export const CreditHistoryView: React.FC = () => {
             </div>
           </div>
         </div>
+        </PracticePanel>
       )}
     </div>
   );

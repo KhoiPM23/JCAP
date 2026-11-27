@@ -76,7 +76,8 @@ type MapNavState = { jmDepth?: number; jmSpot?: boolean; jmPractice?: boolean } 
 export const JapanMapView: React.FC<{
   /** false khi bản đồ đang nằm ẩn dưới trang khác (khung học viên giữ nó sống để chuyển cảnh mượt): không bắt phím, không cướp focus */
   active?: boolean;
-}> = ({ active = true }) => {
+  mobileLayout?: boolean;
+}> = ({ active = true, mobileLayout = false }) => {
   const activeRef = useRef(active);
   activeRef.current = active;
   const navigate = useNavigate();
@@ -85,6 +86,16 @@ export const JapanMapView: React.FC<{
   const isWide = useMediaQuery('(min-width: 1024px)');
   const viewportWidth = useViewportWidth();
   const viewportHeight = useViewportHeight();
+  const mapRef = useRef<HTMLElement>(null);
+  const [mapHeight, setMapHeight] = useState(0);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mobileLayout || !map) return;
+    const observer = new ResizeObserver(([entry]) => setMapHeight(entry.contentRect.height));
+    observer.observe(map);
+    return () => observer.disconnect();
+  }, [mobileLayout]);
+  const reserveBottom = Math.round(mobileLayout && mapHeight ? mapHeight * 0.62 : viewportHeight * SHEET_RATIO);
   const isTouch = useMediaQuery('(pointer: coarse)');
   const isWideHint = useMediaQuery('(min-width: 761px)');
   const [interacted, setInteracted] = useState(false);
@@ -273,7 +284,7 @@ export const JapanMapView: React.FC<{
       />
 
       {/* Vùng bản đồ (biển, bờ, đất do JapanMap vẽ) */}
-      <main className="relative h-full">
+      <main ref={mapRef} className="relative h-full">
         <JapanMap
           selectedId={selectedId}
           onSelect={selectPrefecture}
@@ -285,7 +296,7 @@ export const JapanMapView: React.FC<{
           reserveRight={
             selected && isWide ? PANEL_WIDTH_PX + 28 + (practiceSpot ? practiceChatWidth(viewportWidth) + 12 : 0) : 0
           }
-          reserveBottom={selected && !isWide ? Math.round(viewportHeight * SHEET_RATIO) : 0}
+          reserveBottom={selected && !isWide ? reserveBottom : 0}
           onInteract={() => setInteracted(true)}
           legend={<MapLegend />}
           search={
@@ -366,7 +377,7 @@ export const JapanMapView: React.FC<{
 
         {!selected && <PanelWarmUp />}
 
-        {import.meta.env.DEV && <MissingIconsDevNotice />}
+        {import.meta.env.DEV && !mobileLayout && <MissingIconsDevNotice />}
 
         {/* Thông tin tỉnh: panel bên phải (màn rộng) hoặc ngăn dưới (màn hẹp) */}
         {panelPref && (

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { PracticeConfirmation } from '../../components/jcap/PracticeConfirmation';
+import { usePhoneViewport } from '../../hooks/usePhoneViewport';
 import { flashcardService } from '../../services/flashcardService';
 import { DEMO_VOCAB_SET, DEMO_GRAMMAR_SET } from './demoFlashcardData';
 import type {
@@ -39,6 +41,10 @@ export const FlashcardSessionView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { themeFor, isDark } = useTheme();
+  const mobile = usePhoneViewport();
+  const [confirmExit, setConfirmExit] = useState(false);
+  const [ratingPending, setRatingPending] = useState(false);
+  const ratingPendingRef = useRef(false);
 
   const isExtraPractice = searchParams.get('extraPractice') === 'true' || searchParams.get('mode') === 'extra';
   const rawStudyMode = searchParams.get('studyMode')?.toLowerCase();
@@ -488,10 +494,24 @@ export const FlashcardSessionView: React.FC = () => {
     setIsCompleted(true);
   }, [isCompleted, isDemo, ratingCounts, session, navigate]);
 
+  const rateFromControls = async (rating: FlashcardRating) => {
+    if (!mobile) return handleRate(rating);
+    if (!isFlipped || ratingPendingRef.current) return;
+
+    ratingPendingRef.current = true;
+    setRatingPending(true);
+    try {
+      await handleRate(rating);
+    } finally {
+      ratingPendingRef.current = false;
+      setRatingPending(false);
+    }
+  };
+
   // Bắt phím tắt bàn phím: Space (Lật), 1/2/3 (Đánh giá), A (Nghe), B (Bookmark), Esc (Thoát)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isCompleted) return;
+      if (isCompleted || mobile) return;
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -531,6 +551,7 @@ export const FlashcardSessionView: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     isCompleted,
+    mobile,
     handleRate,
     handlePrevCard,
     handleNextCard,
@@ -899,14 +920,15 @@ export const FlashcardSessionView: React.FC = () => {
   const isGrammarFront = isCurrentCardGrammar && !isFlipped;
 
   return (
-    <div data-theme={themeFor('learn')} className="min-h-screen bg-paper-100 flex flex-col justify-between font-sans selection:bg-ai-soft text-sumi">
+    <div data-theme={themeFor('learn')} className="jx-flash-study min-h-screen bg-paper-100 flex flex-col justify-between font-sans selection:bg-ai-soft text-sumi">
 
       {/* ==================== 1. TOP FOCUS HEADER (3 VÙNG + PROGRESS BAR SÁT ĐÁY) ==================== */}
-      <header className="relative bg-paper-50 border-b border-line px-4 sm:px-6 py-3 min-h-[60px] flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+      <header className="jx-flash-study-header relative bg-paper-50 border-b border-line px-4 sm:px-6 py-3 min-h-[60px] flex items-center justify-between sticky top-0 z-30 shadow-2xs">
         {/* VÙNG 1 (TRÁI): Nút thoát phiên */}
         <div className="flex items-center shrink-0 min-w-[120px] sm:w-64">
           <button
-            onClick={handleExitSession}
+            onClick={mobile ? () => setConfirmExit(true) : handleExitSession}
+            disabled={mobile && ratingPending}
             className="px-3.5 py-1.5 bg-paper-100 hover:bg-paper-200 text-sumi border border-line rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             title="Tạm dừng/thoát phiên học và lưu tiến độ [Esc]"
           >
@@ -1017,9 +1039,9 @@ export const FlashcardSessionView: React.FC = () => {
 
         {/* ==================== THẺ FLASHCARD TỐI GIẢN (PA3 - ULTRA-MINIMALIST QUIZLET STYLE) ==================== */}
         <div
-          className="w-full max-w-[760px] h-[440px] cursor-pointer select-none"
+          className="jx-flash-study-card w-full max-w-[760px] h-[440px] cursor-pointer select-none"
           style={{ perspective: '1200px' }}
-          onClick={handleToggleFlip}
+          onClick={mobile ? undefined : handleToggleFlip}
         >
           <div
             className="relative w-full h-full rounded-3xl"
@@ -1032,6 +1054,7 @@ export const FlashcardSessionView: React.FC = () => {
           >
             {/* ==================== MẶT TRƯỚC (CHỈ HIỂN THỊ TỪ VỰNG / NGỮ PHÁP) ==================== */}
             <div
+              inert={mobile && isFlipped}
               className="absolute inset-0 w-full h-full bg-paper-50 rounded-3xl border border-line p-8 shadow-lg flex flex-col justify-between text-sumi"
               style={{
                 backfaceVisibility: 'hidden',
@@ -1072,6 +1095,7 @@ export const FlashcardSessionView: React.FC = () => {
 
             {/* ==================== MẶT SAU (CẤU TRÚC / CÁCH ĐỌC + NGHĨA + CÂU MẪU + GIẢI THÍCH) ==================== */}
             <div
+              inert={mobile && !isFlipped}
               className={`absolute inset-0 w-full h-full bg-paper-50 rounded-3xl border-2 p-6 sm:p-8 shadow-lg flex flex-col justify-between text-sumi ${
                 isCurrentCardGrammar ? 'border-purple-500/30' : 'border-ai/30'
               }`}
@@ -1182,7 +1206,7 @@ export const FlashcardSessionView: React.FC = () => {
 
         {/* ==================== THANH CÔNG CỤ BÊN DƯỚI THẺ (ACTION TOOLBAR) ==================== */}
         <div className="w-full max-w-[760px] mt-3.5 flex flex-col items-center space-y-2">
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-paper-50 px-3 py-2 rounded-2xl border border-line shadow-2xs">
+          <div className="jx-flash-study-tools inline-flex flex-wrap items-center justify-center gap-2 bg-paper-50 px-3 py-2 rounded-2xl border border-line shadow-2xs">
             {/* 1. Nút Nghe mẫu [A] */}
             <button
               onClick={playTargetAudio}
@@ -1209,14 +1233,15 @@ export const FlashcardSessionView: React.FC = () => {
                 {isPlayingAudio
                   ? 'Đang phát...'
                   : isGrammar
-                  ? 'Nghe câu mẫu [A]'
-                  : 'Nghe mẫu [A]'}
+                  ? (mobile ? 'Nghe câu mẫu' : 'Nghe câu mẫu [A]')
+                  : (mobile ? 'Nghe mẫu' : 'Nghe mẫu [A]')}
               </span>
             </button>
 
             {/* 2. Nút Đánh dấu [B] */}
             <button
               onClick={handleToggleBookmark}
+              aria-pressed={currentCard.isBookmarked}
               title="Đánh dấu thẻ này [B]"
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 border cursor-pointer ${
                 currentCard.isBookmarked
@@ -1225,14 +1250,14 @@ export const FlashcardSessionView: React.FC = () => {
               }`}
             >
               <span>{currentCard.isBookmarked ? '🔖' : '🏷️'}</span>
-              <span>{currentCard.isBookmarked ? 'Đã đánh dấu [B]' : 'Đánh dấu [B]'}</span>
+              <span>{currentCard.isBookmarked ? 'Đã đánh dấu' : 'Đánh dấu'}{!mobile && ' [B]'}</span>
             </button>
 
             {/* 3. Nút Lật thẻ nhanh */}
             <button
               onClick={handleToggleFlip}
               title="Lật mặt thẻ [Space]"
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-paper-100 hover:bg-paper-200 text-sumi border border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="jx-flash-study-flip px-3.5 py-2 rounded-xl text-xs font-bold bg-paper-100 hover:bg-paper-200 text-sumi border border-line transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <span>🔄</span>
               <span>{isFlipped ? 'Lật về Mặt trước' : 'Lật sang Mặt sau'}</span>
@@ -1248,7 +1273,7 @@ export const FlashcardSessionView: React.FC = () => {
               <span className="text-ai font-bold">Thẻ {currentIndex + 1} / {queue.length}</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="jx-flash-study-extra grid grid-cols-3 gap-3">
               {/* Nút 1: Thẻ trước ◀ */}
               <button
                 onClick={handlePrevCard}
@@ -1261,7 +1286,7 @@ export const FlashcardSessionView: React.FC = () => {
               </button>
 
               {/* Nút 2: Lật thẻ 🔄 */}
-              <button
+              {!mobile && <button
                 onClick={handleToggleFlip}
                 className="py-3 px-4 rounded-2xl bg-paper-100 hover:bg-paper-200 border border-line text-sumi transition-all flex items-center justify-center gap-2 shadow-xs group cursor-pointer"
                 title="Lật thẻ [Space]"
@@ -1270,7 +1295,7 @@ export const FlashcardSessionView: React.FC = () => {
                 <span className="text-xs sm:text-sm font-bold">
                   {isFlipped ? 'Mặt trước' : 'Lật xem nghĩa'}
                 </span>
-              </button>
+              </button>}
 
               {/* Nút 3: Thẻ tiếp theo ▶ hoặc Hoàn thành */}
               {currentIndex < queue.length - 1 ? (
@@ -1297,13 +1322,14 @@ export const FlashcardSessionView: React.FC = () => {
         ) : (
           <div className="w-full max-w-[760px] mt-6 space-y-3">
             <div className="text-center text-xs font-semibold text-sumi-muted">
-              Đánh giá mức độ nhớ của bạn:
+              {mobile && !isFlipped ? 'Lật thẻ để xem nghĩa trước khi đánh giá.' : 'Đánh giá mức độ nhớ của bạn:'}
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="jx-flash-study-ratings grid grid-cols-3 gap-3">
               {/* 1. AGAIN */}
               <button
-                onClick={() => handleRate('Again')}
+                onClick={() => void rateFromControls('Again')}
+                disabled={mobile && (!isFlipped || ratingPending)}
                 className="py-3 px-4 rounded-2xl bg-danger-soft/40 hover:bg-danger-soft border border-danger/30 text-danger transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
               >
                 <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
@@ -1319,7 +1345,8 @@ export const FlashcardSessionView: React.FC = () => {
 
               {/* 2. GOOD */}
               <button
-                onClick={() => handleRate('Good')}
+                onClick={() => void rateFromControls('Good')}
+                disabled={mobile && (!isFlipped || ratingPending)}
                 className="py-3 px-4 rounded-2xl bg-ai-soft/40 hover:bg-ai-soft border border-ai/30 text-ai transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
               >
                 <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
@@ -1333,7 +1360,8 @@ export const FlashcardSessionView: React.FC = () => {
 
               {/* 3. EASY */}
               <button
-                onClick={() => handleRate('Easy')}
+                onClick={() => void rateFromControls('Easy')}
+                disabled={mobile && (!isFlipped || ratingPending)}
                 className="py-3 px-4 rounded-2xl bg-success-soft/40 hover:bg-success-soft border border-success/30 text-success transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
               >
                 <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
@@ -1350,7 +1378,7 @@ export const FlashcardSessionView: React.FC = () => {
       </main>
 
       {/* ==================== 4. KEYBOARD SHORTCUTS DOCK ==================== */}
-      <footer className="py-4 px-6 bg-paper-50 border-t border-line flex justify-center">
+      {!mobile && <footer className="py-4 px-6 bg-paper-50 border-t border-line flex justify-center">
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-sumi-muted">
           <div className="flex items-center gap-1.5">
             <kbd className="px-2 py-0.5 bg-paper-100 border border-line rounded-md text-[10px] font-bold text-sumi">Space</kbd>
@@ -1386,7 +1414,19 @@ export const FlashcardSessionView: React.FC = () => {
             <span>Thoát</span>
           </div>
         </div>
-      </footer>
+      </footer>}
+      {mobile && confirmExit && (
+        <PracticeConfirmation
+          title="Thoát phiên ôn tập?"
+          description="Phiên ôn tập hiện tại sẽ dừng."
+          confirmLabel="Thoát phiên"
+          onCancel={() => setConfirmExit(false)}
+          onConfirm={() => {
+            setConfirmExit(false);
+            void handleExitSession();
+          }}
+        />
+      )}
     </div>
   );
 };

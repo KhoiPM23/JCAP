@@ -184,7 +184,7 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="bg-transparent">
+    <div className="jx-touch-page jx-settings-page bg-transparent">
       <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
         <div className="flex flex-col gap-1">
           <h1 className="m-0 text-[28px] font-bold leading-[38px]">Cài đặt</h1>
@@ -192,14 +192,14 @@ export const SettingsView: React.FC = () => {
         </div>
 
         {toastMessage && (
-          <div role="status" className="fixed right-6 top-6 z-50 flex items-center gap-2 rounded-jc-md border border-line bg-paper-50 px-4 py-3 text-sm font-medium shadow-jc-md">
+          <div role="status" className="jx-settings-toast fixed right-6 top-6 z-50 flex items-center gap-2 rounded-jc-md border border-line bg-paper-50 px-4 py-3 text-sm font-medium shadow-jc-md">
             <Icon name="check_circle" size={20} fill style={{ color: 'var(--success)' }} />
             {toastMessage}
           </div>
         )}
 
         <div className="flex flex-wrap items-start gap-8">
-          <nav aria-label="Mục cài đặt" className="sticky top-0 flex flex-[0_0_200px] flex-col gap-0.5">
+          <nav aria-label="Mục cài đặt" className="jx-settings-nav sticky top-0 flex flex-[0_0_200px] flex-col gap-0.5">
             {SECTIONS.map((s) => {
               const on = activeSection === s.id;
               return (

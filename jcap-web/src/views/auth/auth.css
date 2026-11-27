@@ -72,12 +72,19 @@
 @media (max-height: 680px) {
   .auth .stk { display: none; }
 }
-@media (max-width: 760px) {
-  .auth { grid-template-columns: 1fr; height: auto; min-height: 100vh; min-height: 100dvh; }
-  .auth .au-art { display: none; }
-  .auth .au-form { padding: 28px 20px; align-items: flex-start; overflow: visible; }
-  .auth .af2 { grid-template-columns: 1fr; }
-}
+.auth.au-mobile { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; height: auto; min-height: 100dvh; }
+.au-mobile-header { padding: calc(4px + env(safe-area-inset-top, 0px)) 20px 4px; border-bottom: 1px solid var(--line); background: var(--paper-100); }
+.au-mobile-header .home { min-height: 48px; }
+.au-mobile .au-form { padding: 28px 20px calc(32px + env(safe-area-inset-bottom, 0px)); align-items: flex-start; overflow: visible; }
+.au-mobile .af2 { grid-template-columns: minmax(0, 1fr); }
+.au-mobile .af-in { height: 48px; padding-right: 2px; }
+.au-mobile .af-in input { font-size: 16px; }
+.au-mobile .af-eye { width: 44px; height: 44px; }
+.au-mobile .lnk { min-height: 44px; }
+.au-mobile .au-box .lead { display: block; }
+.au-mobile .au-reset { width: 100%; max-width: 420px; padding: 0; overflow-wrap: anywhere; }
+.au-mobile .au-reset input { min-height: 48px; font-size: 16px; }
+.au-mobile .au-reset button { min-height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .auth { animation: none; }
 }

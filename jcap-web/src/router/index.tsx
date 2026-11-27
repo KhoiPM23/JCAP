@@ -4,8 +4,10 @@ import { rememberRoleplaySession } from '../components/jcap/shell/recentRoleplay
 import { useAuth } from '../contexts/AuthContext';
 import { shouldBypassPublicRouteRedirect } from '../utils/authSession';
 import { PrivateRoute } from '../components/PrivateRoute';
+import { AdminDesktopGate } from '../components/AdminDesktopGate';
 import { MainLayout } from '../layouts/MainLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 
 // Core Auth Views (lightweight, kept eager for fast first paint)
 import { LoginView } from '../views/LoginView';
@@ -121,7 +123,7 @@ const AdminRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  return <>{children || <Outlet />}</>;
+  return <AdminDesktopGate>{children || <Outlet />}</AdminDesktopGate>;
 };
 
 /**
@@ -256,10 +258,12 @@ const EmailVerificationPendingRoute: React.FC = () => {
 
 const ScenarioRoute: React.FC = () => {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const mobile = usePhoneViewport();
   const { user, userLevel, logout } = useAuth();
 
   const handleSelectScenario = (scenario: Scenario) => {
-    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id } });
+    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id, scenarioListUrl: mobile ? `/scenarios${search}` : undefined } });
   };
 
   const handleLogout = async () => {

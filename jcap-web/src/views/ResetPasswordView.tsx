@@ -53,7 +53,7 @@ export function ResetPasswordView({ onResetSuccess, onBackToLogin }: ResetPasswo
   };
 
   return (
-    <div className="au-box">
+    <div className="au-box au-reset">
       <AuthHeading
         title="Đặt lại mật khẩu"
         lead={

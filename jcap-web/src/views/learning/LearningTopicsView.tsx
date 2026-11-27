@@ -51,7 +51,7 @@ export function LearningTopicsView() {
     setParams(next);
   }
 
-  return <LearningPage>
+  return <LearningPage rememberScroll={!!data && !loading}>
     <div className="lt-page">
     <h1 className="sr-only">{catalog.title}</h1>
     <nav className="lc-tabs lc-catalog-tabs" aria-label="Danh mục chủ đề">

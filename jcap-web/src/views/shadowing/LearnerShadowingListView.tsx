@@ -8,6 +8,7 @@ import { ShadowingLessonPreview } from '../../components/shadowing/ShadowingLess
 import { ShadowingSectionNav } from '../../components/shadowing/ShadowingSectionNav';
 import '../../components/shadowing/shadowingLibrary.css';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePhoneViewport } from '../../hooks/usePhoneViewport';
 import { useTheme } from '../../contexts/ThemeContext';
 import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
@@ -18,19 +19,6 @@ import { fromServerSession, mergeHistory } from '../../utils/shadowingHistory';
 /** Lịch sử luyện Shadowing nằm ở trang Kết quả, tab Shadowing */
 const RESULTS_SHADOWING = '/roleplay/results?tab=shadowing';
 
-const MOBILE = '(max-width: 760px)';
-
-function useIsMobile() {
-  const [mobile, setMobile] = useState(() => window.matchMedia(MOBILE).matches);
-  useEffect(() => {
-    const media = window.matchMedia(MOBILE);
-    const onChange = () => setMobile(media.matches);
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, []);
-  return mobile;
-}
-
 /** Thư viện Shadowing (HANDOFF 9j): cột mục, cột bài và cột kịch bản xem trước */
 export const LearnerShadowingListView: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +28,7 @@ export const LearnerShadowingListView: React.FC = () => {
   const { isDark } = useTheme();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
   const learnerId = user?.id || user?.email || 'guest_learner';
-  const mobile = useIsMobile();
+  const mobile = usePhoneViewport();
 
   const [items, setItems] = useState<ShadowingDialogueItem[]>([]);
   const [history, setHistory] = useState<ShadowingPracticeSession[]>([]);
