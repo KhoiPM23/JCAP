@@ -199,9 +199,71 @@
 @keyframes jx-ghost-fade { from { opacity: 1; } to { opacity: 0; } }
 @keyframes jx-ghost-drop { from { transform: none; } to { transform: translateY(10px); } }
 
-@media (max-width: 767px) {
-  .jx-page, .jx-ghosts { left: 72px; }
+.jx-app.is-mobile {
+  --jx-mobile-top: calc(56px + env(safe-area-inset-top, 0px));
+  --jx-mobile-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
+.jx-app.is-mobile :is(.jx-page, .jx-ghosts, .jx-maplayer, .jx-pgbg) {
+  inset: var(--jx-mobile-top) 0 var(--jx-mobile-bottom);
+  transition: none;
+}
+.jx-app.is-mobile .jx-page-inner { min-width: 0; padding: 16px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left)); animation: none; }
+.jx-app.is-mobile .jx-page { overscroll-behavior-y: contain; }
+.jx-app.is-mobile .jx-maplayer.is-hidden { transition: none; }
+.jx-app.is-mobile .jx-ghosts { display: none; }
+.jx-app.is-mobile .jm-ukiyoe .jm-hint { left: 12px; top: 12px; max-width: calc(100% - 24px); }
+
+.jx-mobile-header, .jx-mobile-nav {
+  position: fixed;
+  inset-inline: 0;
+  background: var(--paper-50);
+  color: var(--sumi);
+}
+.jx-mobile-header {
+  z-index: 42; top: 0; height: var(--jx-mobile-top);
+  display: flex; gap: 8px; align-items: center;
+  padding: env(safe-area-inset-top, 0px) max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+  border-bottom: 1px solid var(--line);
+}
+.jx-mobile-home, .jx-mobile-credit {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  min-width: 44px; min-height: 44px; border-radius: 10px;
+}
+.jx-mobile-title { flex: 1; min-width: 0; font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jx-mobile-credit { padding-inline: 8px; color: var(--credit); font-size: 13px; font-weight: 700; }
+.jx-mobile-header .jx-notification-anchor { position: relative; inset: auto; z-index: auto; }
+.jx-mobile-header .jx-notification-panel {
+  top: calc(100% + 8px); width: min(390px, calc(100vw - 24px));
+  max-height: calc(100dvh - var(--jx-mobile-top) - var(--jx-mobile-bottom) - 16px);
+}
+.jx-mobile-nav {
+  z-index: 41; bottom: 0; height: var(--jx-mobile-bottom); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 4px max(4px, env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left));
+}
+.jx-mobile-nav > :is(a, button) {
+  display: flex; min-width: 0; min-height: 44px; flex-direction: column; justify-content: center; align-items: center; gap: 2px;
+  padding: 0 2px; border-radius: 10px; color: var(--sumi-muted); font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.jx-mobile-nav > [aria-current], .jx-mobile-more a[aria-current] { color: var(--ai); background: var(--ai-soft); }
+.jx-mobile-more {
+  position: fixed; inset: auto 0 0; margin: 0 auto; width: min(100%, 480px); max-width: none;
+  max-height: min(80dvh, 680px); overflow: auto; overscroll-behavior: contain;
+  border: 1px solid var(--line); border-radius: 20px 20px 0 0; background: var(--paper-50); color: var(--sumi);
+  padding: 0; box-shadow: var(--shadow-lg);
+}
+.jx-mobile-more::backdrop { background: var(--scrim); }
+.jx-mobile-more-content { padding: 4px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.jx-mobile-more-heading { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; background: var(--paper-50); padding: 4px 4px 4px 8px; }
+.jx-mobile-more-heading h2 { font-size: 18px; font-weight: 700; }
+.jx-mobile-more-heading button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; }
+.jx-mobile-more :is(a, .jx-mobile-sign-out) { display: flex; align-items: center; gap: 12px; min-height: 46px; width: 100%; padding: 5px 8px; border-radius: 10px; font-size: 14px; text-align: left; }
+.jx-mobile-more a > span:nth-child(2) { flex: 1; }
+.jx-mobile-sign-out { margin-top: 6px; color: var(--danger); }
+.jx-app.is-mobile :is(.jx-mobile-header, .jx-mobile-nav, .jx-mobile-more) :focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.jx-app.is-mobile .jx-page :is(input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]), textarea, select) { font-size: 16px; }
+.jx-app.is-mobile :is(.jx-mobile-nav, .jx-mobile-header, .jx-mobile-more) :is(a, button) { touch-action: manipulation; }
+.jx-app.is-mobile .jm-back, .jx-app.is-mobile .jm-panel-bottom button[aria-label^="Đóng"] { min-height: 44px; min-width: 44px; }
 
 @media (prefers-reduced-motion: reduce) {
   .jx-app *, .jx-app { transition-duration: .2s !important; transition-delay: 0s !important; animation: none !important; }

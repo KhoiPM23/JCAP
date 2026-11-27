@@ -4,6 +4,8 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { cx } from '../utils';
 import { AppSidebar } from './AppSidebar';
 import { LearnerNotificationBell } from '../../learner/LearnerNotificationBell';
+import { usePhoneViewport } from '../../../hooks/usePhoneViewport';
+import { LearnerMobileNavigation } from './LearnerMobileNavigation';
 
 const COLLAPSE_KEY = 'jcap.sidebar.collapsed';
 
@@ -89,6 +91,7 @@ const PageFrame: React.FC<{ routeKey: string; currentKey: React.MutableRefObject
  */
 export const LearnerShell: React.FC = () => {
   const { pathname } = useLocation();
+  const mobile = usePhoneViewport();
   const [params] = useSearchParams();
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const { isDark, themeFor } = useTheme();
@@ -162,8 +165,8 @@ export const LearnerShell: React.FC = () => {
   };
 
   return (
-    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={stampsPage && !isDark ? themeFor('map') : themeFor('learn')}>
-      <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />
+    <div className={cx('jx-app', mobile && 'is-mobile', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={stampsPage && !isDark ? themeFor('map') : themeFor('learn')}>
+      {mobile ? <LearnerMobileNavigation /> : <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />}
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}
       {mapMounted && (
@@ -175,7 +178,7 @@ export const LearnerShell: React.FC = () => {
               </div>
             }
           >
-            <JapanMapView active={mapRoute} />
+            <JapanMapView active={mapRoute} mobileLayout={mobile} />
           </React.Suspense>
         </div>
       )}
@@ -184,7 +187,7 @@ export const LearnerShell: React.FC = () => {
       <div className="jx-pgbg" aria-hidden="true" />
 
       {!mapRoute && (
-        <main className={cx('jx-page', pending && 'is-pending', isWavyPage && 'jx-waves')}>
+        <main key={mobile ? pathname : undefined} className={cx('jx-page', pending && 'is-pending', isWavyPage && 'jx-waves')}>
           <PageFrame key={pathname} routeKey={pathname} currentKey={currentKey} ghostRef={ghostRef} className="jx-page-inner px-4 py-5 md:p-8">
             {lightIsland ? (
               <div data-theme="hoc-tap" className="jx-light-island">
@@ -201,7 +204,7 @@ export const LearnerShell: React.FC = () => {
       {/* Bản sao mờ dần của trang vừa rời đi */}
       <div ref={ghostRef} className="jx-ghosts" aria-hidden="true" />
       {/* Chuông thông báo chỉ hiện ở góc trên bên trái của Trang chủ / Hành trình */}
-      <LearnerNotificationBell />
+      {!mobile && <LearnerNotificationBell />}
     </div>
   );
 };

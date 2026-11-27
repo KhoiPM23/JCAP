@@ -167,7 +167,7 @@ export const LearnerNotificationBell: React.FC = () => {
       {/* Chuông tròn nhỏ ở góc trên cùng bên phải màn hình Trang chủ (Hành trình) */}
       <div
         ref={containerRef}
-        className="fixed top-4 right-4 z-40 select-none font-sans"
+        className="jx-notification-anchor fixed top-4 right-4 z-40 select-none font-sans"
         style={{ pointerEvents: 'auto' }}
       >
         <button
@@ -194,7 +194,7 @@ export const LearnerNotificationBell: React.FC = () => {
 
         {/* Dropdown danh sách Thông báo kiểu Facebook */}
         {isOpen && (
-          <div className="absolute top-13 right-0 w-[360px] sm:w-[390px] max-h-[85vh] bg-[#242526] text-[#E4E6EB] rounded-2xl shadow-2xl border border-[#3E4042] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+          <div className="jx-notification-panel absolute top-13 right-0 w-[360px] sm:w-[390px] max-h-[85vh] bg-[#242526] text-[#E4E6EB] rounded-2xl shadow-2xl border border-[#3E4042] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
             {/* Header thông báo */}
             <div className="p-4 pb-2 border-b border-[#3E4042]/70">
               <div className="flex items-center justify-between mb-3">

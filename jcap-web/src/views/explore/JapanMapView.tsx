@@ -56,7 +56,8 @@ type MapNavState = { jmDepth?: number; jmSpot?: boolean; jmLesson?: boolean } | 
 export const JapanMapView: React.FC<{
   /** false khi bản đồ đang nằm ẩn dưới trang khác (khung học viên giữ nó sống để chuyển cảnh mượt): không bắt phím, không cướp focus */
   active?: boolean;
-}> = ({ active = true }) => {
+  mobileLayout?: boolean;
+}> = ({ active = true, mobileLayout = false }) => {
   const activeRef = useRef(active);
   activeRef.current = active;
   const navigate = useNavigate();
@@ -65,6 +66,16 @@ export const JapanMapView: React.FC<{
   const isWide = useMediaQuery('(min-width: 1024px)');
   const isTouch = useMediaQuery('(pointer: coarse)');
   const isWideHint = useMediaQuery('(min-width: 761px)');
+  const mapRef = useRef<HTMLElement>(null);
+  const [mapHeight, setMapHeight] = useState(0);
+  const panelHeight = mobileLayout && mapHeight ? Math.min(SHEET_HEIGHT_PX, Math.floor(mapHeight * 0.62)) : SHEET_HEIGHT_PX;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mobileLayout || !map) return;
+    const observer = new ResizeObserver(([entry]) => setMapHeight(entry.contentRect.height));
+    observer.observe(map);
+    return () => observer.disconnect();
+  }, [mobileLayout]);
   const [interacted, setInteracted] = useState(false);
   // Gợi ý thao tác tắt ngay khi người dùng làm bất kỳ thao tác nào trên trang (bấm, chạm, cuộn, bàn phím), không chỉ khi kéo/phóng bản đồ
   useEffect(() => {
@@ -234,7 +245,7 @@ export const JapanMapView: React.FC<{
       />
 
       {/* Vùng bản đồ (biển, bờ, đất do JapanMap vẽ) */}
-      <main className="relative h-full">
+      <main ref={mapRef} className="relative h-full">
         <JapanMap
           selectedId={selectedId}
           onSelect={selectPrefecture}
@@ -242,7 +253,7 @@ export const JapanMapView: React.FC<{
           onSpotSelect={selectSpot}
           onSpotLearn={openLesson}
           reserveRight={selected && isWide ? PANEL_WIDTH_PX + 24 : 0}
-          reserveBottom={selected && !isWide ? SHEET_HEIGHT_PX : 0}
+          reserveBottom={selected && !isWide ? panelHeight : 0}
           onInteract={() => setInteracted(true)}
           legend={<MapLegend />}
           search={<PrefecturePicker onPick={selectPrefecture} isClosed={(id) => journey.status === 'ok' && !journey.prefecture(id)?.isOpen} />}
@@ -315,7 +326,7 @@ export const JapanMapView: React.FC<{
 
         {!selected && <PanelWarmUp />}
 
-        {import.meta.env.DEV && <MissingIconsDevNotice />}
+        {import.meta.env.DEV && !mobileLayout && <MissingIconsDevNotice />}
 
         {/* Thông tin tỉnh: panel bên phải (màn rộng) hoặc ngăn dưới (màn hẹp) */}
         {panelPref && (
@@ -323,6 +334,7 @@ export const JapanMapView: React.FC<{
             key={panelPref.id}
             pref={panelPref}
             isWide={isWide}
+            panelHeight={panelHeight}
             closing={closing}
             activeSpot={selected ? activeSpot : null}
             onSpotSelect={selectSpot}
@@ -473,6 +485,7 @@ const PanelWarmUp: React.FC = () => {
 interface PrefecturePanelProps {
   pref: PrefectureShape;
   isWide: boolean;
+  panelHeight?: number;
   closing: boolean;
   activeSpot: number | null;
   onSpotSelect: (index: number | null) => void;
@@ -486,6 +499,7 @@ interface PrefecturePanelProps {
 const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   pref,
   isWide,
+  panelHeight = SHEET_HEIGHT_PX,
   closing,
   activeSpot,
   onSpotSelect,
@@ -540,7 +554,7 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
           ? 'jm-panel-right absolute top-3 right-3 bottom-3 rounded-[20px]'
           : 'jm-panel-bottom absolute left-0 right-0 bottom-0 rounded-t-[20px] !border-b-0'
       } ${closing ? 'jm-closing pointer-events-none' : ''} jm-ppanel z-20 flex flex-col overflow-hidden`}
-      style={isWide ? { width: PANEL_WIDTH_PX } : { height: SHEET_HEIGHT_PX }}
+      style={isWide ? { width: PANEL_WIDTH_PX } : { height: panelHeight }}
     >
       <div ref={scrollRef} className={`flex flex-1 flex-col gap-[18px] overflow-y-auto overscroll-contain ${isWide ? 'px-5 pt-[18px] pb-4' : 'px-4 pt-3 pb-3'}`}>
         {/* Vùng + nút đóng */}
