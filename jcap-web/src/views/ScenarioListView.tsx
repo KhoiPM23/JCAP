@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { useAuth } from '../contexts/AuthContext';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioService } from '../services/scenarioService';
@@ -50,16 +51,18 @@ const DEFAULT_TOPICS: ScenarioTopic[] = [
  */
 export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScenario }) => {
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
   const { user } = useAuth();
   const { credit } = useLearnerAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('query') || searchParams.get('search') || '';
   const initialTopic = searchParams.get('topic') || 'ALL';
+  const initialLevel = searchParams.get('level');
 
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [topics, setTopics] = useState<ScenarioTopic[]>(DEFAULT_TOPICS);
   const [searchTerm, setSearchTerm] = useState<string>(searchQuery);
-  const [filterLevel, setFilterLevel] = useState<string>('ALL');
+  const [filterLevel, setFilterLevel] = useState<string>(() => mobile && initialLevel && LEVEL_RANK[initialLevel] ? initialLevel : 'ALL');
   const [filterTopic, setFilterTopic] = useState<string>(initialTopic);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -284,6 +287,12 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               onChange={(lvl) => {
                 ukiyoSound.playSubtleTap();
                 setFilterLevel(lvl);
+                if (mobile) {
+                  const params = new URLSearchParams(searchParams);
+                  if (lvl === 'ALL') params.delete('level');
+                  else params.set('level', lvl);
+                  setSearchParams(params, { replace: true });
+                }
               }}
               options={[
                 { value: 'ALL', label: 'Tất cả' },
@@ -380,7 +389,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                 <span className="text-xs font-serif text-sumi-muted">任務一覧</span>
               </h2>
               {filteredScenarios.map((s) => {
-                const selected = s.id === selectedId;
+                const selected = !mobile && s.id === selectedId;
                 const levels = [...(s.supportedJLPTLevels || [])].sort((a, b) => (LEVEL_RANK[a] ?? 9) - (LEVEL_RANK[b] ?? 9));
                 return (
                   <button
@@ -388,9 +397,13 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                     type="button"
                     onClick={() => {
                       ukiyoSound.playWoodblockSnap();
+                      if (mobile) {
+                        onSelectScenario(toScenario(s));
+                        return;
+                      }
                       setSelectedId(s.id);
                     }}
-                    aria-pressed={selected}
+                    aria-pressed={mobile ? undefined : selected}
                     className={`quest-card tactile-press flex w-full items-center gap-4 rounded-jc-xl p-4 text-left transition-all ${
                       selected
                         ? 'border-2 border-[var(--ai)] bg-[var(--ai-soft)] shadow-md ring-1 ring-[var(--ai)]/30'
@@ -434,7 +447,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
           )}
         </div>
 
-        {selectedId != null && (
+        {!mobile && selectedId != null && (
           <ScenarioPreview
             key={selectedId}
             scenarioId={selectedId}

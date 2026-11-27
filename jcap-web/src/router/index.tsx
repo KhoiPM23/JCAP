@@ -240,10 +240,12 @@ const EmailVerificationPendingRoute: React.FC = () => {
 
 const ScenarioRoute: React.FC = () => {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const mobile = usePhoneViewport();
   const { user, userLevel, logout } = useAuth();
 
   const handleSelectScenario = (scenario: Scenario) => {
-    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id } });
+    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id, scenarioListUrl: mobile ? `/scenarios${search}` : undefined } });
   };
 
   const handleLogout = async () => {
