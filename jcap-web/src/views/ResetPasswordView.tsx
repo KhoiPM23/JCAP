@@ -48,7 +48,7 @@ export function ResetPasswordView({ onBackToLogin }: ResetPasswordViewProps) {
   };
 
   return (
-    <div className="p-8">
+    <div className="au-reset p-8">
       <div className="mb-7 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">Tạo mật khẩu mới</p>
         <h1 className="mt-2 text-2xl font-bold text-[#071A44]">Đặt lại mật khẩu</h1>

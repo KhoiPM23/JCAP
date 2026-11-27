@@ -82,6 +82,9 @@
 .au-mobile .af-eye { width: 44px; height: 44px; }
 .au-mobile .lnk { min-height: 44px; }
 .au-mobile .au-box .lead { display: block; }
+.au-mobile .au-reset { width: 100%; max-width: 420px; padding: 0; overflow-wrap: anywhere; }
+.au-mobile .au-reset input { min-height: 48px; font-size: 16px; }
+.au-mobile .au-reset button { min-height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .auth { animation: none; }
 }
