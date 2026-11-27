@@ -8,9 +8,7 @@ import {
   VolumeIcon,
   PhoneCallIcon,
   HandIcon,
-  ListTodoIcon,
   SettingsIcon,
-  BarChartIcon,
   RefreshIcon,
   CheckCircleIcon,
   AlertCircleIcon,
@@ -21,41 +19,7 @@ import type {
   HotelContextPackageDto,
   PlacementTestTurnMessageDto,
   PlacementTestCompleteResponseDto,
-  PlacementEventEvidenceSummary,
 } from '../types/placementTest';
-
-const ALL_PLACEMENT_EVENTS = [
-  {
-    code: 'EVT-01',
-    title: 'Chào hỏi & Xác nhận đặt phòng',
-    nextObjective: 'Cung cấp tên khách (Tanaka), đặt 3 đêm và nhắc lại yêu cầu ưu tiên phòng yên tĩnh.',
-    targetCriteria: 'Chào hỏi đúng chuẩn, nói rõ tên đặt phòng và mục đích check-in.'
-  },
-  {
-    code: 'EVT-02',
-    title: 'Xử lý phòng 512 cạnh thang máy',
-    nextObjective: 'Lễ tân thông báo phòng 512 cạnh thang máy. Hãy bày tỏ e ngại tiếng ồn hoặc yêu cầu đổi phòng yên tĩnh.',
-    targetCriteria: 'Bày tỏ mong muốn đổi phòng lịch sự (kính ngữ / Teineigo), giải thích lý do thích yên tĩnh.'
-  },
-  {
-    code: 'EVT-03',
-    title: 'Lựa chọn phòng Deluxe (+2,000 円)',
-    nextObjective: 'Lễ tân báo chỉ còn phòng Deluxe (+2,000 円/đêm). Hãy quyết định: Nâng hạng Deluxe hoặc giữ phòng cũ.',
-    targetCriteria: 'Đưa ra quyết định dứt khoát hoặc hỏi thêm chi tiết chi phí; thể hiện sự cân nhắc rõ ràng.'
-  },
-  {
-    code: 'EVT-04',
-    title: 'Đăng ký dịch vụ bữa sáng (1,500 円)',
-    nextObjective: 'Lễ tân hỏi về bữa sáng (1,500 円/ngày). Hãy quyết định: Đăng ký bữa sáng hoặc từ chối.',
-    targetCriteria: 'Phản hồi chấp nhận hoặc từ chối bữa sáng lịch sự; có thể hỏi giờ phục vụ.'
-  },
-  {
-    code: 'EVT-05',
-    title: 'Chốt phương án & Trao chìa khóa',
-    nextObjective: 'Lễ tân tổng kết phương án và trao chìa khóa. Hãy cảm ơn và xác nhận kết thúc thủ tục nhận phòng.',
-    targetCriteria: 'Cảm ơn lễ tân đúng văn phong dịch vụ khách sạn Nhật Bản, xác nhận nhận phòng.'
-  }
-];
 
 export const PlacementTestRoomView: React.FC = () => {
   const navigate = useNavigate();
@@ -73,24 +37,8 @@ export const PlacementTestRoomView: React.FC = () => {
   const [messages, setMessages] = useState<PlacementTestTurnMessageDto[]>([]);
   const [contextPackage, setContextPackage] = useState<HotelContextPackageDto | null>(null);
 
-  // 3. Tiến trình & Tiêu chí đánh giá trực tiếp (Live Rubric Inspector)
+  // 3. Tiến trình sự kiện phiên kiểm tra
   const [currentEvent, setCurrentEvent] = useState<string>('EVT-01');
-  const [currentDifficultyBand, setCurrentDifficultyBand] = useState<string>('N4');
-  const [demonstratedBand, setDemonstratedBand] = useState<string>('Unobserved');
-  const [scaffoldingStep, setScaffoldingStep] = useState<number>(0);
-  const [eventSummaries, setEventSummaries] = useState<PlacementEventEvidenceSummary[]>([]);
-  const [latestTurnScores, setLatestTurnScores] = useState<{
-    task: number;
-    grammar: number;
-    vocab: number;
-    pragmatics: number;
-    overall: number;
-    note: string;
-    classification: string;
-    detectedIntent: string;
-    demonstratedBand: string;
-    estimatedLevelSoFar?: string;
-  } | null>(null);
 
   const [strikeWarning, setStrikeWarning] = useState<string | null>(null);
   const [isConcluded, setIsConcluded] = useState(false);
@@ -99,8 +47,6 @@ export const PlacementTestRoomView: React.FC = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   // 4. State điều khiển hiển thị & Nhập liệu
-  const [isLeftOpen, setIsLeftOpen] = useState(true);
-  const [isRightOpen, setIsRightOpen] = useState(true); // Bật mặc định để tester quan sát tiêu chí chấm trực tiếp
   const [isHandsFreeMode, setIsHandsFreeMode] = useState(false);
   const [showTranslation, setShowTranslation] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -330,25 +276,39 @@ export const PlacementTestRoomView: React.FC = () => {
       if (res.success && res.data) {
         setSessionId(res.data.sessionId);
         setCurrentEvent(res.data.currentEvent || 'EVT-01');
-        setCurrentDifficultyBand(res.data.currentDifficultyBand || 'N4');
         setContextPackage(res.data.contextPackage);
+        const loadedMessages =
+          res.data.messageHistory && res.data.messageHistory.length > 0
+            ? res.data.messageHistory
+            : res.data.openingMessage
+            ? [res.data.openingMessage]
+            : [];
+        setMessages(loadedMessages);
 
-        if (res.data.eventSummaries) {
-          setEventSummaries(res.data.eventSummaries);
-        }
-        if (res.data.messageHistory && res.data.messageHistory.length > 0) {
-          setMessages(res.data.messageHistory);
-        } else if (res.data.openingMessage) {
-          setMessages([res.data.openingMessage]);
-        }
-        if (!res.data.isResumed && res.data.openingMessage?.id) {
-          setStreamingAiMessageId(res.data.openingMessage.id);
+        const openingToPlay =
+          !res.data.isResumed && res.data.openingMessage
+            ? res.data.openingMessage
+            : loadedMessages.length === 1 && loadedMessages[0].sender === 'Ai'
+            ? loadedMessages[0]
+            : null;
+
+        if (!res.data.isResumed && openingToPlay?.id) {
+          setStreamingAiMessageId(openingToPlay.id);
         }
         turnStartTimeRef.current = Date.now();
         if (reset && searchParams.get('reset') === '1') {
           setSearchParams({}, { replace: true });
         }
         void refreshUser();
+
+        // Tự động phát giọng đọc câu mồi đầu tiên của AI (truyền trực tiếp speakerId vì state contextPackage chưa kịp re-render)
+        if (openingToPlay?.japaneseText) {
+          void playAiSpeechWithLifecycle(
+            openingToPlay.id,
+            openingToPlay.japaneseText,
+            res.data.contextPackage?.receptionistSpeakerId
+          );
+        }
       } else {
         setLoadError(res.message || 'Không thể tải phiên kiểm tra xếp lớp.');
       }
@@ -384,13 +344,14 @@ export const PlacementTestRoomView: React.FC = () => {
   // và resolve Promise khi âm thanh phát xong 100% (hoặc bị hủy/lỗi).
   const playAiSpeechWithLifecycle = (
     msgId: number,
-    text: string
+    text: string,
+    speakerIdOverride?: number
   ): Promise<void> => {
     stopMicRecording();
     cancelActiveSpeechRef.current?.();
 
     const token = ++speechTokenRef.current;
-    const speakerId = contextPackage?.receptionistSpeakerId;
+    const speakerId = speakerIdOverride ?? contextPackage?.receptionistSpeakerId;
 
     return new Promise<void>((resolve) => {
       let hasStartedPlayback = false;
@@ -548,37 +509,8 @@ export const PlacementTestRoomView: React.FC = () => {
           setStreamingAiMessageId(turnData.aiMessage.id);
         }
 
-        // Cập nhật trạng thái sự kiện & tiêu chí chấm điểm trực tiếp ngay khi nhận phản hồi
+        // Cập nhật trạng thái sự kiện hiện tại ngay khi nhận phản hồi
         setCurrentEvent(turnData.currentEvent);
-        setCurrentDifficultyBand(turnData.currentDifficultyBand);
-        setDemonstratedBand(turnData.demonstratedBand);
-        setScaffoldingStep(turnData.scaffoldingStep);
-
-        if (turnData.eventSummaries) {
-          setEventSummaries(turnData.eventSummaries);
-        }
-
-        if (turnData.taskFulfillmentScore != null) {
-          const taskVal = turnData.taskFulfillmentScore;
-          const grammarVal = turnData.grammarAccuracyScore ?? 0;
-          const vocabVal = turnData.vocabularyRangeScore ?? 0;
-          const pragmaticsVal = turnData.pragmaticsScore ?? 0;
-          const overallVal =
-            turnData.overallTurnScore ??
-            Math.round(0.35 * taskVal + 0.25 * grammarVal + 0.2 * vocabVal + 0.2 * pragmaticsVal);
-          setLatestTurnScores({
-            task: taskVal,
-            grammar: grammarVal,
-            vocab: vocabVal,
-            pragmatics: pragmaticsVal,
-            overall: overallVal,
-            note: turnData.evidenceNote || '',
-            classification: turnData.inputClassification || 'Valid',
-            detectedIntent: turnData.detectedIntent || 'GeneralResponse',
-            demonstratedBand: turnData.demonstratedBand || 'N4',
-            estimatedLevelSoFar: turnData.estimatedLevelSoFar || undefined,
-          });
-        }
 
         // Cảnh báo nếu học viên nói lạc đề hoặc vi phạm nguyên tắc
         if (turnData.isStrikeWarning && turnData.strikeWarningMessage) {
@@ -676,67 +608,6 @@ export const PlacementTestRoomView: React.FC = () => {
       console.error('Cannot complete session:', err);
     } finally {
       isCompletingRef.current = false;
-    }
-  };
-
-  // Helper hiển thị thẻ tiêu chí chấm trực quan
-  const renderCriterionCard = (
-    name: string,
-    score: number,
-    standardText: string,
-    passThreshold = 70
-  ) => {
-    const isPass = score >= passThreshold;
-    const isHigh = score >= 75;
-    return (
-      <div className="rounded-xl border border-[var(--line)] bg-white p-2.5 space-y-1.5 shadow-2xs">
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-[11px] text-[var(--sumi)]">{name}</span>
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
-                isHigh
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : isPass
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-rose-100 text-rose-800'
-              }`}
-            >
-              {isHigh ? 'Đạt cao' : isPass ? 'Đạt' : 'Cần cải thiện'}
-            </span>
-            <span className="font-mono font-bold text-xs text-[var(--sumi)]">{score}/100</span>
-          </div>
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-          <div
-            className={`h-full transition-all duration-500 ${
-              isHigh ? 'bg-emerald-600' : isPass ? 'bg-blue-600' : 'bg-rose-500'
-            }`}
-            style={{ width: `${Math.min(100, Math.max(5, score))}%` }}
-          />
-        </div>
-        <p className="text-[10px] text-[var(--sumi-faint)] leading-tight">{standardText}</p>
-      </div>
-    );
-  };
-
-  // Ánh xạ tên sự kiện dễ hiểu cho Tester
-  const getEventName = (code: string) => {
-    switch (code) {
-      case 'EVT-01':
-        return 'EVT-01: Nhận diện & Xác nhận đặt phòng';
-      case 'EVT-02':
-        return 'EVT-02: Lễ tân xếp phòng 512 cạnh thang máy';
-      case 'EVT-03':
-        return 'EVT-03: Đổi phòng & Thương lượng nâng hạng Deluxe';
-      case 'EVT-04':
-        return 'EVT-04: Quyết định gói bữa sáng (1,500¥)';
-      case 'EVT-05':
-        return 'EVT-05: Chốt thủ tục, nhận chìa khóa & kết thúc';
-      case 'CONCLUDED':
-        return 'Hoàn tất toàn bộ kịch bản';
-      default:
-        return code;
     }
   };
 
@@ -841,35 +712,6 @@ export const PlacementTestRoomView: React.FC = () => {
             </span>
           </button>
 
-          {/* Toggle Cột Bối cảnh bên trái */}
-          <button
-            type="button"
-            onClick={() => setIsLeftOpen(!isLeftOpen)}
-            className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition cursor-pointer ${
-              isLeftOpen
-                ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
-                : 'border-[var(--line)] bg-white text-[var(--sumi-muted)] hover:border-[var(--ai)]'
-            }`}
-            title="Ẩn/Hiện Bảng bối cảnh phòng & khách sạn"
-          >
-            <ListTodoIcon className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">Bối cảnh</span>
-          </button>
-
-          {/* Toggle Cột Tiêu chí đánh giá lượt bên phải (Rubric Inspector) */}
-          <button
-            type="button"
-            onClick={() => setIsRightOpen(!isRightOpen)}
-            className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition cursor-pointer ${
-              isRightOpen
-                ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
-                : 'border-[var(--line)] bg-white text-[var(--sumi-muted)] hover:border-[var(--ai)]'
-            }`}
-            title="Ẩn/Hiện Bảng tiêu chí đánh giá & trình độ thích ứng"
-          >
-            <BarChartIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
-            <span className="hidden lg:inline">Tiêu chí chấm</span>
-          </button>
 
           {/* Dropdown Cài đặt */}
           <div className="relative shrink-0">
@@ -952,212 +794,9 @@ export const PlacementTestRoomView: React.FC = () => {
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. BODY WORKSPACE (3-COLUMN LAYOUT)                                       */}
+      {/* 2. BODY WORKSPACE (FOCUSED CHAT LAYOUT)                                   */}
       {/* ========================================================================= */}
       <div className="relative flex flex-1 overflow-hidden">
-        {/* ============================================================ */}
-        {/* 2.A. LEFT SIDEBAR: BỐI CẢNH ĐẶT PHÒNG KHÁCH SẠN             */}
-        {/* ============================================================ */}
-        <aside
-          className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
-            isLeftOpen
-              ? 'w-72 lg:w-80 opacity-100 shadow-md'
-              : 'w-0 border-r-0 opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="w-72 lg:w-80 flex flex-col h-full shrink-0">
-            {/* Header sidebar */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 bg-white">
-              <div>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--sumi-faint)]">
-                  Bối cảnh tình huống
-                </h2>
-                <p className="text-xs font-bold text-[var(--sumi)] mt-0.5">
-                  Phiếu Đặt Phòng
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsLeftOpen(false)}
-                className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95 cursor-pointer"
-                title="Thu gọn"
-              >
-                <span>◀</span>
-                <span>Thu gọn</span>
-              </button>
-            </div>
-
-            {/* Content List: Voucher + Room Options */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-              {/* Card 1: Voucher Card */}
-              <div className="rounded-xl border border-[var(--line)] bg-white p-3 shadow-xs space-y-2">
-                <div className="border-b border-[var(--line)] pb-1.5">
-                  <span className="text-[11px] font-bold text-[var(--ai)]">
-                    {contextPackage?.hotelName || 'ホテルさくら (Hotel Sakura)'}
-                  </span>
-                </div>
-                <div className="space-y-1 text-[11.5px]">
-                  <div className="flex justify-between">
-                    <span className="text-[var(--sumi-faint)]">Tên khách:</span>
-                    <span className="font-bold text-[var(--sumi)]">
-                      {(contextPackage?.guestName || 'Tanaka').replace(/\s*\([^)]*\)/g, '').trim() || 'Tanaka'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[var(--sumi-faint)]">Thời gian:</span>
-                    <span className="font-semibold text-[var(--sumi)]">
-                      {contextPackage?.bookingDates || '11/10 ～ 11/13 (3 đêm)'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[var(--sumi-faint)]">Loại phòng:</span>
-                    <span className="font-semibold text-[var(--sumi)]">
-                      {(contextPackage?.bookedRoomType || 'Standard Room').replace(/\s*\([^)]*\)/g, '').trim() || 'Standard Room'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[var(--sumi-faint)]">Bữa sáng:</span>
-                    <span className="font-semibold text-rose-600">
-                      {contextPackage?.breakfastPolicy || 'Chưa bao gồm (1,500¥/ngày)'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Yêu cầu đặc biệt Callout */}
-                <div className="rounded-lg border border-amber-300 bg-amber-50/80 p-2 text-amber-900">
-                  <p className="font-bold text-[10px] uppercase tracking-wide text-amber-700">
-                    ⚠️ YÊU CẦU ĐẶC BIỆT KHI ĐẶT:
-                  </p>
-                  <p className="font-bold text-xs mt-0.5 text-amber-900">
-                    {(() => {
-                      const raw = contextPackage?.specialRequest?.trim();
-                      if (!raw) return 'Ưu tiên phòng yên tĩnh';
-                      const parenMatch = raw.match(/\(([^)]+)\)/);
-                      if (parenMatch && /[\u3040-\u30ff\u4e00-\u9faf]/.test(raw)) {
-                        return parenMatch[1].trim();
-                      }
-                      return raw.replace(/[\u3040-\u30ff\u4e00-\u9faf「」]+/g, '').trim() || 'Ưu tiên phòng yên tĩnh';
-                    })()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Card 2: 3 Room Options Comparison */}
-              <div className="space-y-2">
-                <span className="font-bold text-[11px] text-[var(--sumi-muted)] uppercase tracking-wide">
-                  Tình trạng các loại phòng
-                </span>
-
-                {contextPackage?.roomOptions && contextPackage.roomOptions.length > 0 ? (
-                  contextPackage.roomOptions.map((room) => {
-                    const isStandard = room.code === 'Standard';
-                    const standardNoteMatch = isStandard ? room.status.match(/\(([^)]+)\)/) : null;
-                    const displayStatus = isStandard
-                      ? room.status.replace(/\s*\([^)]*\)/g, '').trim() || 'Đã xếp Phòng 512'
-                      : room.status;
-                    const standardNote = standardNoteMatch
-                      ? `(${standardNoteMatch[1].trim()})`
-                      : '(Cạnh thang máy - Có thể ồn)';
-
-                    return (
-                      <div
-                        key={room.code}
-                        className={`rounded-xl border p-2.5 space-y-1 ${
-                          isStandard
-                            ? 'border-amber-300 bg-amber-50/60'
-                            : room.code === 'Deluxe'
-                            ? 'border-emerald-300 bg-emerald-50/60'
-                            : 'border-[var(--line)] bg-[var(--paper-100)] opacity-75'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-[var(--sumi)]">{room.name}</span>
-                          <span
-                            className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold ${
-                              isStandard
-                                ? 'bg-rose-100 text-rose-700'
-                                : room.code === 'Deluxe'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-[var(--paper-200)] text-[var(--sumi-faint)]'
-                            }`}
-                          >
-                            {displayStatus}
-                          </span>
-                        </div>
-                        <p className="text-[10.5px] text-[var(--sumi-muted)]">{room.bedType}</p>
-                        {isStandard ? (
-                          <p className="text-[10.5px] font-semibold text-amber-800">{standardNote}</p>
-                        ) : (
-                          <p
-                            className={`text-[10.5px] font-bold ${
-                              room.surchargePerNight > 0 ? 'text-[var(--ai)]' : 'text-emerald-700'
-                            }`}
-                          >
-                            Phụ phí: +{room.surchargePerNight.toLocaleString()} 円 / đêm
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <>
-                    <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-2.5 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[var(--sumi)]">Standard Room (18m²)</span>
-                        <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9.5px] font-bold text-rose-700">
-                          Đã xếp Phòng 512
-                        </span>
-                      </div>
-                      <p className="text-[10.5px] text-[var(--sumi-muted)]">1 Giường đơn</p>
-                      <p className="text-[10.5px] font-semibold text-amber-800">
-                        (Cạnh thang máy - Có thể ồn)
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-emerald-300 bg-emerald-50/60 p-2.5 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[var(--sumi)]">Deluxe Room (28m²)</span>
-                        <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-800">
-                          Còn phòng trống
-                        </span>
-                      </div>
-                      <p className="text-[11px] font-semibold text-emerald-800">
-                        🌿 Rất yên tĩnh • Xa thang máy • Giường đôi
-                      </p>
-                      <p className="text-[10.5px] font-bold text-[var(--ai)]">
-                        Phụ phí nâng hạng: +2,000 円 / đêm (+6,000 円/3 đêm)
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Policy Note Footer */}
-              <div className="rounded-xl bg-white border border-[var(--line)] p-2.5 text-[11px] text-[var(--sumi-muted)] space-y-1">
-                <p className="font-bold text-[var(--sumi)]">Quy định khách sạn:</p>
-                <p>• Nhận phòng từ 15:00 | Trả phòng trước 11:00</p>
-                <p>• Bữa sáng: 7:00 – 10:00 (1,500 円/người)</p>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn */}
-        <button
-          type="button"
-          onClick={() => setIsLeftOpen(true)}
-          className={`absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[var(--ai)]/30 bg-white px-3 py-2.5 text-xs font-bold text-[var(--ai)] shadow-md hover:bg-[var(--ai-soft)] hover:pr-4 transition-all duration-300 ease-in-out cursor-pointer ${
-            !isLeftOpen
-              ? 'translate-x-0 opacity-100 pointer-events-auto'
-              : '-translate-x-full opacity-0 pointer-events-none'
-          }`}
-          title="Mở rộng bối cảnh phòng"
-        >
-          <ListTodoIcon className="w-3.5 h-3.5" />
-          <span>Bối cảnh phòng</span>
-          <span>▶</span>
-        </button>
-
         {/* ============================================================ */}
         {/* 2.B. CENTER COLUMN: UNIFIED SCENARIO CHAT STREAM             */}
         {/* ============================================================ */}
@@ -1183,17 +822,24 @@ export const PlacementTestRoomView: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
             <div className="mx-auto w-full max-w-[800px] space-y-4">
               {/* Context Summary Banner */}
-              <div className="rounded-2xl border border-[var(--line)] bg-white/80 backdrop-blur-xs px-4 py-2.5 shadow-2xs text-xs font-sans">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 font-bold text-[var(--ai)] text-[10px] tracking-wide uppercase">
-                      <span>Bối cảnh tình huống</span>
-                    </div>
-                    <p className="mt-0.5 text-[var(--sumi)] text-[11px] leading-relaxed">
-                      Bạn (Tanaka) vừa đến sảnh khách sạn Sakura tại Tokyo sau chuyến bay dài và đến quầy lễ tân để làm thủ tục nhận phòng. Yêu cầu khi bạn đặt là ưu tiên phòng yên tĩnh, loại phòng Standard. Tuy nhiên trong quá trình sắp xếp, lễ tân đã thông báo không còn trống phòng Standard yên tĩnh. Hãy trao đổi với lễ tân để giải quyết tình huống, sau đó hỏi thêm thông tin về việc đăng ký bữa sáng tại khách sạn.
-                    </p>
-                  </div>
+              <div className="rounded-2xl border border-[var(--line)] bg-white/90 backdrop-blur-xs px-4 py-3.5 shadow-2xs text-xs font-sans space-y-2">
+                <div className="flex items-center gap-1.5 font-bold text-[var(--ai)] text-[10.5px] tracking-wide uppercase">
+                  <span>Bối cảnh phòng</span>
                 </div>
+                <p className="text-[var(--sumi)] text-xs leading-relaxed">
+                  Bạn vừa đến sảnh <strong>Khách sạn Sakura (Tokyo)</strong> sau chuyến bay dài và đến quầy lễ tân làm thủ tục nhận phòng.
+                </p>
+                <ul className="space-y-1.5 text-[11.5px] text-[var(--sumi-muted)] leading-relaxed pl-4 list-disc">
+                  <li>
+                    <strong className="text-[var(--sumi)]">Thông tin đặt phòng:</strong> Phòng Standard cho 3 đêm, có ghi chú <em>ưu tiên phòng yên tĩnh</em> (bạn có thể tự do xưng tên thật hoặc bất kỳ tên nào).
+                  </li>
+                  <li>
+                    <strong className="text-[var(--sumi)]">Tình huống phát sinh:</strong> Trong quá trình sắp xếp, lễ tân thông báo không còn trống phòng Standard yên tĩnh như yêu cầu ban đầu.
+                  </li>
+                  <li>
+                    <strong className="text-[var(--sumi)]">Nhiệm vụ của bạn:</strong> Trao đổi với lễ tân để giải quyết việc nhận phòng, sau đó hỏi thêm thông tin về việc đăng ký bữa sáng tại khách sạn.
+                  </li>
+                </ul>
               </div>
 
               {/* Loading State Skeleton */}
@@ -1278,7 +924,7 @@ export const PlacementTestRoomView: React.FC = () => {
                             isAi ? 'text-[var(--sumi-faint)]' : 'text-blue-100'
                           }`}
                         >
-                          {isAi ? 'フロント 山田' : 'Bạn (Tanaka)'}
+                          {isAi ? 'フロント 山田' : 'Bạn'}
                         </span>
 
                         {isAi && (
@@ -1489,309 +1135,6 @@ export const PlacementTestRoomView: React.FC = () => {
           </div>
         </main>
 
-                {/* ============================================================ */}
-        {/* 2.D. RIGHT DRAWER: LIVE ASSESSMENT RUBRIC INSPECTOR          */}
-        {/* ============================================================ */}
-        <aside
-          className={`shrink-0 border-l border-[var(--line)] bg-white flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
-            isRightOpen ? 'w-80 lg:w-96 opacity-100 shadow-md' : 'w-0 border-l-0 opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="w-80 lg:w-96 flex flex-col h-full shrink-0">
-            {/* Header Inspector */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 bg-[var(--paper-50)]">
-              <div className="flex items-center gap-2">
-                <BarChartIcon className="w-4 h-4 text-[var(--ai)]" />
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--sumi-faint)]">
-                      Giám sát chấm điểm
-                    </h2>
-                    <span className="rounded bg-amber-100 px-1 py-0.2 text-[9px] font-black text-amber-900 border border-amber-200">
-                      TEST ONLY
-                    </span>
-                  </div>
-                  <p className="text-xs font-bold text-[var(--sumi)] mt-0.5">
-                    Live Rubric &amp; Lộ trình đánh giá
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsRightOpen(false)}
-                className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95 cursor-pointer"
-                title="Thu gọn bảng tiêu chí"
-              >
-                <span>✕</span>
-              </button>
-            </div>
-
-            {/* Nội dung giám sát */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              {/* Cảnh báo chế độ nghiệm thu nội bộ */}
-              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-[10.5px] text-amber-900 leading-relaxed shadow-2xs">
-                <span className="font-bold flex items-center gap-1 text-[11px] text-amber-950 mb-0.5">
-                  <span>🧪</span> Màn hình Kiểm thử Nghiệm thu (Testing Only)
-                </span>
-                <span>
-                  Bảng theo dõi tiêu chí chấm, điểm số theo lượt và tiến trình Can-do này chỉ phục vụ kiểm thử kỹ thuật nội bộ, <strong>không hiển thị cho học viên trên bản deploy chính thức</strong>.
-                </span>
-              </div>
-
-              {/* 1. Nhiệm vụ tiếp theo của bạn (Next Actionable Objective) */}
-              <div className="rounded-xl border border-[var(--ai)]/30 bg-[var(--ai-soft)]/50 p-3 space-y-1.5 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)] flex items-center gap-1">
-                    <span>🎯</span> Nhiệm vụ tiếp theo của bạn
-                  </span>
-                  <span className="rounded bg-[var(--ai)] px-1.5 py-0.5 text-[9px] font-bold text-white">
-                    {currentEvent}
-                  </span>
-                </div>
-                <p className="text-xs font-bold text-[var(--sumi)] leading-snug">
-                  {ALL_PLACEMENT_EVENTS.find((e) => e.code === currentEvent)?.nextObjective ||
-                    'Lắng nghe phản hồi từ lễ tân và tiếp tục thủ tục nhận phòng.'}
-                </p>
-                <p className="text-[10.5px] text-[var(--sumi-muted)] italic pt-0.5">
-                  Mục tiêu đạt:{' '}
-                  {ALL_PLACEMENT_EVENTS.find((e) => e.code === currentEvent)?.targetCriteria ||
-                    'Phản hồi lịch thiệp theo đúng tình huống dịch vụ khách sạn.'}
-                </p>
-              </div>
-
-              {/* 2. Lộ trình 5 Sự kiện nhận phòng (Event Progression Roadmap) */}
-              <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-50)] p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wide text-[var(--sumi-faint)]">
-                    Lộ trình 5 tình huống
-                  </span>
-                  <span className="text-[10px] font-bold font-mono text-[var(--ai)]">
-                    {eventSummaries.length}/5 sự kiện đã hoàn thành
-                  </span>
-                </div>
-
-                <div className="space-y-1.5">
-                  {ALL_PLACEMENT_EVENTS.map((evt, idx) => {
-                    const summary = eventSummaries.find((s) => s.eventCode === evt.code);
-                    const isCompleted = !!summary && summary.outcomeStatus === 'Fulfilled';
-                    const isCurrent = currentEvent === evt.code;
-
-                    return (
-                      <div
-                        key={evt.code}
-                        className={`rounded-lg border p-2.5 text-[11px] transition ${
-                          isCompleted
-                            ? 'border-emerald-200 bg-emerald-50/60'
-                            : isCurrent
-                            ? 'border-[var(--ai)] bg-blue-50/40 ring-1 ring-[var(--ai)]/30 shadow-2xs'
-                            : 'border-[var(--line)] bg-white/70'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-2 flex-1">
-                            <span
-                              className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-mono shrink-0 font-bold mt-0.5 ${
-                                isCompleted
-                                  ? 'bg-emerald-600 text-white'
-                                  : isCurrent
-                                  ? 'bg-[var(--ai)] text-white animate-pulse'
-                                  : 'bg-slate-200 text-slate-600'
-                              }`}
-                            >
-                              {isCompleted ? '✓' : idx + 1}
-                            </span>
-                            <span
-                              className={`font-bold leading-snug break-words ${
-                                isCompleted
-                                  ? 'text-emerald-950'
-                                  : isCurrent
-                                  ? 'text-[var(--ai)] font-extrabold'
-                                  : 'text-[var(--sumi-muted)]'
-                              }`}
-                            >
-                              {evt.code}: {evt.title}
-                            </span>
-                          </div>
-                          <div className="shrink-0">
-                            {isCompleted ? (
-                              <span className="rounded bg-emerald-100 px-1.5 py-0.2 text-[9px] font-bold text-emerald-800 font-mono">
-                                Đạt {summary?.highestDemonstratedBand || 'N4'}
-                              </span>
-                            ) : isCurrent ? (
-                              <span className="rounded bg-[var(--ai)] px-1.5 py-0.2 text-[9px] font-bold text-white">
-                                Đang diễn ra
-                              </span>
-                            ) : (
-                              <span className="rounded bg-slate-100 px-1.5 py-0.2 text-[9px] font-medium text-[var(--sumi-faint)]">
-                                Chưa tới
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Chi tiết nhiệm vụ theo trạng thái (Hiển thị đầy đủ, không bị cắt dấu ...) */}
-                        {isCompleted && summary?.summaryExplanation && (
-                          <p className="text-[10px] text-emerald-800 mt-1.5 pl-6 leading-relaxed border-t border-emerald-200/50 pt-1">
-                            {summary.summaryExplanation}
-                          </p>
-                        )}
-
-                        {isCurrent && (
-                          <div className="mt-2 pl-6 pt-1.5 border-t border-[var(--ai)]/20 text-[10.5px] space-y-1">
-                            <div className="text-[var(--ai)] font-bold flex items-start gap-1">
-                              <span className="shrink-0">🎯</span>
-                              <span className="leading-snug">{evt.nextObjective}</span>
-                            </div>
-                            <div className="text-[var(--sumi-muted)] italic leading-tight pl-4">
-                              Mục tiêu: {evt.targetCriteria}
-                            </div>
-                          </div>
-                        )}
-
-                        {!isCompleted && !isCurrent && (
-                          <div className="mt-1 pl-6 text-[10px] text-[var(--sumi-faint)] leading-snug">
-                            {evt.nextObjective}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 3. Phân tích lượt đối thoại vừa nói (Latest Turn Analysis & Rubric Scores) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="font-bold text-[10.5px] uppercase tracking-wide text-[var(--sumi-faint)]">
-                    Đánh giá lượt đối thoại gần nhất
-                  </p>
-                  {latestTurnScores && (
-                    <span className="text-[10px] font-bold font-mono text-emerald-700">
-                      Bậc thể hiện: {latestTurnScores.demonstratedBand}
-                    </span>
-                  )}
-                </div>
-
-                {latestTurnScores ? (
-                  <div className="space-y-2">
-                    {/* Ý định nhận diện & Phân loại câu nói */}
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div className="rounded-xl bg-[var(--paper-50)] p-2.5 border border-[var(--line)]">
-                        <span className="text-[10px] text-[var(--sumi-faint)] block">Ý định (Intent):</span>
-                        <span className="font-bold text-[var(--ai)] font-mono truncate block mt-0.5" title={latestTurnScores.detectedIntent}>
-                          {latestTurnScores.detectedIntent}
-                        </span>
-                      </div>
-                      <div className="rounded-xl bg-[var(--paper-50)] p-2.5 border border-[var(--line)]">
-                        <span className="text-[10px] text-[var(--sumi-faint)] block">Phân loại câu nói:</span>
-                        <span className="font-bold text-emerald-700 block mt-0.5">
-                          {latestTurnScores.classification === 'Valid'
-                            ? 'Hợp lệ (Valid)'
-                            : latestTurnScores.classification}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Điểm tổng hợp trung bình của lượt nói */}
-                    <div className="rounded-xl border border-[var(--ai)]/30 bg-[var(--ai-soft)]/70 p-2.5 flex items-center justify-between gap-2 shadow-2xs">
-                      <div className="min-w-0">
-                        <span className="text-[11px] font-bold text-[var(--ai)] block">
-                          Điểm tổng hợp lượt nói
-                        </span>
-                        <span className="text-[9.5px] text-[var(--sumi-muted)] block">
-                          TB trọng số: 35% NV • 25% NP • 20% TV • 20% VP
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
-                            latestTurnScores.overall >= 75
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : latestTurnScores.overall >= 70
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-rose-100 text-rose-800'
-                          }`}
-                        >
-                          {latestTurnScores.overall >= 75
-                            ? 'Đạt cao'
-                            : latestTurnScores.overall >= 70
-                            ? 'Đạt'
-                            : 'Cần cải thiện'}
-                        </span>
-                        <span className="font-mono font-black text-base text-[var(--ai)]">
-                          {latestTurnScores.overall}/100
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 4 Tiêu chí Rubric Đạt / Cần cải thiện */}
-                    <div className="space-y-2">
-                      {/* Tiêu chí 1: Nhiệm vụ */}
-                      {renderCriterionCard(
-                        '1. Hoàn thành nhiệm vụ',
-                        latestTurnScores.task,
-                        'Đạt mục tiêu giao tiếp của sự kiện, trả lời đúng trọng tâm câu hỏi của lễ tân.',
-                        70
-                      )}
-
-                      {/* Tiêu chí 2: Ngữ pháp */}
-                      {renderCriterionCard(
-                        '2. Ngữ pháp & Cấu trúc',
-                        latestTurnScores.grammar,
-                        'Dùng đúng thể lịch sự Teineigo (desu/masu) hoặc kính ngữ Keigo, không sai trợ từ.',
-                        70
-                      )}
-
-                      {/* Tiêu chí 3: Từ vựng */}
-                      {renderCriterionCard(
-                        '3. Vốn từ vựng',
-                        latestTurnScores.vocab,
-                        'Vốn từ phù hợp văn cảnh nhận phòng (đặt phòng, loại phòng, đêm, bữa sáng).',
-                        70
-                      )}
-
-                      {/* Tiêu chí 4: Văn phong lễ tân */}
-                      {renderCriterionCard(
-                        '4. Văn phong xã hội (Pragmatics)',
-                        latestTurnScores.pragmatics,
-                        'Văn phong lịch thiệp, thái độ đúng mực, sử dụng câu đệm (sumimasen, onegaishimasu).',
-                        70
-                      )}
-                    </div>
-
-                    {/* AI Evidence Note */}
-                    {latestTurnScores.note && (
-                      <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-[11px] text-blue-900 space-y-1 shadow-2xs">
-                        <p className="font-bold text-[10px] uppercase tracking-wide text-blue-800 flex items-center gap-1">
-                          <span>🔍</span> Ghi chú đánh giá của AI:
-                        </p>
-                        <p className="leading-relaxed">{latestTurnScores.note}</p>
-                      </div>
-                    )}
-
-                    {/* Cơ chế thích ứng tiếp theo */}
-                    <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-2.5 text-[10.5px] text-indigo-900 space-y-1">
-                      <span className="font-bold text-[10px] uppercase tracking-wider text-indigo-800 block">
-                        Cơ chế thích ứng cho lượt tiếp theo:
-                      </span>
-                      <p className="leading-relaxed">
-                        {latestTurnScores.task >= 75 && latestTurnScores.grammar >= 75 && latestTurnScores.demonstratedBand === 'N3'
-                          ? '🚀 Thể hiện chuẩn N3 xuất sắc (>=75đ) -> AI nâng câu hỏi lên bậc N3 ở tình huống tới.'
-                          : latestTurnScores.task >= 60
-                          ? '⚖️ Thể hiện đạt mức N4 vững vàng -> AI duy trì câu hỏi ở bậc N4 để thẩm định thêm.'
-                          : '🎯 AI duy trì câu hỏi thích ứng để tiếp tục thu thập bằng chứng đánh giá.'}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-[var(--line)] p-4 text-center text-[11px] text-[var(--sumi-faint)]">
-                    Chưa có lượt đối thoại nào được gửi. Hãy nhập câu chào hoặc bấm Mic để kiểm tra cách AI phân tích và chấm điểm 4 tiêu chí.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
       {/* ========================================================================= */}
