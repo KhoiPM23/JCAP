@@ -112,13 +112,9 @@ export const PlacementTestHistoryView: React.FC = () => {
             <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-extrabold text-blue-800">
               {sessions.length} phiên đã lưu
             </span>
-            <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-xs font-extrabold text-amber-900">
-              🧪 MÔI TRƯỜNG KIỂM THỬ NỘI BỘ
-            </span>
           </div>
           <p className="mt-1 text-sm text-[var(--sumi-muted)]">
-            Xem lại chi tiết từng lượt nói, bằng chứng Can-do và căn cứ AI xếp hạng trình độ N5–N3.
-            <span className="ml-1 text-xs font-semibold text-amber-800">(Dữ liệu phục vụ kiểm thử đối soát kỹ thuật, không phải bản deploy chính thức cho học viên)</span>
+            Xem lại chi tiết từng lượt hội thoại, bằng chứng Can-do và nhận xét đánh giá trình độ N5–N3.
           </p>
         </div>
 
@@ -153,7 +149,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                   ? 'Đang khởi tạo…'
                   : ptStatus?.activeSessionId
                   ? 'Làm lại bài mới (Huỷ bài cũ)'
-                  : 'Làm bài kiểm tra mới (Retake)'}
+                  : 'Làm lại bài đánh giá'}
               </span>
             </button>
           )}
@@ -419,7 +415,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
                     <div>
                       <h3 className="text-base font-bold text-[var(--sumi)] flex items-center gap-2">
-                        <span>🔍</span> Thanh tra Bằng chứng & Nhận xét Từng Lượt nói (Turn Evidence Inspector)
+                        <span>🔍</span> Chi tiết Hội thoại &amp; Nhận xét Từng Lượt nói
                       </h3>
                       <p className="mt-0.5 text-xs text-[var(--sumi-muted)]">
                         Chi tiết từng phát ngôn, căn cứ xếp hạng N5/N4/N3 và nhận xét của AI.
@@ -452,7 +448,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                           {/* Message Header */}
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-2 text-xs font-bold">
-                              <span>{isAi ? '🏨 Lễ tân (Yamada)' : '👤 Bạn (Tanaka)'}</span>
+                              <span>{isAi ? '🏨 Lễ tân (Yamada)' : '👤 Bạn'}</span>
                               {evidence && (
                                 <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-black text-blue-800">
                                   {evidence.eventCode}
