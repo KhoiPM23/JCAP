@@ -2359,6 +2359,12 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Join(_dbContext.RoleplaySessions, sig => sig.SessionId, ses => ses.Id, (sig, ses) => new { sig, ses })
             .CountAsync(x => x.ses.UserId == userId && x.ses.SessionType != "PlacementTest", cancellationToken);
 
+        int voiceTurns = await TelemetryEvaluatorService.CountVoiceStandardTurnsAsync(
+            _dbContext,
+            userId,
+            cancellationToken);
+        bool hasVoiceData = voiceTurns > 0;
+
         DateTime? lastPracticed = await _dbContext.RoleplaySessions
             .Where(s => s.UserId == userId && s.SessionType != "PlacementTest" && s.CompletedAt != null)
             .OrderByDescending(s => s.CompletedAt)
@@ -2384,10 +2390,13 @@ public class RoleplaySessionService : IRoleplaySessionService
         else
             focusAreas.Add("Chú ý phân biệt cặp trợ từ に vs で, は vs が");
 
-        if (profile.AverageMoraRate >= 4.0)
-            strengths.Add("Nhịp điệu phát âm lưu loát (≥ 4.0 âm/giây)");
-        else
-            focusAreas.Add("Luyện tập nối âm và ngắt nghỉ tự nhiên hơn");
+        if (hasVoiceData)
+        {
+            if (profile.AverageMoraRate >= 4.0)
+                strengths.Add("Nhịp điệu phát âm lưu loát (≥ 4.0 âm/giây)");
+            else
+                focusAreas.Add("Luyện tập nối âm và ngắt nghỉ tự nhiên hơn");
+        }
 
         if (profile.HintDependencyRate <= 25)
             strengths.Add("Tự chủ giao tiếp cao (ít dựa gợi ý)");
@@ -2429,8 +2438,8 @@ public class RoleplaySessionService : IRoleplaySessionService
             })
             .ToList();
 
-        // Đồng bộ chỉ số tổng quát với 6 năng lực cốt lõi để tránh lệch số trên Backend & UI
-        double alignedProficiency = TelemetryEvaluatorService.ComputeEffectiveAlignedProficiency(profile, totalSessions);
+        // Đồng bộ chỉ số tổng quát với các trục năng lực thực sự đã đo (5 trục nếu chưa thu âm, 6 trục nếu đã nói qua micro)
+        double alignedProficiency = TelemetryEvaluatorService.ComputeEffectiveAlignedProficiency(profile, totalSessions, hasVoiceData);
 
         omikujiRank = alignedProficiency >= 85 ? "大吉 (Đại Cát)"
             : alignedProficiency >= 70 ? "中吉 (Trung Cát)" : "吉 (Cát)";
@@ -2531,12 +2540,14 @@ public class RoleplaySessionService : IRoleplaySessionService
             SpeakingReflexIndex = profile.SpeakingReflexIndex,
             KeigoCommandScore = profile.KeigoCommandScore,
             ParticleAccuracyRate = profile.ParticleAccuracyRate,
-            AverageMoraRate = profile.AverageMoraRate,
+            AverageMoraRate = hasVoiceData ? profile.AverageMoraRate : 0.0,
             HintDependencyRate = profile.HintDependencyRate,
             CommunicativeConfidenceScore = profile.CommunicativeConfidenceScore,
             CommunicativeProficiencyIndex = alignedProficiency,
             TotalSessionsCompleted = totalSessions,
             TotalPracticeTurns = totalTurns,
+            VoicePracticeTurns = voiceTurns,
+            HasVoiceData = hasVoiceData,
             Strengths = strengths,
             TargetFocusAreas = focusAreas,
             OmikujiRank = omikujiRank,

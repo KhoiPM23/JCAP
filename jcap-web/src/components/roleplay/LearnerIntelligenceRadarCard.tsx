@@ -68,6 +68,7 @@ interface RadarAxisConfig {
   topicName: string;
   accentColor: string;
   badgeClass: string;
+  isUnmeasured?: boolean;
 }
 
 const getSkillStatusTheme = (score: number) => {
@@ -230,8 +231,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     const reflex = Math.round(profile.speakingReflexIndex ?? 75);
     const styleScore = Math.round(profile.keigoCommandScore ?? 75);
     const particles = Math.round(profile.particleAccuracyRate ?? 80);
-    const rawMora = Number((profile.averageMoraRate ?? 4.0).toFixed(1));
-    const moraNorm = Math.max(18, Math.min(100, Math.round((rawMora / 6.0) * 100)));
+    const hasVoiceData =
+      typeof profile.hasVoiceData === 'boolean'
+        ? profile.hasVoiceData
+        : (profile.averageMoraRate ?? 0) > 0;
+    const rawMora = hasVoiceData ? Number((profile.averageMoraRate ?? 0).toFixed(1)) : 0;
+    const moraNorm = hasVoiceData ? Math.max(18, Math.min(100, Math.round((rawMora / 6.0) * 100))) : 0;
     const confidence = Math.round(profile.communicativeConfidenceScore ?? 75);
     const autonomy = Math.max(0, 100 - Math.round(profile.hintDependencyRate ?? 20));
 
@@ -286,19 +291,25 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         : 'Cần phân biệt rõ trợ từ に và で khi nói về địa điểm, phương tiện.',
       'Luyện hỏi đường và mua vé với nhiều trợ từ chỉ nơi chốn.',
     );
-    const moraInsight = withAiInsight(
-      'mora',
-      rawMora >= 4.0
-        ? 'Bạn giữ nhịp trường âm, âm ngắt ổn định, dễ nghe.'
-        : 'Tốc độ nói còn ngắt quãng. Hãy luyện nối cụm từ thành một hơi liền mạch.',
-      'Nghe mẫu rồi lặp lại theo nhịp câu đời thường.',
-    );
+    const moraInsight = hasVoiceData
+      ? withAiInsight(
+          'mora',
+          rawMora >= 4.0
+            ? 'Bạn giữ nhịp trường âm, âm ngắt ổn định, dễ nghe.'
+            : 'Tốc độ nói còn ngắt quãng. Hãy luyện nối cụm từ thành một hơi liền mạch.',
+          'Nghe mẫu rồi lặp lại theo nhịp câu đời thường.',
+        )
+      : {
+          diagnosticDetail:
+            'Bạn chưa thực hiện lượt nói qua micro nên hệ thống chưa đo nhịp độ phát âm. Hãy bật micro ở phiên tới để ghi nhận chỉ số này.',
+          drillMethod: 'Bật micro khi luyện Hội thoại AI hoặc luyện Shadowing để đo nhịp nói thực tế.',
+        };
     const confidenceInsight = withAiInsight(
       'confidence',
       confidence >= 75
-        ? 'Hệ thống nhận diện giọng nói rõ ràng, âm lượng ổn định.'
-        : 'Một số âm cuối câu còn nhỏ hoặc bị nuốt âm. Hãy giữ hơi đều tới cuối câu.',
-      'Luyện đọc rõ tên món, số lượng và số tiền qua micro.',
+        ? 'Bạn duy trì luồng đối thoại chủ động, câu trả lời dứt khoát và ít do dự.'
+        : 'Bạn còn ngập ngừng hoặc phụ thuộc trợ giúp khi trả lời. Hãy tự tin hoàn thiện trọn câu ngắn trước.',
+      'Luyện trả lời trọn câu lịch sự không mở gợi ý sớm.',
     );
     const autonomyInsight = withAiInsight(
       'autonomy',
@@ -365,28 +376,29 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         shortLabel: 'Nhịp nói',
         fullTitle: 'Nhịp điệu phát âm',
         normalizedScore: moraNorm,
-        displayValue: `${rawMora.toFixed(1)}`,
-        unitLabel: ' âm/s',
-        statusLabel: moraTheme.statusLabel,
-        statusText: getMoraAssessment(rawMora),
-        scopeBadge: 'Chuẩn giao tiếp: 4.0–6.0 âm/giây',
+        displayValue: hasVoiceData ? `${rawMora.toFixed(1)}` : 'Chưa đo',
+        unitLabel: hasVoiceData ? ' âm/s' : '',
+        statusLabel: hasVoiceData ? moraTheme.statusLabel : 'Chưa thu âm',
+        statusText: hasVoiceData ? getMoraAssessment(rawMora) : 'Chưa có lượt nói qua micro',
+        scopeBadge: hasVoiceData ? 'Chuẩn giao tiếp: 4.0–6.0 âm/giây' : 'Chỉ đo khi nói qua micro',
         diagnosticDetail: moraInsight.diagnosticDetail,
         drillMethod: moraInsight.drillMethod,
         topicCode: 'DAILY_LIFE',
         topicName: 'Đời sống',
-        accentColor: moraTheme.hex,
-        badgeClass: moraTheme.badgeClass,
+        accentColor: hasVoiceData ? moraTheme.hex : '#64748b',
+        badgeClass: hasVoiceData ? moraTheme.badgeClass : 'bg-slate-100 text-slate-600 border-slate-200',
+        isUnmeasured: !hasVoiceData,
       },
       {
         id: 'confidence',
-        shortLabel: 'Phát âm',
-        fullTitle: 'Độ rõ phát âm',
+        shortLabel: 'Tự tin',
+        fullTitle: 'Độ tự tin giao tiếp',
         normalizedScore: confidence,
         displayValue: `${confidence}`,
         unitLabel: '/100',
         statusLabel: confidenceTheme.statusLabel,
-        statusText: confidence >= 75 ? 'Khẩu hình sáng, rõ âm' : 'Cần nói tròn vành rõ chữ',
-        scopeBadge: 'Độ rõ khi nói qua micro',
+        statusText: confidence >= 75 ? 'Đối đáp tự tin, mạch lạc' : 'Cần diễn đạt dứt khoát hơn',
+        scopeBadge: 'Độ tự tin & độ hoàn chỉnh khi đối thoại',
         diagnosticDetail: confidenceInsight.diagnosticDetail,
         drillMethod: confidenceInsight.drillMethod,
         topicCode: 'SHOPPING',
@@ -421,7 +433,9 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
       const found = radarAxes.find((a) => a.id === selectedAxisId);
       if (found) return found;
     }
-    const sorted = [...radarAxes].sort((a, b) => a.normalizedScore - b.normalizedScore);
+    const measuredAxes = radarAxes.filter((a) => !a.isUnmeasured);
+    const pool = measuredAxes.length > 0 ? measuredAxes : radarAxes;
+    const sorted = [...pool].sort((a, b) => a.normalizedScore - b.normalizedScore);
     return sorted[0];
   }, [radarAxes, selectedAxisId]);
 
@@ -836,8 +850,9 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     );
   }
 
-  const computedAxesAverage = radarAxes.length > 0
-    ? Math.round(radarAxes.reduce((sum, a) => sum + a.normalizedScore, 0) / radarAxes.length)
+  const measuredRadarAxes = radarAxes.filter((a) => !a.isUnmeasured);
+  const computedAxesAverage = measuredRadarAxes.length > 0
+    ? Math.round(measuredRadarAxes.reduce((sum, a) => sum + a.normalizedScore, 0) / measuredRadarAxes.length)
     : Math.round(profile.communicativeProficiencyIndex || 0);
   const overallIndex = computedAxesAverage;
   const masteryRank = getMasteryRank(overallIndex);
@@ -904,12 +919,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringStrokeDashoffset = ringCircumference - (Math.min(100, Math.max(0, overallIndex)) / 100) * ringCircumference;
 
-  const displayStrengths = radarAxes
+  const displayStrengths = measuredRadarAxes
     .filter((a) => a.normalizedScore >= 75)
     .sort((a, b) => b.normalizedScore - a.normalizedScore)
     .map((a) => `${a.fullTitle} (${a.displayValue}${a.unitLabel}): ${a.statusText}`);
 
-  const displayTargetFocusAreas = radarAxes
+  const displayTargetFocusAreas = measuredRadarAxes
     .filter((a) => a.normalizedScore < 75)
     .sort((a, b) => a.normalizedScore - b.normalizedScore)
     .slice(0, 3)
@@ -1326,7 +1341,9 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               <div className="divide-y divide-[var(--line)]/60">
                 {radarAxes.map((axis) => {
                   const isSelected = activeAxis?.id === axis.id;
-                  const filledSegments = Math.max(1, Math.min(10, Math.round(axis.normalizedScore / 10)));
+                  const filledSegments = axis.isUnmeasured
+                    ? 0
+                    : Math.max(1, Math.min(10, Math.round(axis.normalizedScore / 10)));
                   const matchedScn = availableScenarios.find((s) => s.topicCode === axis.topicCode) || availableScenarios[0];
                   const hasTrainedBefore = matchedScn
                     ? completedScenarioIds.has(matchedScn.id) || completedScenarioTitles.has((matchedScn.title || '').trim().toLowerCase())

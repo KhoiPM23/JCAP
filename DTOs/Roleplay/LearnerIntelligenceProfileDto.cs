@@ -61,6 +61,16 @@ namespace JCAP.DTOs.Roleplay
         public int TotalPracticeTurns { get; set; }
 
         /// <summary>
+        /// Tổng số lượt thực sự thu âm giọng nói qua micro (không tính gõ phím)
+        /// </summary>
+        public int VoicePracticeTurns { get; set; }
+
+        /// <summary>
+        /// Đánh dấu học viên đã từng thu âm giọng nói hay chưa (dùng để không hiển thị số mặc định 3.5 âm/s khi mới gõ phím)
+        /// </summary>
+        public bool HasVoiceData { get; set; }
+
+        /// <summary>
         /// Danh sách điểm mạnh đúc kết
         /// </summary>
         public List<string> Strengths { get; set; } = new();
