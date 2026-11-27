@@ -300,6 +300,7 @@
 .jx-app.is-mobile :is(.jx-mobile-nav, .jx-mobile-header, .jx-mobile-more) :is(a, button),
 .jx-mobile-practice :is(header, .jx-shadow-sentence-actions, .jx-practice-composer, .jx-practice-panel) button { touch-action: manipulation; }
 .jx-app.is-mobile .jm-back, .jx-app.is-mobile .jm-panel-bottom button[aria-label^="Đóng"] { min-height: 44px; min-width: 44px; }
+.jx-shadow-mobile-history { display: none; }
 
 @media (max-width: 767px), (max-width: 1023px) and (max-height: 500px) and (pointer: coarse) {
   .jx-flash-study-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; padding-block: 8px; }
@@ -344,6 +345,34 @@
   .jx-flash-card-empty { display: block; padding: 24px 16px; }
   .jx-flash-history-overlay { align-items: flex-end; padding: 0; }
   .jx-flash-history-dialog { max-height: 88dvh; margin: 0; padding: 16px 16px max(16px, env(safe-area-inset-bottom)); border-radius: 20px 20px 0 0; }
+
+  .jx-touch-page { min-width: 0; overflow-wrap: anywhere; }
+  .jx-touch-page :is(button:not([role="switch"]), .jx-mobile-hit) { min-height: 44px; min-width: 44px; touch-action: manipulation; }
+  .jx-touch-page .jx-mobile-wrap { flex-wrap: wrap; gap: 8px; }
+  .jx-touch-page .jx-mobile-card-padding { padding: 16px; }
+  .jx-result-card-actions { align-self: stretch; flex-wrap: wrap; }
+  .jx-result-card-actions a { min-height: 44px; }
+  .jx-result-toast { width: max-content; max-width: calc(100% - 24px); flex-wrap: wrap; }
+  .jx-result-toast a { min-height: 44px; white-space: normal; }
+  .jx-placement-history { padding-inline: 0; }
+  .jx-placement-detail, .jx-support-detail { scroll-margin-top: 12px; }
+  .jx-touch-page .jx-shf { column-gap: 6px; row-gap: 8px; }
+  .jx-touch-page .jx-shf-sep { display: none; }
+  .jx-touch-page .jx-shf-search, .jx-touch-page .jx-shf-search:is(:focus-within, .has-q) { width: 100%; margin-bottom: 8px; }
+  .jx-touch-page .jx-shf-search :is(label, input) { height: 44px; }
+  .jx-shadow-history { padding-inline: 0; }
+  .jx-shadow-mobile-history { display: block; }
+
+  .jx-mobile-records, .jx-mobile-records tbody, .jx-mobile-records .jx-record-detail, .jx-mobile-records .jx-record-detail td { display: block; }
+  .jx-mobile-records thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .jx-mobile-records .jx-record-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 8px; padding: 14px; }
+  .jx-mobile-records td { min-width: 0; max-width: none; padding: 0; white-space: normal; text-overflow: clip; text-align: left; }
+  .jx-mobile-records .jx-record-detail td { padding: 8px; }
+  .jx-mobile-records .jx-record-detail td > div { padding: 12px; }
+  .jx-mobile-records .jx-record-row td:last-child { grid-column: 1 / -1; }
+  .jx-mobile-records .jx-record-row td:last-child > div { flex-wrap: wrap; justify-content: flex-start; }
+  .jx-shadow-records td:nth-child(4) { grid-column: 1 / -1; grid-row: 1; }
+  .jx-shadow-records td:nth-child(4) span { white-space: normal; }
 }
 
 @media (prefers-reduced-motion: reduce) {

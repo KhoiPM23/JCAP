@@ -151,10 +151,10 @@ export const LearnerShadowingDetailView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="jx-touch-page max-w-4xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-[#71809A]">
-        <Link to="/shadowing" className="hover:text-[#0878EE]">
+        <Link to="/shadowing" className="jx-mobile-hit inline-flex items-center hover:text-[#0878EE]">
           Thư viện Shadowing
         </Link>
         <span>/</span>
@@ -189,7 +189,7 @@ export const LearnerShadowingDetailView: React.FC = () => {
             <p className="text-xs text-[#71809A] max-w-xl">{dialogue.sourceDescription}</p>
           )}
 
-          <div className="flex items-center gap-4 text-xs text-[#071A44] pt-2">
+          <div className="jx-mobile-wrap flex items-center gap-4 text-xs text-[#071A44] pt-2">
             <span>Vai A: <strong className="text-[#0878EE]">{dialogue.speakerRoleA_Name}</strong></span>
             <span>•</span>
             <span>Vai B: <strong className="text-purple-700">{dialogue.speakerRoleB_Name}</strong></span>

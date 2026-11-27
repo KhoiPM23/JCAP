@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PracticeConfirmation } from '../components/jcap/PracticeConfirmation';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { placementTestService } from '../services/placementTestService';
 import { formatDateTime } from '../utils/dateUtils';
 import type {
@@ -9,6 +11,9 @@ import type {
 
 export const PlacementTestHistoryView: React.FC = () => {
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
+  const detailRef = useRef<HTMLDivElement>(null);
+  const [confirmRetake, setConfirmRetake] = useState(false);
   const [sessions, setSessions] = useState<PlacementTestHistoryItemDto[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [detail, setDetail] = useState<PlacementTestHistoryDetailDto | null>(null);
@@ -86,7 +91,7 @@ export const PlacementTestHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto flex max-w-[1360px] flex-col gap-6 bg-transparent px-4 pb-16 pt-4">
+    <div className="jx-touch-page jx-placement-history mx-auto flex max-w-[1360px] flex-col gap-6 bg-transparent px-4 pb-16 pt-4">
       {/* Top Breadcrumb & Action Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line)] pb-5">
         <div>
@@ -118,7 +123,7 @@ export const PlacementTestHistoryView: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleRetake}
+            onClick={mobile ? () => setConfirmRetake(true) : handleRetake}
             disabled={retaking}
             className="inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] px-4 py-2.5 text-sm font-bold text-[var(--on-ai)] shadow-sm hover:bg-[var(--ai-hover)] transition cursor-pointer disabled:opacity-50"
             title="Bắt đầu một phiên Placement Test mới để kiểm thử tiếp"
@@ -148,7 +153,7 @@ export const PlacementTestHistoryView: React.FC = () => {
           </p>
           <button
             type="button"
-            onClick={handleRetake}
+            onClick={mobile ? () => navigate('/placement-test') : handleRetake}
             className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] px-5 py-2.5 text-sm font-bold text-[var(--on-ai)] hover:bg-[var(--ai-hover)] transition cursor-pointer"
           >
             Bắt đầu làm bài kiểm tra ngay
@@ -170,7 +175,14 @@ export const PlacementTestHistoryView: React.FC = () => {
                   <button
                     key={s.sessionId}
                     type="button"
-                    onClick={() => setSelectedSessionId(s.sessionId)}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      setSelectedSessionId(s.sessionId);
+                      if (mobile) {
+                        detailRef.current?.focus({ preventScroll: true });
+                        detailRef.current?.scrollIntoView({ block: 'start' });
+                      }
+                    }}
                     className={`flex flex-col gap-2 rounded-2xl border p-4 text-left transition cursor-pointer ${
                       isSelected
                         ? 'border-[var(--ai)] bg-[var(--ai-soft)] shadow-md ring-2 ring-[var(--ai)]/30'
@@ -225,7 +237,7 @@ export const PlacementTestHistoryView: React.FC = () => {
           </div>
 
           {/* Right Column: Detailed Breakdown & Evidence Inspector (8 cols) */}
-          <div className="flex flex-col gap-6 lg:col-span-8">
+          <div ref={detailRef} tabIndex={mobile ? -1 : undefined} role="region" aria-label="Chi tiết bài kiểm tra" className="jx-placement-detail flex min-w-0 flex-col gap-6 lg:col-span-8">
             {loadingDetail ? (
               <div className="flex h-96 items-center justify-center rounded-3xl border border-[var(--line)] bg-[var(--paper-50)]">
                 <div className="text-center">
@@ -533,6 +545,19 @@ export const PlacementTestHistoryView: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+      {mobile && confirmRetake && (
+        <PracticeConfirmation
+          title="Làm bài kiểm tra mới?"
+          description="Bài mới sẽ bắt đầu từ câu đầu tiên. Các kết quả đã lưu vẫn có trong lịch sử."
+          cancelLabel="Xem tiếp lịch sử"
+          confirmLabel="Bắt đầu bài mới"
+          onCancel={() => setConfirmRetake(false)}
+          onConfirm={() => {
+            setConfirmRetake(false);
+            void handleRetake();
+          }}
+        />
       )}
     </div>
   );
