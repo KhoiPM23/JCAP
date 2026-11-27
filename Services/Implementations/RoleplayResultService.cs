@@ -38,6 +38,8 @@ namespace JCAP.Services.Implementations
 
         private readonly IPersonaMemoryService? _personaMemory;
 
+        private readonly IAdaptiveProfileService? _adaptiveProfileService;
+
         public RoleplayResultService(
 
             AppDbContext dbContext,
@@ -50,7 +52,9 @@ namespace JCAP.Services.Implementations
 
             ITelemetryEvaluatorService? telemetryEvaluator = null,
 
-            IPersonaMemoryService? personaMemory = null)
+            IPersonaMemoryService? personaMemory = null,
+
+            IAdaptiveProfileService? adaptiveProfileService = null)
 
         {
 
@@ -65,6 +69,8 @@ namespace JCAP.Services.Implementations
             _telemetryEvaluator = telemetryEvaluator;
 
             _personaMemory = personaMemory;
+
+            _adaptiveProfileService = adaptiveProfileService;
 
         }
 
@@ -275,6 +281,23 @@ namespace JCAP.Services.Implementations
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, "Lỗi cập nhật Telemetry khi hoàn tất session {SessionId}", sessionId);
+                    }
+                }
+
+                // Tổng hợp AI Coaching Snapshot một lần lúc hoàn tất phiên (strict timeout, fallback an toàn)
+                if (_adaptiveProfileService != null)
+                {
+                    try
+                    {
+                        using var coachingCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(4500));
+                        await _adaptiveProfileService.GenerateAndPersistCoachingSnapshotAsync(
+                            userId,
+                            sessionId,
+                            coachingCts.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Bỏ qua hoặc timeout khi tổng hợp AI Adaptive Coaching cho session {SessionId}", sessionId);
                     }
                 }
 

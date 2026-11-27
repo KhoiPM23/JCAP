@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 
 export interface RoleplayStageHeaderProps {
   scenarioTitle: string;
@@ -66,7 +65,6 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
         <button
           type="button"
           onClick={() => {
-            ukiyoSound.playSubtleTap();
             onExit();
           }}
           className="p-2 rounded-xl text-[var(--sumi-muted)] hover:text-[var(--sumi)] hover:bg-[var(--paper-200)] transition cursor-pointer flex items-center justify-center"
@@ -91,7 +89,6 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
         <button
           type="button"
           onClick={() => {
-            ukiyoSound.playSubtleTap();
             onToggleMissionsPanel();
           }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
@@ -111,7 +108,6 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
         <button
           type="button"
           onClick={() => {
-            ukiyoSound.playSubtleTap();
             onToggleEvaluationDrawer();
           }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
@@ -135,8 +131,7 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
           <button
             type="button"
             onClick={() => {
-              ukiyoSound.playSubtleTap();
-              setIsSettingsOpen(!isSettingsOpen);
+                setIsSettingsOpen(!isSettingsOpen);
             }}
             className={`p-2 rounded-xl transition cursor-pointer flex items-center justify-center ${
               isSettingsOpen ? 'bg-[var(--paper-200)] text-[var(--ai)]' : 'text-[var(--sumi-muted)] hover:bg-[var(--paper-100)]'
@@ -166,8 +161,7 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
                   type="checkbox"
                   checked={showFurigana}
                   onChange={(e) => {
-                    ukiyoSound.playSubtleTap();
-                    onToggleFurigana(e.target.checked);
+                            onToggleFurigana(e.target.checked);
                   }}
                   className="w-4 h-4 rounded text-[var(--ai)] focus:ring-[var(--ai)]"
                 />
@@ -180,8 +174,7 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
                   type="checkbox"
                   checked={showVietnamese}
                   onChange={(e) => {
-                    ukiyoSound.playSubtleTap();
-                    onToggleVietnamese(e.target.checked);
+                            onToggleVietnamese(e.target.checked);
                   }}
                   className="w-4 h-4 rounded text-[var(--ai)] focus:ring-[var(--ai)]"
                 />
@@ -194,8 +187,7 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
                   type="checkbox"
                   checked={autoPlayTts}
                   onChange={(e) => {
-                    ukiyoSound.playSubtleTap();
-                    onToggleAutoPlayTts(e.target.checked);
+                            onToggleAutoPlayTts(e.target.checked);
                   }}
                   className="w-4 h-4 rounded text-[var(--ai)] focus:ring-[var(--ai)]"
                 />
@@ -210,8 +202,7 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
                       key={s}
                       type="button"
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        onChangeVoiceSpeed(s);
+                                    onChangeVoiceSpeed(s);
                       }}
                       className={`py-1 text-xs font-bold rounded-lg transition ${
                         voiceSpeed === s
@@ -232,7 +223,6 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
         <button
           type="button"
           onClick={() => {
-            ukiyoSound.playSubtleTap();
             onEndEarly();
           }}
           className="px-3 py-1.5 rounded-xl text-xs font-bold text-[var(--danger)] bg-[var(--danger-soft)] hover:bg-red-100 transition cursor-pointer border border-[var(--danger)]/20 whitespace-nowrap"

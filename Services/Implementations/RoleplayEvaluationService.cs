@@ -117,8 +117,8 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             },
             new()
             {
-                Category = "Chuẩn xác Ngôn ngữ & Kính ngữ (30%)",
-                Description = $"Ngữ pháp & Trợ từ ({grammarScore}/100), Từ vựng ({vocabularyScore}/100), Kính ngữ ({impressionScore}/100)",
+                Category = "Chuẩn xác Ngôn ngữ & Văn phong (30%)",
+                Description = $"Ngữ pháp & Trợ từ ({grammarScore}/100), Từ vựng ({vocabularyScore}/100), Văn phong & Lịch sự ({impressionScore}/100)",
                 DeltaPoints = linguisticPoints
             },
             new()

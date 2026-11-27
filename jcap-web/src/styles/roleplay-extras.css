@@ -5,15 +5,17 @@ ruby {
 }
 
 rt {
-  font-size: max(10.5px, 0.52em);
-  line-height: 1;
+  font-size: max(9.5px, 0.5em);
   font-weight: 600;
   letter-spacing: 0;
   color: var(--sumi-muted);
   user-select: none;
-  position: relative;
-  top: -2px;
   white-space: nowrap;
+}
+
+/* Chỉ giãn line-height khi furigana ĐANG hiện (có ruby mà không bị ẩn) */
+.jc-jp:has(ruby:not(.no-furi)) {
+  line-height: 2.1;
 }
 
 /* Furigana trong bong bóng thoại của AI (Đối tác): Chàm xám thanh thoát chuẩn Washi, làm nổi bật Kanji chính */
@@ -23,7 +25,7 @@ rt {
 .jc-bubble--ai rt {
   color: #445B8A !important;
   font-weight: 500 !important;
-  font-size: max(11px, 0.54em) !important;
+  font-size: max(10.5px, 0.54em) !important;
   opacity: 0.92 !important;
 }
 
@@ -35,7 +37,7 @@ rt {
 .jc-bubble--me .jc-jp rt {
   color: #26437A !important;
   font-weight: 500 !important;
-  font-size: max(11px, 0.54em) !important;
+  font-size: max(10.5px, 0.54em) !important;
   opacity: 0.95 !important;
   text-shadow: none !important;
 }
@@ -58,9 +60,9 @@ rt {
   box-shadow: 0 1px 3px rgba(30, 44, 72, 0.04) !important;
 }
 
-/* When furigana is hidden, maintain layout spacing to avoid jarring layout shifts */
+/* Khi ẩn furigana: ẩn rt hoàn toàn (không chiếm không gian) → line-height tự thu gọn */
 .no-furi rt {
-  visibility: hidden;
+  display: none;
 }
 
 /* Motivation Micro-Animations: HeartBeat & Confetti Drop */

@@ -398,7 +398,22 @@ namespace JCAP.Services.Implementations
 
             double predictedSuccessRate = Math.Round(Math.Clamp(profile.CommunicativeConfidenceScore * 0.85 + 15.0, 65.0, 96.0), 1);
 
-            profile.InferredTraitsJson = JsonSerializer.Serialize(new
+            string? existingAiCoachingRaw = null;
+            if (!string.IsNullOrWhiteSpace(profile.InferredTraitsJson))
+            {
+                try
+                {
+                    using var existingDoc = JsonDocument.Parse(profile.InferredTraitsJson);
+                    if (existingDoc.RootElement.ValueKind == JsonValueKind.Object
+                        && existingDoc.RootElement.TryGetProperty("aiCoaching", out var aiNode))
+                    {
+                        existingAiCoachingRaw = aiNode.GetRawText();
+                    }
+                }
+                catch { }
+            }
+
+            var serializedTraits = JsonSerializer.Serialize(new
             {
                 strengths,
                 weaknesses,
@@ -419,6 +434,23 @@ namespace JCAP.Services.Implementations
                 lastEvaluatedSessionId = sessionId,
                 evaluatedAtUtc = DateTime.UtcNow
             });
+
+            if (!string.IsNullOrWhiteSpace(existingAiCoachingRaw))
+            {
+                try
+                {
+                    var rootObj = System.Text.Json.Nodes.JsonNode.Parse(serializedTraits)?.AsObject();
+                    var coachingNode = System.Text.Json.Nodes.JsonNode.Parse(existingAiCoachingRaw);
+                    if (rootObj != null && coachingNode != null)
+                    {
+                        rootObj["aiCoaching"] = coachingNode;
+                        serializedTraits = rootObj.ToJsonString();
+                    }
+                }
+                catch { }
+            }
+
+            profile.InferredTraitsJson = serializedTraits;
 
             // 6. Kích hoạt cập nhật FSRS LearnerSkillMastery (Spaced Repetition Mastery Tracking)
             // Tải trước danh sách SkillMastery hiện có của user vào dictionary để tránh N+1 query và triệt tiêu lỗi duplicate key
@@ -601,7 +633,7 @@ namespace JCAP.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        private static (string Code, string Name, string Category) ResolveSkillInfo(string rawCode)
+        internal static (string Code, string Name, string Category) ResolveSkillInfo(string rawCode)
         {
             return rawCode switch
             {

@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 
 namespace JCAP.DTOs.Roleplay;
 
 /// <summary>
-/// Ngữ cảnh thích ứng thống nhất (Long-term + Recent Window) dùng chung cho FE-03, Roadmap, Shadowing, Flashcard & Explore.
+/// Ngữ cảnh thích ứng thống nhất (Long-term + Recent Window + Hybrid AI Coaching) dùng chung cho FE-03, Roadmap, Shadowing, Flashcard & Explore.
 /// Không biến đổi nội dung tĩnh; chỉ cung cấp tín hiệu xếp hạng và gợi ý thích ứng.
 /// </summary>
 public sealed class AdaptiveContextDto
@@ -31,8 +32,11 @@ public sealed class AdaptiveContextDto
     public List<int> RecommendedScenarioIds { get; set; } = new();
     public List<AdaptiveScenarioRecommendationDto> RecommendedScenarios { get; set; } = new();
     public List<int> RecommendedShadowingIds { get; set; } = new();
+    public List<AdaptiveShadowingRecommendationDto> RecommendedShadowings { get; set; } = new();
     public List<string> RecommendedFlashcardKeywords { get; set; } = new();
+    public string? FlashcardAdviceVi { get; set; }
     public string? AiRuntimeDirective { get; set; }
+    public AiCoachingSnapshotDto? AiCoaching { get; set; }
 }
 
 public sealed class AdaptiveContextQuery
@@ -51,6 +55,32 @@ public sealed class AdaptiveScenarioRecommendationDto
     public int PredictedPassRate { get; set; } // 0..100 IRT P(pass)
     public string ReasonVi { get; set; } = string.Empty;
     public bool IsTopPick { get; set; }
+}
+
+public sealed class AdaptiveShadowingRecommendationDto
+{
+    public int DialogueId { get; set; }
+    public int MatchScore { get; set; }
+    public string ReasonVi { get; set; } = string.Empty;
+}
+
+public sealed class AiCoachingSnapshotDto
+{
+    public int SourceSessionId { get; set; }
+    public DateTime GeneratedAtUtc { get; set; }
+    public string Source { get; set; } = "deterministic"; // "ai" | "deterministic"
+    public string ExecutiveDiagnosis { get; set; } = string.Empty;
+    public Dictionary<string, AiAxisInsightDto> AxisInsights { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<int, string> ScenarioReasons { get; set; } = new();
+    public Dictionary<int, string> ShadowingReasons { get; set; } = new();
+    public string? FlashcardAdviceVi { get; set; }
+    public string? NextSessionFocus { get; set; }
+}
+
+public sealed class AiAxisInsightDto
+{
+    public string DiagnosticVi { get; set; } = string.Empty;
+    public string DrillMethodVi { get; set; } = string.Empty;
 }
 
 public sealed class AdaptiveSkillScoresDto

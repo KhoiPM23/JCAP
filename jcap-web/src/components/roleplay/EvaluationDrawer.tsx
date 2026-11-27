@@ -1,6 +1,5 @@
 import React from 'react';
 import type { RoleplayMessageDto } from '../../types/roleplay';
-import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 
 export interface EvaluationDrawerProps {
   isOpen: boolean;
@@ -36,10 +35,7 @@ export const EvaluationDrawer: React.FC<EvaluationDrawerProps> = ({
         </div>
         <button
           type="button"
-          onClick={() => {
-            ukiyoSound.playSubtleTap();
-            onClose();
-          }}
+          onClick={() => onClose()}
           className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-[var(--paper-200)] transition cursor-pointer"
         >
           ✕
@@ -150,10 +146,7 @@ export const EvaluationDrawer: React.FC<EvaluationDrawerProps> = ({
               <div className="pt-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    ukiyoSound.playWoodblockSnap();
-                    onRedoTurn(selectedMessage);
-                  }}
+                  onClick={() => onRedoTurn(selectedMessage)}
                   className="w-full py-2.5 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-md transition active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-base">replay</span>

@@ -4,7 +4,6 @@ import { roleplayResultService } from '../services/roleplayResultService';
 import { roleplayService } from '../services/roleplayService';
 import type { LearnerIntelligenceProfileDto } from '../types/roleplay';
 import { formatDateMedium } from '../utils/dateUtils';
-import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 import { ResultHankoStamp } from '../components/common/ResultHankoStamp';
 import type {
   RoleplayResultHistoryResponse,
@@ -105,7 +104,6 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
 
           <Link
             to={`/roleplay/results/${result.id}`}
-            onClick={() => ukiyoSound.playSubtleTap()}
             className="inline-flex h-10 sm:h-11 items-center justify-center rounded-xl bg-[var(--ai)] px-4 sm:px-5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-[var(--ai-hover)] hover:shadow-sm active:scale-95 cursor-pointer shrink-0"
           >
             <span>Xem kết quả</span>
@@ -186,7 +184,6 @@ export const ConversationHistoryView: React.FC = () => {
   }, [filter, page]);
 
   const changeFilter = (nextFilter: ResultFilter) => {
-    ukiyoSound.playSubtleTap();
     setFilter(nextFilter);
     setPage(1);
   };
@@ -332,10 +329,7 @@ export const ConversationHistoryView: React.FC = () => {
                   key={lv}
                   type="button"
                   aria-pressed={jlptFilter === lv}
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    setJlptFilter(lv);
-                  }}
+                  onClick={() => setJlptFilter(lv)}
                   className={`rounded-xl px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
                     jlptFilter === lv
                       ? 'bg-[var(--ai)] text-white shadow-xs'
@@ -375,7 +369,6 @@ export const ConversationHistoryView: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                ukiyoSound.playSubtleTap();
                 setSearchQuery('');
                 setJlptFilter('all');
               }}
@@ -399,7 +392,6 @@ export const ConversationHistoryView: React.FC = () => {
             </p>
             <Link
               to="/scenarios"
-              onClick={() => ukiyoSound.playSubtleTap()}
               className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-[var(--ai)] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[var(--ai-hover)] shadow-xs"
             >
               <span>Vào thư viện tình huống</span>
@@ -414,10 +406,7 @@ export const ConversationHistoryView: React.FC = () => {
             <button
               type="button"
               disabled={page <= 1}
-              onClick={() => {
-                ukiyoSound.playSubtleTap();
-                setPage((current) => Math.max(1, current - 1));
-              }}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
               className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs font-bold text-slate-800 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-stone-50 transition cursor-pointer shadow-2xs"
             >
               ← Trang trước
@@ -428,10 +417,7 @@ export const ConversationHistoryView: React.FC = () => {
             <button
               type="button"
               disabled={page >= history.totalPages}
-              onClick={() => {
-                ukiyoSound.playSubtleTap();
-                setPage((current) => current + 1);
-              }}
+              onClick={() => setPage((current) => current + 1)}
               className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs font-bold text-slate-800 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-stone-50 transition cursor-pointer shadow-2xs"
             >
               Trang sau →

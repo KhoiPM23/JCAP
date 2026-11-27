@@ -156,7 +156,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     [showFurigana, toggledFuriMessageIds]
   );
   const toggleFuriForMessage = useCallback((msgId: number) => {
-    ukiyoSound.playSubtleTap();
     setToggledFuriMessageIds((prev) => {
       const next = new Set(prev);
       if (next.has(msgId)) next.delete(msgId);
@@ -462,10 +461,13 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const [isPlayingAlternativeAudio, setIsPlayingAlternativeAudio] = useState(false);
 
 
+  const syncedPeekSessionIdRef = useRef<number | string | null>(null);
   // Đồng bộ số lần đã dùng gợi ý và xem bản dịch trong phiên từ Backend DTO hoặc lịch sử tin nhắn
   useEffect(() => {
     if (session) {
       const currentSessionId = session.id || session.sessionId || sessionId;
+      const isSameSession = syncedPeekSessionIdRef.current === currentSessionId;
+      syncedPeekSessionIdRef.current = currentSessionId ?? null;
       const isUserMsg = (sender?: string) => {
         const s = (sender || '').toLowerCase().trim();
         return s === 'user' || s === 'learner' || s === 'me';
@@ -497,8 +499,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       setSessionHintOffersCount(initialOffers);
 
       const priorPeeks = session.totalTranslationPeeksUsed || 0;
-      sessionTranslationPeeksUsedRef.current = priorPeeks;
-      setSessionTranslationPeeksUsed(priorPeeks);
+      const nextPeeks = isSameSession
+        ? Math.max(sessionTranslationPeeksUsedRef.current, priorPeeks)
+        : priorPeeks;
+      sessionTranslationPeeksUsedRef.current = nextPeeks;
+      setSessionTranslationPeeksUsed(nextPeeks);
     }
   }, [session?.id, session?.sessionId, sessionId, session?.totalHintTurnsUsed, session?.totalTranslationPeeksUsed, session?.messages]);
 
@@ -779,7 +784,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     } else {
       const isSaved = res.data?.isBookmarked ?? !isBookmarked;
       if (isSaved) {
-        ukiyoSound.playMigotoChime();
         setToastMessage(`Đã lưu ${itemLabel} 「${item.text}」 vào Flashcard!`);
       } else {
         setToastMessage(`Đã bỏ lưu ${itemLabel} 「${item.text}」 khỏi Flashcard.`);
@@ -1344,7 +1348,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     setPlayingMessageId(null);
     setInputText(naturalText);
     retryCountRef.current += 1;
-    ukiyoSound.playMigotoChime();
     handlePlayLearnerSample(naturalText);
   };
 
@@ -1908,7 +1911,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       });
 
       setIsBowing(true);
-      try { ukiyoSound.playMigotoChime(); } catch { /* ignore */ }
       setTimeout(() => setIsBowing(false), 1600);
 
       // Tự động đóng banner vinh danh sau 3.8s
@@ -2301,12 +2303,13 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           setTimeout(() => setAvatarEmotionOverride(null), 3500);
         }
 
-        // Game Feel: Combo Streak & Hanabi Sparkle Logic (side effects kept strictly OUTSIDE setState updater per #192)
+        // Game Feel: Combo Streak & Semantic Audio Feedback (đảm bảo không trùng với chuông hoàn thành nhiệm vụ)
         const fbStatus = turn.userMessage.linguisticFeedback?.status?.toLowerCase();
         const hasStainIssue = Boolean(stain?.hasStain && (stain.stainType === 'error' || stain.stainType === 'warning' || stain.stainType === 'TameguchiSlip'));
         const autonomy = turn.userMessage.linguisticFeedback?.speechDelivery?.turnAutonomyScore ?? 100;
         const usedTier3 = (turn.userMessage.linguisticFeedback?.speechDelivery?.hintLevelUsed ?? 0) >= 3 || autonomy <= 60;
         const isGoodTurn = (fbStatus === 'good' || fbStatus === 'success') && !hasStainIssue && !usedTier3;
+        const hasNewlyCompletedMission = Array.isArray(turn.newlyCompletedMissionIds) && turn.newlyCompletedMissionIds.length > 0;
 
         if (isGoodTurn) {
           const nextCombo = comboCountRef.current + 1;
@@ -2315,14 +2318,22 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           if (autonomy >= 95 || nextCombo >= 3) {
             setSparkleText(nextCombo >= 3 ? `Chuỗi ${nextCombo}x · Xuất sắc!` : 'Xuất sắc!');
             setShowSparkleBurst(true);
-            ukiyoSound.playMigotoChime();
-          } else if (nextCombo >= 2) {
-            ukiyoSound.playWoodblockSnap();
           }
-        } else if (fbStatus === 'warning' || fbStatus === 'error' || hasStainIssue) {
+          if (!hasNewlyCompletedMission && (autonomy >= 95 || nextCombo >= 2)) {
+            ukiyoSound.playSuccessChime();
+          }
+        } else if (fbStatus === 'error' || stain?.stainType === 'TameguchiSlip' || stain?.stainType === 'error') {
           comboCountRef.current = 0;
           setComboCount(0);
-          ukiyoSound.playTaikoThud();
+          if (!hasNewlyCompletedMission) {
+            ukiyoSound.playErrorTone();
+          }
+        } else if (fbStatus === 'warning' || hasStainIssue) {
+          comboCountRef.current = 0;
+          setComboCount(0);
+          if (!hasNewlyCompletedMission) {
+            ukiyoSound.playWarningTone();
+          }
         }
 
 
@@ -3050,7 +3061,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     inputTextRef.current = '';
     setInputText('');
     setIsVoiceDraftLocked(false);
-    ukiyoSound.playSubtleTap();
   }, [invalidateVoiceRecording]);
 
   const handleToggleMic = () => {
@@ -3513,10 +3523,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  setIsLeftOpen(false);
-                }}
+                onClick={() => setIsLeftOpen(false)}
                 className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95 tactile-press cursor-pointer"
                 title="Thu gọn danh sách nhiệm vụ"
               >
@@ -3555,10 +3562,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             <div className="flex border-b border-[var(--line)] bg-[var(--paper-50)] text-xs font-bold">
               <button
                 type="button"
-                onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  setSidebarTab('missions');
-                }}
+                onClick={() => setSidebarTab('missions')}
                 className={`flex-1 py-2.5 font-semibold transition tactile-press ${
                   sidebarTab === 'missions'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
@@ -3569,10 +3573,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  setSidebarTab('knowledge');
-                }}
+                onClick={() => setSidebarTab('knowledge')}
                 className={`flex-1 py-2.5 font-semibold transition tactile-press ${
                   sidebarTab === 'knowledge'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
@@ -3644,10 +3645,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-200)]/70 p-1 border border-[var(--line)] text-xs font-bold">
                     <button
                       type="button"
-                      onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setKnowledgeSubTab('vocab');
-                      }}
+                      onClick={() => setKnowledgeSubTab('vocab')}
                       className={`py-1.5 px-2 rounded-lg transition-all ${
                         knowledgeSubTab === 'vocab'
                           ? 'bg-white text-[var(--ai)] shadow-xs font-bold'
@@ -3658,10 +3656,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setKnowledgeSubTab('grammar');
-                      }}
+                      onClick={() => setKnowledgeSubTab('grammar')}
                       className={`py-1.5 px-2 rounded-lg transition-all ${
                         knowledgeSubTab === 'grammar'
                           ? 'bg-white text-[var(--ai)] shadow-xs font-bold'
@@ -3675,7 +3670,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   {/* Link nhanh sang Kho Flashcard Đã Lưu */}
                   <Link
                     to="/flashcards/bookmarks?level=All&type=All"
-                    onClick={() => ukiyoSound.playSubtleTap()}
                     className="flex items-center justify-between rounded-xl border border-amber-300/80 bg-amber-50/90 hover:bg-amber-100/80 px-3 py-2 text-[11px] font-bold text-amber-950 shadow-2xs transition"
                   >
                     <span className="flex items-center gap-1.5">
@@ -3994,7 +3988,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                           </p>
                         ) : isFuriActiveForMsg(msg.id) ? (
                           <div
-                            className="jc-jp text-[15px] sm:text-base font-medium leading-[1.85] tracking-normal min-h-[1.75rem] text-[#1E2C48] font-jp"
+                            className="jc-jp text-[15px] sm:text-base font-medium leading-[2.05] tracking-normal min-h-[1.75rem] text-[#1E2C48] font-jp"
                             dangerouslySetInnerHTML={{ __html: getResolvedMessageFurigana(msg) }}
                           />
                         ) : (
@@ -4245,10 +4239,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           {isScrolledUp && (
             <button
               type="button"
-              onClick={() => {
-                ukiyoSound.playSubtleTap();
-                scrollToBottom();
-              }}
+              onClick={() => scrollToBottom()}
               className="absolute bottom-24 right-6 sm:right-10 z-30 inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/95 text-slate-700 shadow-md border border-[var(--line-strong)] backdrop-blur-xs hover:bg-[var(--paper-100)] hover:scale-105 active:scale-95 transition-all cursor-pointer animate-fade-in"
               title="Cuộn xuống lượt đối thoại mới nhất"
               aria-label="Cuộn xuống lượt đối thoại mới nhất"

@@ -486,7 +486,6 @@ export const ScenarioDetailsView: React.FC = () => {
                       role="tab"
                       aria-selected={isSelected}
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
                         setActiveLevel(level.jlptLevel);
                         setStartError(null);
                       }}
@@ -697,10 +696,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-100)] p-1 border border-[var(--line)]/80 text-xs font-bold">
                 <button
                   type="button"
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    setCheatsheetTab('vocab');
-                  }}
+                  onClick={() => setCheatsheetTab('vocab')}
                   className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
                     cheatsheetTab === 'vocab'
                       ? 'bg-white text-[var(--ai)] shadow-2xs'
@@ -711,10 +707,7 @@ export const ScenarioDetailsView: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    setCheatsheetTab('grammar');
-                  }}
+                  onClick={() => setCheatsheetTab('grammar')}
                   className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
                     cheatsheetTab === 'grammar'
                       ? 'bg-white text-[var(--ai)] shadow-2xs'
