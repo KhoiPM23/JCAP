@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
 import { rememberRoleplaySession } from '../components/jcap/shell/recentRoleplay';
 import { useAuth } from '../contexts/AuthContext';
+import { shouldBypassPublicRouteRedirect } from '../utils/authSession';
 import { PrivateRoute } from '../components/PrivateRoute';
 import { MainLayout } from '../layouts/MainLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
@@ -76,6 +77,13 @@ const LearningContentDetailView = React.lazy(() => import('../views/learning/Lea
 /** Redirects if already authenticated (Admin -> /admin/dashboard, Learner -> /scenarios) */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
+
+  // Luôn cho phép mở /login?confirmed=..., /login?reset=true và /reset-password để hoàn tất luồng xác thực
+  if (shouldBypassPublicRouteRedirect(location.pathname, location.search)) {
+    return <>{children}</>;
+  }
+
   if (isAuthenticated) {
     let userRole = user?.role;
     if (!userRole) {
@@ -211,7 +219,12 @@ const ForgotPasswordRoute: React.FC = () => {
 
 const ResetPasswordRoute: React.FC = () => {
   const navigate = useNavigate();
-  return <ResetPasswordView onBackToLogin={() => navigate('/login')} />;
+  return (
+    <ResetPasswordView
+      onResetSuccess={() => navigate('/login?reset=true', { replace: true })}
+      onBackToLogin={() => navigate('/login', { replace: true })}
+    />
+  );
 };
 
 const RegisterRoute: React.FC = () => {

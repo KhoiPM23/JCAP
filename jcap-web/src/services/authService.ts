@@ -26,19 +26,21 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
 
   if (!response.ok) {
     if (json && typeof json === 'object' && 'message' in json) {
-      return json as ApiResponse<T>;
+      return { ...(json as ApiResponse<T>), statusCode: response.status };
     }
 
     if (response.status === 502 || response.status === 503 || response.status === 504 || response.status === 500) {
       return {
         success: false,
         message: BACKEND_UNREACHABLE_MESSAGE,
+        statusCode: response.status,
       };
     }
 
     return {
       success: false,
       message: (json && json.message) || text || `Máy chủ phản hồi lỗi (HTTP ${response.status}).`,
+      statusCode: response.status,
     };
   }
 
@@ -46,10 +48,11 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
     return {
       success: false,
       message: 'Dữ liệu phản hồi từ máy chủ trống hoặc không đúng định dạng JSON.',
+      statusCode: response.status,
     };
   }
 
-  return json as ApiResponse<T>;
+  return { ...(json as ApiResponse<T>), statusCode: response.status };
 }
 
 export const authService = {
