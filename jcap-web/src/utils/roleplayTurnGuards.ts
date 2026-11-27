@@ -5,25 +5,72 @@
 export interface RoleplayTurnQuotaInput {
   isAdmin: boolean;
   hasActiveSubscription?: boolean | null;
+  isSubscriptionQuotaExhausted?: boolean | null;
+  remainingSubscriptionQuota?: number | null;
   creditBalance?: number | null;
   isQuotaBlocked?: boolean;
+  serverWarningMessage?: string | null;
 }
 
 /**
  * Determines whether the user is permitted to send a roleplay turn.
  * - Admins are always allowed.
  * - If backend has explicitly blocked quota (HTTP 400 insufficient credit/quota), block until resolved.
- * - Active subscription learners are allowed unless explicitly quota-blocked by backend.
- * - Wallet-only learners with creditBalance <= 0 are blocked pre-flight.
+ * - Active subscription learners with remaining token quota (> 0) are allowed even when creditBalance is 0.
+ * - Wallet-only learners (or subscription learners whose token quota is exhausted) with creditBalance <= 0 are blocked pre-flight.
  */
 export function canSendRoleplayTurn(input: RoleplayTurnQuotaInput): boolean {
   if (input.isAdmin) return true;
   if (input.isQuotaBlocked) return false;
-  if (input.hasActiveSubscription) return true;
+
+  const subQuotaExhausted =
+    Boolean(input.isSubscriptionQuotaExhausted) ||
+    (typeof input.remainingSubscriptionQuota === 'number' && input.remainingSubscriptionQuota <= 0);
+
+  if (input.hasActiveSubscription && !subQuotaExhausted) {
+    return true;
+  }
+
   if (typeof input.creditBalance === 'number' && input.creditBalance <= 0) {
     return false;
   }
   return true;
+}
+
+/**
+ * Resolves a low-credit (<= 5 coins) or low-subscription-token (<= 5 tokens) warning message
+ * when the user is still allowed to send turns, or null if no warning should be shown.
+ * - If subscription token quota is NOT exhausted and has > 5 tokens left: returns null even if creditBalance is 0.
+ */
+export function resolveRoleplayCreditWarning(input: RoleplayTurnQuotaInput): string | null {
+  if (input.isAdmin) return null;
+
+  const subQuotaExhausted =
+    Boolean(input.isSubscriptionQuotaExhausted) ||
+    (typeof input.remainingSubscriptionQuota === 'number' && input.remainingSubscriptionQuota <= 0);
+
+  if (input.hasActiveSubscription && !subQuotaExhausted) {
+    if (
+      typeof input.remainingSubscriptionQuota === 'number' &&
+      input.remainingSubscriptionQuota > 0 &&
+      input.remainingSubscriptionQuota <= 5
+    ) {
+      return (
+        input.serverWarningMessage ||
+        `Gói tháng của bạn sắp hết token trong chu kỳ này (còn ${input.remainingSubscriptionQuota} token).`
+      );
+    }
+    return null;
+  }
+
+  if (typeof input.creditBalance === 'number' && input.creditBalance > 0 && input.creditBalance <= 5) {
+    if (input.serverWarningMessage) return input.serverWarningMessage;
+    return input.hasActiveSubscription
+      ? `Token gói tháng đã hết, hệ thống đang dùng xu dự phòng và bạn sắp hết xu (chỉ còn ${input.creditBalance} xu). Vui lòng nạp thêm Credit.`
+      : `Số dư Credit của bạn sắp hết (chỉ còn ${input.creditBalance} xu). Vui lòng nạp thêm Credit hoặc đăng ký Gói tháng để cuộc trò chuyện không bị gián đoạn.`;
+  }
+
+  return null;
 }
 
 /**

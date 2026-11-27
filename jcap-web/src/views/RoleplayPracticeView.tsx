@@ -9,6 +9,7 @@ import { voicevoxService, type VoiceOption } from '../services/voicevoxService';
 import { resolveMediaUrl } from '../utils/apiBase';
 import {
   canSendRoleplayTurn,
+  resolveRoleplayCreditWarning,
   isInsufficientCreditError,
   isFillerOrAiEcho,
   shouldRunDeadlockFiller,
@@ -221,12 +222,17 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const [isQuotaBlocked, setIsQuotaBlocked] = useState(false);
   const [quotaBlockedMessage, setQuotaBlockedMessage] = useState<string | null>(null);
   const effectiveCreditBalance = session?.creditBalance ?? user?.creditBalance;
-  const isOutOfCredits = !canSendRoleplayTurn({
+  const quotaGuardInput = {
     isAdmin,
     hasActiveSubscription: session?.hasActiveSubscription,
+    isSubscriptionQuotaExhausted: session?.isSubscriptionQuotaExhausted,
+    remainingSubscriptionQuota: session?.remainingSubscriptionQuota,
     creditBalance: effectiveCreditBalance,
     isQuotaBlocked,
-  });
+    serverWarningMessage: session?.creditWarningMessage,
+  };
+  const isOutOfCredits = !canSendRoleplayTurn(quotaGuardInput);
+  const lowCreditWarningMessage = !isOutOfCredits ? resolveRoleplayCreditWarning(quotaGuardInput) : null;
   const isOutOfCreditsRef = useRef(isOutOfCredits);
   useEffect(() => {
     isOutOfCreditsRef.current = isOutOfCredits;
@@ -1402,6 +1408,35 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         if (!isAdmin && typeof res.data.creditBalance === 'number') {
           creditService.updateLocalCreditBalance(res.data.creditBalance);
         }
+        const initialAllowed = canSendRoleplayTurn({
+          isAdmin,
+          hasActiveSubscription: res.data.hasActiveSubscription,
+          isSubscriptionQuotaExhausted: res.data.isSubscriptionQuotaExhausted,
+          remainingSubscriptionQuota: res.data.remainingSubscriptionQuota,
+          creditBalance: res.data.creditBalance ?? user?.creditBalance,
+          isQuotaBlocked: false,
+        });
+        if (!initialAllowed && res.data.status !== 'Completed') {
+          const msg =
+            res.data.creditWarningMessage ||
+            'Bạn chưa có đủ Credit (0 xu). Mặc dù bước khởi tạo kịch bản là miễn phí, việc trò chuyện với AI có tính phí — vui lòng nạp thêm Credit hoặc đăng ký Gói tháng để bắt đầu hội thoại.';
+          setQuotaBlockedMessage(msg);
+          setToastMessage(msg);
+          setTimeout(() => setToastMessage(null), 5500);
+        } else {
+          const initWarn = resolveRoleplayCreditWarning({
+            isAdmin,
+            hasActiveSubscription: res.data.hasActiveSubscription,
+            isSubscriptionQuotaExhausted: res.data.isSubscriptionQuotaExhausted,
+            remainingSubscriptionQuota: res.data.remainingSubscriptionQuota,
+            creditBalance: res.data.creditBalance ?? user?.creditBalance,
+            serverWarningMessage: res.data.creditWarningMessage,
+          });
+          if (initWarn && res.data.status !== 'Completed') {
+            setToastMessage(initWarn);
+            setTimeout(() => setToastMessage(null), 4800);
+          }
+        }
         if (!Array.isArray(res.data.messages) || res.data.messages.length === 0) {
           const titleLower = (res.data.scenarioTitle || '').toLowerCase();
           const openingJp = titleLower.includes('ramen') || titleLower.includes('quán') || titleLower.includes('cafe')
@@ -2164,9 +2199,37 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
         if (!isAdmin && typeof turn.creditBalance === 'number') {
           creditService.updateLocalCreditBalance(turn.creditBalance);
-          if (turn.creditBalance > 0) {
+          const nextAllowed = canSendRoleplayTurn({
+            isAdmin,
+            hasActiveSubscription: turn.hasActiveSubscription ?? session?.hasActiveSubscription,
+            isSubscriptionQuotaExhausted: turn.isSubscriptionQuotaExhausted ?? session?.isSubscriptionQuotaExhausted,
+            remainingSubscriptionQuota:
+              turn.remainingSubscriptionQuota !== undefined
+                ? turn.remainingSubscriptionQuota
+                : session?.remainingSubscriptionQuota,
+            creditBalance: turn.creditBalance,
+            isQuotaBlocked: false,
+          });
+          if (nextAllowed) {
             setIsQuotaBlocked(false);
             setQuotaBlockedMessage(null);
+            const postTurnWarn = resolveRoleplayCreditWarning({
+              isAdmin,
+              hasActiveSubscription: turn.hasActiveSubscription ?? session?.hasActiveSubscription,
+              isSubscriptionQuotaExhausted: turn.isSubscriptionQuotaExhausted ?? session?.isSubscriptionQuotaExhausted,
+              remainingSubscriptionQuota:
+                turn.remainingSubscriptionQuota !== undefined
+                  ? turn.remainingSubscriptionQuota
+                  : session?.remainingSubscriptionQuota,
+              creditBalance: turn.creditBalance,
+              serverWarningMessage: turn.creditWarningMessage,
+            });
+            if (postTurnWarn) {
+              setToastMessage(postTurnWarn);
+              setTimeout(() => setToastMessage(null), 4800);
+            }
+          } else if (turn.creditWarningMessage) {
+            setQuotaBlockedMessage(turn.creditWarningMessage);
           }
         }
 
@@ -2194,6 +2257,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             missions: Array.isArray(turn.updatedMissions) && turn.updatedMissions.length > 0 ? turn.updatedMissions : (prev.missions || []),
             isNaturallyConcluded: turn.isNaturallyConcluded ?? prev.isNaturallyConcluded,
             creditBalance: turn.creditBalance ?? prev.creditBalance,
+            hasActiveSubscription: turn.hasActiveSubscription ?? prev.hasActiveSubscription,
+            remainingSubscriptionQuota:
+              turn.remainingSubscriptionQuota !== undefined
+                ? turn.remainingSubscriptionQuota
+                : prev.remainingSubscriptionQuota,
+            isSubscriptionQuotaExhausted: turn.isSubscriptionQuotaExhausted ?? prev.isSubscriptionQuotaExhausted,
+            creditWarningMessage:
+              turn.creditWarningMessage !== undefined ? turn.creditWarningMessage : prev.creditWarningMessage,
           };
         });
 
@@ -4431,11 +4502,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-rose-950 text-sm">
-                        Số dư Credit đã hết hoặc đã đạt hạn mức lượt nói
+                        {session?.hasActiveSubscription && session?.isSubscriptionQuotaExhausted
+                          ? 'Đã hết hạn mức token Gói tháng và không còn xu dự phòng (0 xu)'
+                          : 'Bạn chưa đủ Credit để trò chuyện với AI (0 xu)'}
                       </p>
                       <p className="text-[11px] text-rose-800 leading-relaxed mt-0.5">
                         {quotaBlockedMessage ||
-                          'Bạn cần nạp thêm Credit hoặc nâng cấp Gói hội viên để tiếp tục gửi lượt nói mới trong phiên luyện tập này.'}
+                          session?.creditWarningMessage ||
+                          'Mặc dù bước khởi tạo kịch bản là miễn phí, mỗi lượt trò chuyện với AI đều có tính phí. Vui lòng nạp thêm Credit hoặc đăng ký Gói hội viên để bắt đầu hội thoại.'}
                       </p>
                     </div>
                   </div>
@@ -4457,6 +4531,21 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 </div>
               ) : (
               <div className="space-y-2">
+              {lowCreditWarningMessage && (
+                <div className="flex items-center justify-between gap-2.5 rounded-2xl border border-amber-300/90 bg-amber-50/95 px-3.5 py-2 text-xs text-amber-950 shadow-2xs font-sans">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <AlertCircleIcon className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span className="font-semibold leading-snug">{lowCreditWarningMessage}</span>
+                  </div>
+                  <Link
+                    to="/credits"
+                    className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-amber-600 hover:bg-amber-700 px-2.5 py-1 text-[11px] font-bold text-white transition active:scale-95"
+                  >
+                    <span>Nạp thêm</span>
+                    <ArrowRightIcon className="w-3 h-3" />
+                  </Link>
+                </div>
+              )}
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 {/* Button xin Hint (Tức thì < 5ms) */}
                 <button

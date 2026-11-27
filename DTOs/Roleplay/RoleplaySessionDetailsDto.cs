@@ -21,6 +21,9 @@ public class RoleplaySessionDetailsDto
     public int CreditBalance { get; set; }
     public bool IsNaturallyConcluded { get; set; }
     public bool HasActiveSubscription { get; set; }
+    public int? RemainingSubscriptionQuota { get; set; }
+    public bool IsSubscriptionQuotaExhausted { get; set; }
+    public string? CreditWarningMessage { get; set; }
     public int? ResultId { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<RoleplayMissionDto> Missions { get; set; } = [];

@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   canSendRoleplayTurn,
+  resolveRoleplayCreditWarning,
   isInsufficientCreditError,
   isFillerOrAiEcho,
   shouldRunDeadlockFiller,
@@ -22,6 +23,24 @@ describe('roleplayTurnGuards (#194, #153, #195, #172, #173, #155)', () => {
       true
     );
     assert.equal(
+      canSendRoleplayTurn({
+        isAdmin: false,
+        hasActiveSubscription: true,
+        isSubscriptionQuotaExhausted: true,
+        creditBalance: 0,
+      }),
+      false
+    );
+    assert.equal(
+      canSendRoleplayTurn({
+        isAdmin: false,
+        hasActiveSubscription: true,
+        isSubscriptionQuotaExhausted: true,
+        creditBalance: 3,
+      }),
+      true
+    );
+    assert.equal(
       canSendRoleplayTurn({ isAdmin: false, hasActiveSubscription: true, creditBalance: 0, isQuotaBlocked: true }),
       false
     );
@@ -36,6 +55,47 @@ describe('roleplayTurnGuards (#194, #153, #195, #172, #173, #155)', () => {
     assert.equal(
       canSendRoleplayTurn({ isAdmin: false, hasActiveSubscription: false, creditBalance: 5 }),
       true
+    );
+  });
+
+  it('resolveRoleplayCreditWarning warns on <=5 coins or <=5 sub tokens, and stays silent when sub has >5 tokens even with 0 coins', () => {
+    // 1. Active sub with plenty of tokens (> 5) and 0 extra coins -> silent (null)
+    assert.equal(
+      resolveRoleplayCreditWarning({
+        isAdmin: false,
+        hasActiveSubscription: true,
+        remainingSubscriptionQuota: 42,
+        isSubscriptionQuotaExhausted: false,
+        creditBalance: 0,
+      }),
+      null
+    );
+    // 2. Active sub with low remaining tokens (<= 5) -> warns about subscription tokens
+    const lowSubMsg = resolveRoleplayCreditWarning({
+      isAdmin: false,
+      hasActiveSubscription: true,
+      remainingSubscriptionQuota: 4,
+      isSubscriptionQuotaExhausted: false,
+      creditBalance: 0,
+    });
+    assert.ok(lowSubMsg && lowSubMsg.includes('4 token'));
+
+    // 3. Non-sub user with 5 coins -> warns about low credit balance
+    const lowCoinMsg = resolveRoleplayCreditWarning({
+      isAdmin: false,
+      hasActiveSubscription: false,
+      creditBalance: 5,
+    });
+    assert.ok(lowCoinMsg && lowCoinMsg.includes('5 xu'));
+
+    // 4. Non-sub user with 6 coins -> silent (null)
+    assert.equal(
+      resolveRoleplayCreditWarning({
+        isAdmin: false,
+        hasActiveSubscription: false,
+        creditBalance: 6,
+      }),
+      null
     );
   });
 

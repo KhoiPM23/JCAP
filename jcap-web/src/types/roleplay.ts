@@ -120,6 +120,9 @@ export interface RoleplaySessionDetailsDto {
   creditCost?: number;
   creditBalance?: number;
   hasActiveSubscription?: boolean;
+  remainingSubscriptionQuota?: number | null;
+  isSubscriptionQuotaExhausted?: boolean;
+  creditWarningMessage?: string | null;
   resultId?: number | null;
   isNaturallyConcluded: boolean;
   createdAt?: string;
@@ -161,6 +164,10 @@ export interface RoleplayTurnResponseDto {
   isNaturallyConcluded: boolean;
   creditBalance?: number;
   creditsSpentThisTurn?: number;
+  hasActiveSubscription?: boolean;
+  remainingSubscriptionQuota?: number | null;
+  isSubscriptionQuotaExhausted?: boolean;
+  creditWarningMessage?: string | null;
   sessionStatus?: string;
   detectedIssues?: DetectedGrammarIssue[];
   speedScale?: number;
