@@ -325,15 +325,23 @@ class CreditService {
    * Cập nhật số dư credit trong localStorage và thông báo sự kiện cập nhật để Header đồng bộ
    */
   public updateLocalCreditBalance(newBalance: number) {
-    let user: any = {};
+    const token = localStorage.getItem('jcap_token');
     const userStr = localStorage.getItem('jcap_user');
-    if (userStr) {
-      try {
-        user = JSON.parse(userStr);
-      } catch {
-        user = {};
-      }
+    if (!token || !userStr) {
+      return;
     }
+
+    let user: any;
+    try {
+      user = JSON.parse(userStr);
+    } catch {
+      return;
+    }
+
+    if (!user || typeof user !== 'object' || !user.id || !user.email) {
+      return;
+    }
+
     user.creditBalance = newBalance;
     localStorage.setItem('jcap_user', JSON.stringify(user));
     // Phát event cho Header và các component khác

@@ -1,5 +1,6 @@
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
+using JCAP.Hosting;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -52,16 +53,16 @@ namespace JCAP.Controllers
             [FromQuery] string? userId,
             [FromQuery] string? token)
         {
-            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = PublicUrlResolver.ResolveFrontendUrl(_configuration, HttpContext);
             var result = await _authService.ConfirmEmailAsync(userId ?? string.Empty, token ?? string.Empty);
 
             if (result.Success)
             {
-                return Redirect($"{frontendUrl.TrimEnd('/')}/login?confirmed=true");
+                return Redirect($"{frontendUrl}/login?confirmed=true");
             }
 
             var errorMessage = Uri.EscapeDataString(result.Message);
-            return Redirect($"{frontendUrl.TrimEnd('/')}/login?confirmed=false&error={errorMessage}");
+            return Redirect($"{frontendUrl}/login?confirmed=false&error={errorMessage}");
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace JCAP.Controllers
         [HttpGet("google/callback")]
         public async Task<IActionResult> GoogleCallback([FromQuery] string? code, [FromQuery] string? error)
         {
-            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = PublicUrlResolver.ResolveFrontendUrl(_configuration, HttpContext);
 
             if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
             {
