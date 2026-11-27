@@ -373,6 +373,11 @@
   .jx-mobile-records .jx-record-row td:last-child > div { flex-wrap: wrap; justify-content: flex-start; }
   .jx-shadow-records td:nth-child(4) { grid-column: 1 / -1; grid-row: 1; }
   .jx-shadow-records td:nth-child(4) span { white-space: normal; }
+  .jx-credit-records td:nth-child(5), .jx-credit-records td:nth-child(6) { grid-column: 1 / -1; }
+  .jx-credit-page, .jx-payment-return { padding: 12px 0 32px; }
+  .jx-payment-return > div { padding: 16px; }
+  .jx-payment-return > div :is(.truncate, .whitespace-nowrap) { white-space: normal; }
+  .jx-um .jx-um-line { flex-wrap: wrap; gap: 8px; }
 
   .jx-settings-nav { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex-basis: 100%; }
   .jx-settings-nav a { padding-inline: 8px; }
@@ -380,6 +385,10 @@
   .jx-settings-page .jc-seg { width: 100%; }
   .jx-settings-page .jc-seg__opt { flex: 1; padding-inline: 6px; }
   .jx-settings-toast { top: calc(var(--jx-mobile-top) + 8px); right: 8px; max-width: calc(100% - 16px); }
+
+  .jx-practice-panel > .jx-phone-overlay { position: static; padding: 0; background: none; backdrop-filter: none; }
+  .jx-practice-panel > .jx-phone-overlay > div { max-width: none; border: 0; border-radius: 0; overflow: visible; box-shadow: none; }
+  .jx-practice-panel > .jx-phone-overlay > div:has(> form) > div:first-child { position: sticky; top: 0; z-index: 1; background-color: var(--paper-50); }
 }
 
 @media (prefers-reduced-motion: reduce) {
