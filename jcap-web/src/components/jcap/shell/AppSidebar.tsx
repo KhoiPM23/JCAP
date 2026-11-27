@@ -17,7 +17,7 @@ import { Logo } from '../Logo';
 import { ProgressBar } from '../Progress';
 import { Stepper } from '../Tabs';
 import { cx, fmt } from '../utils';
-import { recentRoleplaySessionId } from './recentRoleplay';
+import { forgetRoleplaySession, recentRoleplaySessionId } from './recentRoleplay';
 import { useLearnerAccount } from './useLearnerAccount';
 import { resolveMediaUrl } from '../../../utils/apiBase';
 
@@ -302,7 +302,7 @@ const LearningGroup: React.FC<{
       // Như trước: chỉ bài đã qua ít nhất một câu mới hiện "Tiếp tục"
       setShadow(local && local.completedSentenceCount > 0 ? local : null);
     });
-    const sid = recentRoleplaySessionId();
+    const sid = recentRoleplaySessionId(learnerId);
     if (!sid) {
       setConv(null);
       return () => {
@@ -315,9 +315,21 @@ const LearningGroup: React.FC<{
       .then((res) => {
         if (cancelled) return;
         const s = res.success ? res.data : undefined;
-        setConv(s && (s.status === 'Active' || s.status === 'InProgress') ? s : null);
+        const isActive = Boolean(s && (s.status === 'Active' || s.status === 'InProgress'));
+        if (isActive && s) {
+          setConv(s);
+        } else {
+          // Phiên đã kết thúc hoặc không thuộc người dùng hiện tại -> tự dọn cache tránh lặp lại 404
+          forgetRoleplaySession(learnerId);
+          setConv(null);
+        }
       })
-      .catch(() => !cancelled && setConv(null));
+      .catch(() => {
+        if (!cancelled) {
+          forgetRoleplaySession(learnerId);
+          setConv(null);
+        }
+      });
     return () => {
       cancelled = true;
       shadowCancelled = true;

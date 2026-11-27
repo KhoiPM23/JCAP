@@ -9,6 +9,7 @@ import {
   cleanFuriganaHtml,
   alignFuriganaWithOriginal,
   cleanPedagogicMeaning,
+  generateClientFuriganaHtml,
 } from './japaneseSanitizer.ts';
 
 describe('japaneseSanitizer', () => {
@@ -166,5 +167,15 @@ describe('japaneseSanitizer', () => {
     assert.equal(alignedKanaXss.includes('<img'), false);
     assert.equal(alignedKanaXss.includes('onerror='), false);
     assert.equal(alignFuriganaWithOriginal('<ruby>切符<rt>きっぷ</rt></ruby>', '3 < 5 きっぷ'), '3 &lt; 5 きっぷ');
+  });
+
+  it('generateClientFuriganaHtml should apply general phonetic rule for any minute counter (ぷん vs ふん) while keeping 分かる as わ', () => {
+    assert.ok(generateClientFuriganaHtml('1分待ちます').includes('1<ruby>分<rt>ぷん</rt></ruby>'));
+    assert.ok(generateClientFuriganaHtml('2分ぐらいです').includes('2<ruby>分<rt>ふん</rt></ruby>'));
+    assert.ok(generateClientFuriganaHtml('15分ぐらいです').includes('15<ruby>分<rt>ふん</rt></ruby>'));
+    assert.ok(generateClientFuriganaHtml('23分かかります').includes('23<ruby>分<rt>ぷん</rt></ruby>'));
+    assert.ok(generateClientFuriganaHtml('47分かかります').includes('47<ruby>分<rt>ふん</rt></ruby>'));
+    assert.ok(generateClientFuriganaHtml('１０分前です').includes('１０<ruby>分<rt>ぷん</rt></ruby>'));
+    assert.ok(generateClientFuriganaHtml('分かりました').includes('<ruby>分<rt>わ</rt></ruby>かりました'));
   });
 });

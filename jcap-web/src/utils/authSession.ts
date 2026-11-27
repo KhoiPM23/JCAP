@@ -31,6 +31,7 @@ export function clearStoredAuthSession(storage?: Pick<Storage, 'removeItem'>): v
   target.removeItem('jcap_token');
   target.removeItem('jcap_user');
   target.removeItem('jcap_current_view');
+  target.removeItem('jcap.recentRoleplaySession');
 }
 
 export function readStoredAuthSession(
