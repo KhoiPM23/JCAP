@@ -755,7 +755,13 @@ public class RoleplaySessionService : IRoleplaySessionService
         // Chỉ chặn âm thanh nhiễu / không nghe được; ngưỡng 0.50-0.60 với tiếng Nhật người học vẫn cho đi tiếp bình thường
         if (turnResult == null && request.SpeechConfidence.HasValue && request.SpeechConfidence.Value < 0.35 && !string.IsNullOrWhiteSpace(userMessageText))
         {
-            var askBackJa = "恐れ入りますが、少し聞き取れませんでした。もう一度よろしいでしょうか？";
+            var jlptForGuard = (levelConfig.JLPTLevel ?? "N5").Trim().ToUpperInvariant();
+            var askBackJa = jlptForGuard switch
+            {
+                "N5" => "すみません、よく聞こえませんでした。もう一度お願いします。",
+                "N4" => "すみません、少し聞き取れませんでした。もう一度お願いします。",
+                _ => "恐れ入りますが、少し聞き取れませんでした。もう一度よろしいでしょうか？"
+            };
             var reg = RoleplaySocialRegister.Deduce(levelConfig.Scenario?.Title, levelConfig.AiPersona, levelConfig.Description);
             var askBackVi = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiSelf} nghe chưa rõ. {reg.AiAddressLearner} có thể nói lại một lần nữa được không ạ?";
             turnResult = new AiTurnResult
@@ -810,92 +816,15 @@ public class RoleplaySessionService : IRoleplaySessionService
             _logger.LogWarning(ex, "Không thể lấy persona memory directive cho người dùng {UserId}", userId);
         }
 
-        // 3. Kết hợp Ký ức nhân vật + Hồ sơ năng lực học viên ngầm + Chỉ thị DDA
-        var directiveBuilder = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(compactMemory))
-        {
-            directiveBuilder.AppendLine(compactMemory);
-        }
-        if (!string.IsNullOrWhiteSpace(ddaDecision.PromptModifier))
-        {
-            directiveBuilder.AppendLine(ddaDecision.PromptModifier);
-        }
-
-        // Bơm Hồ sơ Năng lực Trung tâm (LearnerIntelligenceProfile) vào System Prompt & điều chỉnh tốc độ phản hồi
-        try
-        {
-            var learnerProf = await _telemetryEvaluator.GetOrCreateProfileAsync(userId);
-            if (learnerProf != null)
-            {
-                string dominantWeakness = ExtractDominantWeakness(learnerProf.InferredTraitsJson);
-                directiveBuilder.AppendLine(
-                    $"[LEARNER PROFILE ADAPTATION: reflex={learnerProf.SpeakingReflexIndex:F0}, keigo={learnerProf.KeigoCommandScore:F0}, particle_acc={learnerProf.ParticleAccuracyRate:F0}%, mora_pace={learnerProf.AverageMoraRate:F1}, hint_dep={learnerProf.HintDependencyRate:F0}%, weakness={dominantWeakness}]");
-
-                var adaptTips = BuildProfileAdaptationSummary(learnerProf);
-                if (!string.IsNullOrWhiteSpace(adaptTips))
-                {
-                    directiveBuilder.AppendLine($"[ADAPTIVE COACHING: {adaptTips}]");
-                }
-
-                if ((learnerProf.SpeakingReflexIndex < 55 || learnerProf.AverageMoraRate < 3.4) && ddaDecision.SpeedScale >= 1.0)
-                {
-                    ddaDecision.SpeedScale = 0.88;
-                }
-
-                var topRecurringErrors = await _dbContext.LearnerSkillMasteries
-                    .AsNoTracking()
-                    .Where(m => m.UserId == userId && m.Lapses >= 2)
-                    .OrderByDescending(m => m.Lapses)
-                    .ThenByDescending(m => m.LastPracticedUtc)
-                    .Select(m => m.SkillName)
-                    .Take(2)
-                    .ToListAsync(cancellationToken);
-
-                if (topRecurringErrors.Count > 0)
-                {
-                    directiveBuilder.AppendLine(
-                        $"[RECURRING MISTAKE COACHING: Học viên hay lặp lại lỗi \"{string.Join("; ", topRecurringErrors)}\". Nếu lỗi này xuất hiện lại, hãy nhắc sửa thật ngắn gọn, nhẹ nhàng và tái hiện câu đúng trong hội thoại.]");
-                }
-
-                var lastTwoPassedFlags = await (
-                    from r in _dbContext.RoleplayResults.AsNoTracking()
-                    join s in _dbContext.RoleplaySessions.AsNoTracking() on r.RoleplaySessionId equals s.Id into sj
-                    from s in sj.DefaultIfEmpty()
-                    where r.UserId == userId && (s == null || s.SessionType != "PlacementTest")
-                    orderby r.CompletedAt descending, r.Id descending
-                    select r.PassStatus)
-                    .Take(2)
-                    .ToListAsync(cancellationToken);
-
-                if (lastTwoPassedFlags.Count >= 2 && lastTwoPassedFlags.All(p => !p))
-                {
-                    directiveBuilder.AppendLine(
-                        "[FAIL-STREAK SUPPORT: Học viên vừa chưa đạt 2 phiên gần nhất. Hãy giữ giọng ấm áp, câu ngắn dễ hiểu và khích lệ tự nhiên để lấy lại sự tự tin.]");
-                    ddaDecision.SpeedScale = Math.Min(ddaDecision.SpeedScale, 0.88);
-                }
-            }
-        }
-        catch { }
-
-        // Bơm chỉ thị Implicit Recast nếu học viên mắc lỗi ngữ pháp/trợ từ
-        if (detectedIssues.Count > 0)
-        {
-            var topErr = detectedIssues[0];
-            directiveBuilder.AppendLine($"[RECAST: Học viên vừa dùng sai {topErr.Code} ({topErr.Title}). Trong câu đối đáp, hãy khéo léo dùng lại cấu trúc chuẩn tự nhiên để tái hiện (implicit recast) mà không chỉ trích.]");
-        }
+        // 3. Kết hợp tối đa 3 chỉ thị gọn nhẹ để tránh bão chỉ thị làm loãng vai AI và cấp độ JLPT
+        var priorityDirectives = new List<string>(3);
+        var jlptLevelUpper = (levelConfig.JLPTLevel ?? "N5").Trim().ToUpperInvariant();
+        bool isN5Level = jlptLevelUpper == "N5";
 
         // 3b. Phân tích Kính ngữ / Thể văn tất định bằng RegisterAnalyzer
         var regAnalysis = _registerAnalyzer.Analyze(userMessageText, levelConfig.ExpectedLearnerRegister);
-        if (!regAnalysis.IsMatch && regAnalysis.SumiInkIndicatorType != null)
-        {
-            directiveBuilder.AppendLine($"[REGISTER DIRECTIVE: Học viên dùng thể {regAnalysis.DetectedRegister} trong khi bối cảnh yêu cầu {regAnalysis.ExpectedRegister}. Phản xạ xã hội chân thực theo văn hóa Nhật.]");
-        }
-        if (regAnalysis.IsSurvivalPhrase)
-        {
-            directiveBuilder.AppendLine("[SURVIVAL PHRASE DIRECTIVE: Học viên chủ động dùng cụm từ sinh tồn (nhờ nhắc lại/nói chậm). Hãy nói chậm rãi, khích lệ và nhắc lại nội dung quan trọng.]");
-        }
 
-        // 3c. EventDirector: Đánh giá kích hoạt biến cố rẽ nhánh sư phạm (EV_SOLD_OUT, EV_DELAY, EV_SPEAK_FAST, EV_MISHEARD, EV_INDIRECT_REFUSAL)
+        // 3c. EventDirector: Đánh giá kích hoạt biến cố rẽ nhánh sư phạm phù hợp ngữ cảnh kịch bản
         var userTurnCount = existingUserMessages.Count + 1;
         var previousUserMessages = existingUserMessages;
 
@@ -921,14 +850,16 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
+        var scenarioEventContext = $"{levelConfig.Scenario?.Title} {levelConfig.Title} {levelConfig.AiPersona} {levelConfig.Description}";
         var eventDecision = _eventDirector.EvaluateEventTrigger(
-            levelConfig.JLPTLevel,
+            levelConfig.JLPTLevel ?? "N5",
             userTurnCount,
             turnsSinceLastEvent,
             totalEventsTriggeredSoFar,
             remainingMissionsCount: pendingMissions.Count,
             compatibleEventsJson: levelConfig.CompatibleEventsJson,
-            lastUserUtterance: userMessageText);
+            lastUserUtterance: userMessageText,
+            scenarioContext: scenarioEventContext);
 
         string? activeEventCode = null;
         if (eventDecision.ShouldTriggerEvent && eventDecision.TriggeredEvent != null)
@@ -936,27 +867,84 @@ public class RoleplaySessionService : IRoleplaySessionService
             activeEventCode = eventDecision.EventCode;
             if (!string.IsNullOrWhiteSpace(eventDecision.DirectiveForAiPrompt))
             {
-                directiveBuilder.AppendLine(eventDecision.DirectiveForAiPrompt);
+                priorityDirectives.Add(eventDecision.DirectiveForAiPrompt);
             }
         }
 
-        if (turnResult == null && _adaptiveProfileService != null)
+        // Priority 2: Survival phrase / Register directive (tối đa 1)
+        if (regAnalysis.IsSurvivalPhrase)
         {
-            try
+            priorityDirectives.Add("[SURVIVAL PHRASE DIRECTIVE: Học viên chủ động dùng cụm từ sinh tồn (nhờ nhắc lại/nói chậm). Hãy nói chậm rãi, khích lệ và nhắc lại nội dung quan trọng.]");
+        }
+        else if (!regAnalysis.IsMatch && regAnalysis.SumiInkIndicatorType != null)
+        {
+            priorityDirectives.Add($"[REGISTER DIRECTIVE: Học viên dùng thể {regAnalysis.DetectedRegister} trong khi bối cảnh yêu cầu {regAnalysis.ExpectedRegister}. Phản xạ tự nhiên và khéo léo giữ đúng vai.]");
+        }
+
+        // Cập nhật nhịp độ phát âm & Fail-streak / DDA (tối đa 1 chỉ thị, không bơm chỉ thị mở rộng câu khi đang ở N5)
+        string? ddaOrSupportDirective = null;
+        bool isDdaFastExpand = !string.IsNullOrWhiteSpace(ddaDecision.PromptModifier)
+            && ddaDecision.PromptModifier.Contains("mở rộng chủ đề", StringComparison.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(ddaDecision.PromptModifier) && !(isN5Level && isDdaFastExpand))
+        {
+            ddaOrSupportDirective = ddaDecision.PromptModifier;
+        }
+
+        try
+        {
+            var learnerProf = await _telemetryEvaluator.GetOrCreateProfileAsync(userId);
+            if (learnerProf != null)
             {
-                var adaptiveContext = await _adaptiveProfileService.GetAdaptiveContextAsync(userId, cancellationToken);
-                if (!string.IsNullOrWhiteSpace(adaptiveContext.AiRuntimeDirective))
+                if ((learnerProf.SpeakingReflexIndex < 55 || learnerProf.AverageMoraRate < 3.4) && ddaDecision.SpeedScale >= 1.0)
                 {
-                    directiveBuilder.AppendLine($"[ADAPTIVE CONTEXT]: {adaptiveContext.AiRuntimeDirective}");
+                    ddaDecision.SpeedScale = 0.88;
+                }
+
+                var lastTwoPassedFlags = await (
+                    from r in _dbContext.RoleplayResults.AsNoTracking()
+                    join s in _dbContext.RoleplaySessions.AsNoTracking() on r.RoleplaySessionId equals s.Id into sj
+                    from s in sj.DefaultIfEmpty()
+                    where r.UserId == userId && (s == null || s.SessionType != "PlacementTest")
+                    orderby r.CompletedAt descending, r.Id descending
+                    select r.PassStatus)
+                    .Take(2)
+                    .ToListAsync(cancellationToken);
+
+                if (lastTwoPassedFlags.Count >= 2 && lastTwoPassedFlags.All(p => !p))
+                {
+                    ddaOrSupportDirective ??= "[FAIL-STREAK SUPPORT: Học viên vừa chưa đạt 2 phiên gần nhất. Hãy giữ giọng ấm áp, câu ngắn dễ hiểu và khích lệ tự nhiên.]";
+                    ddaDecision.SpeedScale = Math.Min(ddaDecision.SpeedScale, 0.88);
                 }
             }
-            catch (Exception ex)
+        }
+        catch { }
+
+        // Bơm Implicit Recast nếu còn slot (< 3)
+        if (priorityDirectives.Count < 3 && detectedIssues.Count > 0)
+        {
+            var topErr = detectedIssues[0];
+            priorityDirectives.Add($"[RECAST: Học viên vừa dùng sai {topErr.Code} ({topErr.Title}). Trong câu đối đáp, khéo léo dùng lại cấu trúc chuẩn tự nhiên để tái hiện.]");
+        }
+        else if (priorityDirectives.Count < 3 && !string.IsNullOrWhiteSpace(ddaOrSupportDirective))
+        {
+            priorityDirectives.Add(ddaOrSupportDirective);
+        }
+
+        // Chỉ giữ ký ức NPC ngắn gọn (1 dòng) nếu còn slot
+        if (priorityDirectives.Count < 3 && !string.IsNullOrWhiteSpace(compactMemory))
+        {
+            var firstMemoryLine = compactMemory
+                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault()?.Trim();
+            if (!string.IsNullOrWhiteSpace(firstMemoryLine))
             {
-                _logger.LogDebug(ex, "Bỏ qua nạp AdaptiveContext khi gửi lượt hội thoại");
+                priorityDirectives.Add(firstMemoryLine);
             }
         }
 
-        var combinedDirective = directiveBuilder.Length > 0 ? directiveBuilder.ToString().Trim() : null;
+        var combinedDirective = priorityDirectives.Count > 0
+            ? string.Join("\n", priorityDirectives.Take(3)).Trim()
+            : null;
 
         // 4. Gọi AI phân tích và phản hồi nếu chưa xử lý bởi Pre-flight Guard (lịch sử sạch, chưa gồm userMessage hiện tại)
         if (levelConfig.Scenario == null)
@@ -1215,17 +1203,26 @@ public class RoleplaySessionService : IRoleplaySessionService
                 if (sm != null)
                 {
                     var missionOrder = sm.Mission?.Order ?? 0;
-                    var missionContent = (sm.Mission?.Content ?? "") + " " + (sm.Mission?.CompletionCriteriaJson ?? "");
-                    bool isClosingMission = missionContent.Contains("cảm ơn", StringComparison.OrdinalIgnoreCase) ||
-                                            missionContent.Contains("ra về", StringComparison.OrdinalIgnoreCase) ||
-                                            missionContent.Contains("tạm biệt", StringComparison.OrdinalIgnoreCase) ||
-                                            missionContent.Contains("kết thúc", StringComparison.OrdinalIgnoreCase);
-                    bool userSaidClosing = System.Text.RegularExpressions.Regex.IsMatch(
+                    static bool IsClosingMissionItem(Mission? m)
+                    {
+                        var mc = (m?.Content ?? "") + " " + (m?.CompletionCriteriaJson ?? "");
+                        return mc.Contains("cảm ơn", StringComparison.OrdinalIgnoreCase) ||
+                               mc.Contains("ra về", StringComparison.OrdinalIgnoreCase) ||
+                               mc.Contains("tạm biệt", StringComparison.OrdinalIgnoreCase) ||
+                               mc.Contains("kết thúc", StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    bool isClosingMission = IsClosingMissionItem(sm.Mission);
+                    bool userSaidExplicitDeparture = System.Text.RegularExpressions.Regex.IsMatch(
                         userMessageText,
-                        @"(ありがとう|ごちそうさま|ご馳走様|失礼|お会計|勘定|さようなら|また来ます)");
+                        @"(ごちそうさま|ご馳走様|失礼|お会計|勘定|さようなら|また来ます)");
+                    var hasEarlierNonClosingPending = session.SessionMissions.Any(x =>
+                        !x.IsCompleted && (x.Mission?.Order ?? 0) < missionOrder && !IsClosingMissionItem(x.Mission));
                     var hasEarlierPending = session.SessionMissions.Any(x => !x.IsCompleted && (x.Mission?.Order ?? 0) < missionOrder);
 
-                    if (missionOrder == maxOrder && maxOrder > 1 && hasEarlierPending && !(isClosingMission && userSaidClosing))
+                    // Không cho phép tick sớm nhiệm vụ kết thúc nếu các nhiệm vụ chính trước đó vẫn chưa hoàn thành
+                    if (missionOrder == maxOrder && maxOrder > 1 && hasEarlierPending &&
+                        !(isClosingMission && userSaidExplicitDeparture && !hasEarlierNonClosingPending))
                     {
                         _logger.LogInformation("Nhiệm vụ {MissionId} (Order {Order}) là nhiệm vụ kết thúc kịch bản, bị hoãn tick do còn nhiệm vụ tiên quyết chưa hoàn thành.", missionId, sm.Mission?.Order);
                         continue;

@@ -80,7 +80,7 @@ export const SumiInkPill: React.FC<SumiInkPillProps> = ({
       title="Lưu ý về thể văn và độ lịch sự trong giao tiếp."
     >
       <span className="font-semibold">
-        {isSevere ? 'Lưu ý: Thể văn (Lệch vai vế)' : 'Gợi ý: Kính ngữ (Sắc thái)'}
+        {isSevere ? 'Lưu ý: Thể văn (Lệch vai vế)' : 'Gợi ý: Văn phong (Sắc thái)'}
       </span>
       <span className={`material-symbols-outlined text-[13px] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
         expand_more

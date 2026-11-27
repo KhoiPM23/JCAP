@@ -171,7 +171,11 @@ Return strictly pure JSON matching:
             // Chặn ngay các lượt nói tiếng Việt hoặc ngoại ngữ trước khi gọi LLM
             if (IsLikelyForeignOrVietnamese(userMessage))
             {
-                var confusedJa = "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。";
+                var confusedJa = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、外国語は分かりませんので、日本語で話してください。",
+                    "すみません、外国語は分かりませんので、日本語でお話しください。",
+                    "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。");
                 var confusedVi = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói bằng tiếng Nhật được không ạ?";
                 return new AiTurnResult
                 {
@@ -205,7 +209,11 @@ Return strictly pure JSON matching:
             // PRE-FLIGHT GUARD 2: Chặn ký tự Romaji (chữ Latin) yêu cầu chuyển sang Kana/Kanji
             if (!IsLikelyForeignOrVietnamese(userMessage) && IsLikelyRomaji(userMessage))
             {
-                var jaNotice = "恐れ入ります、ローマ字ではなく、日本語のひらがな・カタカナ、または漢字でお話しいただけますでしょうか。";
+                var jaNotice = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、ローマ字ではなく、ひらがな・カタカナ・かんじで話してください。",
+                    "すみません、ローマ字ではなく、日本語の文字でお話しください。",
+                    "恐れ入ります、ローマ字ではなく、日本語のひらがな・カタカナ、または漢字でお話しいただけますでしょうか。");
                 var viNotice = $"Xin lỗi {reg.AiAddressLearner}, hệ thống yêu cầu sử dụng chữ viết tiếng Nhật (Hiragana/Katakana/Kanji) thay vì ký tự La-tinh (Romaji). {reg.AiAddressLearner} vui lòng bật bộ gõ tiếng Nhật (IME) nhé ạ.";
                 return new AiTurnResult
                 {
@@ -259,31 +267,55 @@ Return strictly pure JSON matching:
 
                 if (isRamenScenario)
                 {
-                    jaReply = "はい、ラーメンをどうなさいますか？ご注文をお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "はい、ラーメンはどうしますか？注文をお願いします。",
+                        "はい、ラーメンはどうしますか？ご注文をお願いします。",
+                        "はい、ラーメンをどうなさいますか？ご注文をお聞かせください。");
                     viReply = $"Vâng, {reg.AiAddressLearner} muốn dùng mì ramen như thế nào ạ? Xin vui lòng cho {reg.AiSelf} biết yêu cầu gọi món.";
                     naturalAlt = "すみません、ラーメンをお願いします。";
                 }
                 else if (isStationScenario)
                 {
-                    jaReply = "はい、どちらまで行かれますか？どうなさいますか、ご用件をお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "はい、どこまで行きますか？教えてください。",
+                        "はい、どちらまで行きますか？ご用件を教えてください。",
+                        "はい、どちらまで行かれますか？どうなさいますか、ご用件をお聞かせください。");
                     viReply = $"Vâng, {reg.AiAddressLearner} muốn đi tới đâu ạ? Xin vui lòng cho {reg.AiSelf} biết ga đến hoặc yêu cầu vé tàu.";
                     naturalAlt = "新宿駅までの切符を一枚お願いします。";
                 }
                 else if (isInterviewScenario)
                 {
-                    jaReply = "はい、その件についてどうなさいますか？詳しくお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "はい、もう一度詳しく教えてください。",
+                        "はい、そのことについて詳しく教えてください。",
+                        "はい、その件についてどうなさいますか？詳しくお聞かせください。");
                     viReply = $"Vâng, về việc đó thì {reg.AiAddressLearner} muốn trình bày thế nào ạ? Xin vui lòng nói rõ hơn câu trả lời.";
-                    naturalAlt = "志望動機についてお話しさせていただきます。";
+                    naturalAlt = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "志望動機を話します。",
+                        "志望動機について話します。",
+                        "志望動機についてお話しさせていただきます。");
                 }
                 else if (isCafeScenario)
                 {
-                    jaReply = "はい、お飲み物をどうなさいますか？ご注文をお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "はい、飲み物は何にしますか？注文をお願いします。",
+                        "はい、お飲み物はどうしますか？ご注文をお願いします。",
+                        "はい、お飲み物をどうなさいますか？ご注文をお聞かせください。");
                     viReply = $"Vâng, {reg.AiAddressLearner} muốn dùng đồ uống như thế nào ạ? Xin vui lòng cho {reg.AiSelf} biết yêu cầu gọi món.";
                     naturalAlt = "すみません、アイスコーヒーをお願いします。";
                 }
                 else
                 {
-                    jaReply = "はい、どうなさいますか？ご用件を最後までお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "はい、どうしましたか？最後まで話してください。",
+                        "はい、どうしましたか？最後までお話しください。",
+                        "はい、どうなさいますか？ご用件を最後までお聞かせください。");
                     viReply = $"Vâng, {reg.AiAddressLearner} có yêu cầu như thế nào ạ? Xin vui lòng nói trọn vẹn câu để {reg.AiSelf} phục vụ tốt nhất.";
                     naturalAlt = "すみません、これをお願いします。";
                 }
@@ -293,7 +325,7 @@ Return strictly pure JSON matching:
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = viReply,
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -320,13 +352,17 @@ Return strictly pure JSON matching:
             // 2. Paradoxical / Conflicting Request Guard (熱いアイスコーヒー)
             if (Regex.IsMatch(userMessage, @"(熱い.*アイス|アイス.*熱い|冷たい.*ホット|ホット.*冷たい)"))
             {
-                var jaReply = "恐れ入ります、ホット（温かいもの）とアイス（冷たいもの）のどちらをご希望でしょうか？";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、ホット（温かいもの）とアイス（冷たいもの）、どちらにしますか？",
+                    "すみません、ホット（温かいもの）とアイス（冷たいもの）、どちらにしますか？",
+                    "恐れ入ります、ホット（温かいもの）とアイス（冷たいもの）のどちらをご希望でしょうか？");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn dùng đồ uống nóng (hot) hay lạnh (ice) ạ?",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -353,13 +389,17 @@ Return strictly pure JSON matching:
             // 3. Off-Context / Off-Menu Guard (Tổng quát hóa theo bối cảnh: Quán ăn, Nhà ga, Phỏng vấn)
             if (isRamenScenario && Regex.IsMatch(userMessage, @"(ピザ|ハンバーガー|パスタ|スパゲッティ|ピッツァ|寿司|すし)"))
             {
-                var jaReply = "大変申し訳ございません、当店はラーメン専門店ですので、ラーメンのメニューからお選びいただけますでしょうか？";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、ここはラーメンの店です。ラーメンのメニューから選んでください。",
+                    "すみません、当店はラーメン専門店ですので、ラーメンから選んでいただけますか？",
+                    "大変申し訳ございません、当店はラーメン専門店ですので、ラーメンのメニューからお選びいただけますでしょうか？");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, quán chúng tôi là tiệm chuyên mì ramen, {reg.AiAddressLearner} vui lòng chọn món trong thực đơn mì ramen nhé ạ?",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -384,13 +424,17 @@ Return strictly pure JSON matching:
             }
             if (isStationScenario && Regex.IsMatch(userMessage, @"(ラーメン|ピザ|ハンバーガー|パスタ|寿司|すし|定食|コーヒー)"))
             {
-                var jaReply = "大変申し訳ございません、こちらは駅の窓口でございますので、切符のご購入や運行案内に関するご用件をお願いできますでしょうか？";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、ここは駅です。切符や電車のことですか？",
+                    "すみません、こちらは駅の窓口ですので、切符や電車のご用件をお願いします。",
+                    "大変申し訳ございません、こちらは駅の窓口でございますので、切符のご購入や運行案内に関するご用件をお願いできますでしょうか？");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, đây là quầy dịch vụ nhà ga, {reg.AiSelf} chỉ hỗ trợ mua vé và thông tin chuyến tàu thôi ạ.",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -415,13 +459,17 @@ Return strictly pure JSON matching:
             }
             if (isInterviewScenario && Regex.IsMatch(userMessage, @"(ラーメン|ピザ|ハンバーガー|パスタ|寿司|すし|切符)"))
             {
-                var jaReply = "恐れ入ります、こちらは採用面接の場でございますので、ご質問に対するお答えや自己PRをお願いできますでしょうか？";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、今は面接です。質問に答えてください。",
+                    "すみません、今は面接ですので、質問への答えをお願いします。",
+                    "恐れ入ります、こちらは採用面接の場でございますので、ご質問に対するお答えや自己PRをお願いできますでしょうか？");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"Xin lỗi {reg.AiAddressLearner}, đây là buổi phỏng vấn tuyển dụng, {reg.AiAddressLearner} vui lòng trả lời câu hỏi phỏng vấn nhé ạ?",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -439,20 +487,28 @@ Return strictly pure JSON matching:
                                 Comment = "Vui lòng tập trung vào các câu hỏi phỏng vấn xin việc (lý do ứng tuyển, kinh nghiệm, điểm mạnh)."
                             }
                         },
-                        NaturalAlternative = "私の長所についてお話しいたします。",
+                        NaturalAlternative = PickByJlpt(
+                            levelConfig.JLPTLevel,
+                            "私の長所を話します。",
+                            "私の長所について話します。",
+                            "私の長所についてお話しいたします。"),
                         CulturalTip = "Trong buổi phỏng vấn ở Nhật, tính tập trung và thái độ nghiêm túc đối với các câu hỏi là yếu tố quyết định."
                     }
                 };
             }
             if (isCafeScenario && Regex.IsMatch(userMessage, @"(ラーメン|寿司|すし|切符|定食|餃子|ギョーザ)"))
             {
-                var jaReply = "大変申し訳ございません、当店はカフェでございますので、お飲み物や軽食のメニューからお選びいただけますでしょうか？";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、ここはカフェです。飲み物やケーキから選んでください。",
+                    "大変申し訳ございません、当店はカフェでございますので、お飲み物や軽食のメニューからお選びいただけますでしょうか？",
+                    "大変申し訳ございません、当店はカフェでございますので、お飲み物や軽食のメニューからお選びいただけますでしょうか？");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, quán chúng tôi là quán cà phê, {reg.AiAddressLearner} vui lòng chọn các món trong thực đơn đồ uống hoặc bánh ngọt nhé ạ?",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -477,13 +533,17 @@ Return strictly pure JSON matching:
             }
             if (isMedicalScenario && Regex.IsMatch(userMessage, @"(ラーメン|ピザ|ハンバーガー|パスタ|寿司|すし|切符|ビール|コーヒー)"))
             {
-                var jaReply = "大変恐れ入ります、こちらは医療機関でございますので、症状や体調についてお聞かせいただけますでしょうか？";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "すみません、ここは病院です。体の具合はどうですか？",
+                    "すみません、こちらは病院ですので、症状について教えてください。",
+                    "大変恐れ入ります、こちらは医療機関でございますので、症状や体調についてお聞かせいただけますでしょうか？");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, đây là cơ sở y tế khám chữa bệnh, {reg.AiAddressLearner} vui lòng cho biết triệu chứng hoặc tình trạng sức khỏe nhé ạ?",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -521,10 +581,12 @@ Return strictly pure JSON matching:
                         levelConfig.JLPTLevel,
                         "すみません、どこまで行きますか？駅の名前を教えてください。",
                         "すみません、どの切符を一枚ですか？行き先の駅名を教えてください。",
-                        "恐れ入ります、どの切符をひとつ（一枚）ご希望でしょうか？行き先の駅名をお聞かせください。");
+                        "恐れ入ります、どの切符を一枚ご希望でしょうか？行き先の駅名をお聞かせください。");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn mua một vé đi đâu ạ? Xin cho {reg.AiSelf} biết ga đến nhé.";
                     summary = "Yêu cầu chưa cụ thể • Cần nói rõ ga đến";
-                    naturalAlt = "新宿駅までの切符を一枚お願いします。";
+                    naturalAlt = scenarioContext.Contains("shinjuku")
+                        ? "東京駅までの切符を一枚お願いします。"
+                        : "新宿駅までの切符を一枚お願いします。";
                 }
                 else if (isInterviewScenario)
                 {
@@ -591,7 +653,7 @@ Return strictly pure JSON matching:
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = viReply,
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -662,7 +724,7 @@ Return strictly pure JSON matching:
                         JapaneseReply = jaReply,
                         FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                         VietnameseMeaning = viReply,
-                        UserVietnameseMeaning = userMessage,
+                        UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                         UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                         CompletedMissionIds = new List<int>(),
                         IsNaturallyConcluded = false,
@@ -699,7 +761,7 @@ Return strictly pure JSON matching:
                         JapaneseReply = jaReply,
                         FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                         VietnameseMeaning = $"Dạ xin lỗi {reg.AiAddressLearner}, để xếp chỗ thì {reg.AiAddressLearner} vui lòng cho biết đi mấy người ạ?",
-                        UserVietnameseMeaning = userMessage,
+                        UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                         UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                         CompletedMissionIds = new List<int>(),
                         IsNaturallyConcluded = false,
@@ -739,7 +801,7 @@ Return strictly pure JSON matching:
                     JapaneseReply = jaReply,
                     FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
                     VietnameseMeaning = $"{reg.AiSelf} đã rõ. Khẩu vị mì của {reg.AiAddressLearner} thế nào ạ? {reg.AiAddressLearner} có thể chọn độ đậm nhạt của nước dùng và độ cứng của sợi mì ạ.",
-                    UserVietnameseMeaning = userMessage,
+                    UserVietnameseMeaning = RoleplaySocialRegister.TranslateUserUtterance(userMessage, reg),
                     UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
                     CompletedMissionIds = new List<int>(),
                     IsNaturallyConcluded = false,
@@ -788,7 +850,7 @@ Return strictly pure JSON matching:
 LEARNER'S LATEST UTTERANCE:
 ""{userMessage}""
 
-PENDING MISSIONS:
+PENDING MISSIONS (GOALS FOR THE LEARNER TO INITIATE — EVALUATE ONLY WHAT THE LEARNER EXPLICITLY SAID; NEVER TICK A MISSION JUST BECAUSE YOU MENTIONED THE TOPIC IN YOUR REPLY; NEVER PERFORM/SPEAK THESE MISSIONS FOR THE LEARNER):
 {missionsDescription}
 
 TASK INSTRUCTIONS:
@@ -819,7 +881,7 @@ TASK INSTRUCTIONS:
    - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}. PURE JAPANESE ONLY (STRICTLY NO VIETNAMESE WORDS, ENGLISH, OR TRANSLATIONS INSIDE replyJapanese).
    - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text. PURE JAPANESE RUBY ONLY.
    - replyVietnamese: Natural translation in Vietnamese strictly adhering to the social register: use '{reg.AiSelf}' and address learner as '{reg.AiAddressLearner}'. ABSOLUTELY ZERO SLASHES ('/').
-   - userVietnameseMeaning: Accurate Vietnamese translation of what the learner said in Japanese, strictly phrased from the learner's perspective ('{reg.LearnerSelf}' addressing '{reg.LearnerAddressAi}'). ABSOLUTELY ZERO SLASHES ('/').
+   - userVietnameseMeaning: Accurate, natural, properly capitalized Vietnamese translation of ONLY what the learner said in Japanese, strictly phrased from the learner's perspective ('{reg.LearnerSelf}' addressing '{reg.LearnerAddressAi}'). NEVER prefix with 'Tôi nói:' or copy raw Japanese text. ABSOLUTELY ZERO SLASHES ('/').
    - completedMissionIds: Array of Mission IDs satisfied in the current turn. Follow STRICT rules:
      * Intent Verification: The learner's utterance MUST actively and clearly express the specific intent and conditions specified in the mission's Content and CompletionCriteriaJson.
      * NEVER mark a mission complete if the learner only provides generic filler words, passive agreement ('はい', 'そうです', 'わかりました', 'ええと'), or unrelated statements.
@@ -856,7 +918,7 @@ TASK INSTRUCTIONS:
          * When learner successfully uses scenario target words (e.g. 味玉, 固め) or target grammar, record a type 'success' explicitly praising that target usage.
          * If learner used a simpler general word instead of the scenario target (e.g. saying 卵 instead of 味玉), suggest the target word in naturalAlternative.
        - ONLY mark type 'success' when the learner genuinely uses correct sentence structures, appropriate politeness, or scenario target vocabulary.
-     * naturalAlternative: More natural native phrasing in Japanese (incorporating scenario target words if applicable)
+     * naturalAlternative: More natural native phrasing in Japanese strictly matching BOTH the LEARNER'S ROLE (never give staff-to-customer phrases like '少々お待ちください' to a customer/tourist!) AND JLPT {levelConfig.JLPTLevel} (for N5, use simple です/ます like 'トイレはどこですか？' or 'メニューをお願いします。', NEVER 'どちらでしょうか' or 'お願いできますでしょうか'). NEVER include inline reading parentheses like 'お手洗い（おてあらい）'.
      * culturalTip: Relevant practical cultural tip in Vietnamese
 
 Return strictly pure JSON matching this schema:
@@ -947,7 +1009,14 @@ Return strictly pure JSON matching this schema:
                         {
                             matchesIntent = true;
                         }
-                        else if ((crit.Contains("order") || content.Contains("gọi món") || content.Contains("chọn") || content.Contains("ăn kèm") || content.Contains("ramen")) &&
+                        else if ((crit.Contains("price") || content.Contains("giá") || content.Contains("tiền")) &&
+                                 !content.Contains("thanh toán") && !content.Contains("thẻ") &&
+                                 Regex.IsMatch(cleanUserMsg, @"(いくら|値段|何円|おいくら)"))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("order") || content.Contains("gọi món") || content.Contains("gọi ") || content.Contains("chọn") || content.Contains("ăn kèm")) &&
+                                 !combinedMeta.Contains("giá") && !combinedMeta.Contains("price") && !combinedMeta.Contains("thanh toán") && !combinedMeta.Contains("cảm ơn") &&
                                  (cleanUserMsg.Contains("ください") || cleanUserMsg.Contains("お願いします") || cleanUserMsg.Contains("にします") || cleanUserMsg.Contains("注文") || cleanUserMsg.Contains("ラーメン")))
                         {
                             matchesIntent = true;
@@ -963,7 +1032,13 @@ Return strictly pure JSON matching this schema:
                         {
                             matchesIntent = true;
                         }
+                        else if ((combinedMeta.Contains("suica") || combinedMeta.Contains("pasmo")) &&
+                                 Regex.IsMatch(cleanUserMsg, @"(suica|スイカ|pasmo|パスモ|チャージ|icカード)", RegexOptions.IgnoreCase))
+                        {
+                            matchesIntent = true;
+                        }
                         else if ((crit.Contains("card") || crit.Contains("payment") || content.Contains("thanh toán") || content.Contains("thẻ") || content.Contains("tính tiền")) &&
+                                 !combinedMeta.Contains("suica") && !combinedMeta.Contains("pasmo") && !combinedMeta.Contains("nạp tiền") && !combinedMeta.Contains("bảo hiểm") &&
                                  Regex.IsMatch(cleanUserMsg, @"(カード|電子マネー|クレカ|支払|会計|勘定|現金|いくら)"))
                         {
                             matchesIntent = true;
@@ -1221,8 +1296,12 @@ Return strictly pure JSON matching this schema:
                 else if (Regex.IsMatch(userMessage, @"(.)\1{4,}"))
                 {
                     completedIds.Clear();
-                    ja = "恐れ入ります、少々聞き取りにくかったのですが、もう一度お話しいただけますでしょうか？";
-                    fHtml = "恐れ入ります、<ruby>少々<rt>しょうしょう</rt></ruby><ruby>聞<rt>き</rt></ruby>き<ruby>取<rt>と</rt></ruby>りにくかったのですが、もう<ruby>一度<rt>いちど</rt></ruby>お<ruby>話<rt>はな</rt></ruby>しいただけますでしょうか？";
+                    ja = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、聞き取りにくかったです。もう一度お願いします。",
+                        "すみません、少し聞き取りにくかったです。もう一度お話しください。",
+                        "恐れ入ります、少々聞き取りにくかったのですが、もう一度お話しいただけますでしょうか？");
+                    fHtml = RoleplaySocialRegister.GenerateFuriganaHtml(ja);
                     vi = $"Xin lỗi {reg.AiAddressLearner}, âm thanh hơi khó nghe một chút, {reg.AiAddressLearner} có thể nói lại được không ạ?";
                     if (feedback != null)
                     {
@@ -1257,8 +1336,12 @@ Return strictly pure JSON matching this schema:
                     isConcluded = false;
                     if (isDiningScenario)
                     {
-                        ja = "あれっ、もうお帰りですか？まだご注文の途中ですが、いかがなさいますか？";
-                        fHtml = "あれっ、もうお<ruby>帰<rt>かえ</rt></ruby>りですか？まだご<ruby>注文<rt>ちゅうもん</rt></ruby>の<ruby>途中<rt>とちゅう</rt></ruby>ですが、いかがなさいますか？";
+                        ja = PickByJlpt(
+                            levelConfig.JLPTLevel,
+                            "あれっ、もうお帰りですか？まだ注文の途中ですが、どうしますか？",
+                            "あれっ、もうお帰りですか？まだご注文の途中ですが、どうしますか？",
+                            "あれっ、もうお帰りですか？まだご注文の途中ですが、いかがなさいますか？");
+                        fHtml = RoleplaySocialRegister.GenerateFuriganaHtml(ja);
                         vi = $"Ơ, {reg.AiAddressLearner} về luôn rồi sao ạ? Vẫn đang trong lúc gọi món mà, {reg.AiAddressLearner} có muốn tiếp tục không ạ?";
                     }
                     else
@@ -1273,6 +1356,29 @@ Return strictly pure JSON matching this schema:
                         feedback.Summary = "Kết thúc cuộc trò chuyện quá sớm";
                         feedback.NaturalAlternative = isDiningScenario ? "まだ注文したいです。" : "すみません、もう少し続けたいです。";
                     }
+                }
+
+                // 9. Post-LLM AI Output Guards: Anti-Role-Reversal, N5 Keigo Softener & Inline Reading Cleaner
+                (ja, fHtml, vi) = ApplyAiReplyGuards(
+                    ja, fHtml, vi, reg, scenario.Id, levelConfig.JLPTLevel, _logger);
+
+                if (!string.IsNullOrWhiteSpace(feedback?.NaturalAlternative))
+                {
+                    var cleanAlt = Regex.Replace(
+                        feedback.NaturalAlternative,
+                        @"（[ぁ-んァ-ヶー]{1,12}）",
+                        string.Empty).Trim();
+                    cleanAlt = cleanAlt.Replace("おお手洗い", "お手洗い", StringComparison.Ordinal);
+                    feedback.NaturalAlternative = cleanAlt;
+                }
+
+                if (!string.IsNullOrWhiteSpace(vi) && char.IsLower(vi[0]))
+                {
+                    vi = char.ToUpper(vi[0]) + vi[1..];
+                }
+                if (!string.IsNullOrWhiteSpace(userVi) && char.IsLower(userVi[0]))
+                {
+                    userVi = char.ToUpper(userVi[0]) + userVi[1..];
                 }
 
                 if (pendingMissions.Count > 0 && pendingMissions.All(m => completedIds.Contains(m.Id)))
@@ -1401,6 +1507,12 @@ Return strictly pure JSON:
         sb.AppendLine($"- Role/Persona: {levelConfig.AiPersona}");
         sb.AppendLine($"- Context: {levelConfig.Description}");
         sb.AppendLine($"- Target JLPT Level: {levelConfig.JLPTLevel}");
+        sb.AppendLine("[STRICT ROLE BOUNDARY & ANTI-ROLE-REVERSAL]");
+        sb.AppendLine($"- YOUR ROLE ONLY: You are exclusively '{levelConfig.AiPersona}'. The human user is the LEARNER playing the counterpart role.");
+        sb.AppendLine("- NEVER reverse roles or speak/ask questions that belong to the learner's role (e.g., if you are shop/station/cafe staff, NEVER ask the customer 'いくらですか？', 'メニューを見せてください', 'お会計をお願いします', or 'ごちそうさまでした').");
+        sb.AppendLine("- NEVER break the 4th wall: Stay 100% inside the fictional scene. Do NOT say '練習しましょう' (let's practice) or mention lessons/missions unless your persona is explicitly a teacher/mentor.");
+        sb.AppendLine("- NEVER hallucinate or pre-assume orders: NEVER assume the learner ordered an item from the target vocabulary list (e.g., never assume 'アイスカフェラテ' when they only said 'コーヒー' or asked for the menu).");
+        sb.AppendLine("- ALWAYS answer the learner's direct question FIRST (price, restroom location, menu, Suica purchase steps, etc.) before politely moving the conversation forward.");
         sb.AppendLine("[VIETNAMESE PRONOUN & SOCIAL REGISTER (VAI VẾ XƯNG HÔ) - STRICT ZERO-SLASH & ADAPTIVE RULES]");
         sb.AppendLine($"- Baseline Register Suggestion: {reg.RegisterDescription}");
         sb.AppendLine($"- Suggested Baseline: Learner = '{reg.LearnerSelf}' addressing '{reg.LearnerAddressAi}'; AI Persona = '{reg.AiSelf}' addressing '{reg.AiAddressLearner}'.");
@@ -1409,7 +1521,7 @@ Return strictly pure JSON:
         sb.AppendLine("- CONSISTENCY: Maintain that chosen pronoun pair consistently across all Vietnamese fields (userVietnameseMeaning, replyVietnamese, and linguisticFeedback).");
         if (levelConfig.TargetVocabularies?.Count > 0)
         {
-            sb.AppendLine("[SCENARIO TARGET VOCABULARIES TO REINFORCE]");
+            sb.AppendLine("[LEARNER TARGET VOCABULARIES (FOR EVALUATING LEARNER ONLY — NEVER ASSUME UNORDERED ITEMS FROM THIS LIST)]");
             foreach (var v in levelConfig.TargetVocabularies)
             {
                 sb.AppendLine($"- {v.Word}{(string.IsNullOrWhiteSpace(v.Reading) ? "" : $" ({v.Reading})")}: {v.Meaning}");
@@ -1417,7 +1529,7 @@ Return strictly pure JSON:
         }
         if (levelConfig.TargetGrammars?.Count > 0)
         {
-            sb.AppendLine("[SCENARIO TARGET GRAMMAR PATTERNS TO REINFORCE]");
+            sb.AppendLine("[LEARNER TARGET GRAMMAR PATTERNS (FOR EVALUATING LEARNER ONLY — NEVER SPEAK LEARNER QUESTIONS AS AI)]");
             foreach (var g in levelConfig.TargetGrammars)
             {
                 sb.AppendLine($"- {g.Pattern}: {g.Meaning}{(string.IsNullOrWhiteSpace(g.ExampleSentence) ? "" : $" (VD: {g.ExampleSentence})")}");
@@ -1575,6 +1687,126 @@ Return strictly pure JSON:
         }
 
         return feedback;
+    }
+
+    private static (string ja, string? fHtml, string vi) ApplyAiReplyGuards(
+        string ja,
+        string? fHtml,
+        string vi,
+        RoleplaySocialRegister reg,
+        int scenarioId,
+        string? jlptLevel,
+        ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(ja))
+        {
+            return (ja, fHtml, vi);
+        }
+
+        // 1. Khử chú thích cách đọc trong ngoặc đơn (VD: "お手洗い（おてあらい）" hoặc "ひとつ（一枚）")
+        var cleanedJa = Regex.Replace(ja, @"（[ぁ-んァ-ヶー]{1,12}）", string.Empty);
+        cleanedJa = Regex.Replace(cleanedJa, @"ひとつ（一枚）", "一枚");
+        if (!string.Equals(cleanedJa, ja, StringComparison.Ordinal))
+        {
+            ja = cleanedJa;
+            fHtml = null;
+        }
+
+        // 2. Chống đảo vai cho nhân vật nhân viên dịch vụ (không hỏi ngược khách giá tiền, gọi thanh toán hoặc cảm ơn ăn xong)
+        if (reg.RegisterType == SocialRegisterType.ServiceStaff)
+        {
+            var unquoted = Regex.Replace(ja, @"「[^」]*」", string.Empty);
+            if (Regex.IsMatch(unquoted, @"(いくらですか|いくらでしょうか|値段はいくら|お会計をお願い|ごちそうさまでした)"))
+            {
+                logger.LogWarning(
+                    "Post-LLM Role-Reversal Guard triggered for Scenario {ScenarioId} ({Level}): {RawReply}",
+                    scenarioId,
+                    jlptLevel,
+                    ja);
+                ja = PickByJlpt(
+                    jlptLevel,
+                    "わかりました！他に何かありますか？",
+                    "わかりました。他にご注文やご質問はありますか？",
+                    "かしこまりました。他にご注文やご不明な点はございますか？");
+                fHtml = RoleplaySocialRegister.GenerateFuriganaHtml(ja);
+                vi = $"Dạ vâng, {reg.AiSelf} đã rõ. {reg.AiAddressLearner} còn muốn hỏi hoặc gọi thêm gì nữa không ạ?";
+                return (ja, fHtml, vi);
+            }
+        }
+
+        // 3. Làm mềm kính ngữ N3-N1 nếu kịch bản đang ở cấp độ N5 (và kính ngữ N1/N2 quá nặng ở N4)
+        var normLevel = (jlptLevel ?? "N5").Trim().ToUpperInvariant();
+        if (normLevel == "N5")
+        {
+            var softened = SoftenN5Keigo(ja);
+            if (!string.Equals(softened, ja, StringComparison.Ordinal))
+            {
+                ja = softened;
+                fHtml = null;
+            }
+        }
+        else if (normLevel == "N4")
+        {
+            var softenedN4 = ja
+                .Replace("恐れ入りますが、", "すみません、", StringComparison.Ordinal)
+                .Replace("恐れ入りますが", "すみません、", StringComparison.Ordinal)
+                .Replace("販売はしておりません", "販売していません", StringComparison.Ordinal)
+                .Replace("ご案内いたします", "ご案内します", StringComparison.Ordinal);
+            if (!string.Equals(softenedN4, ja, StringComparison.Ordinal))
+            {
+                ja = softenedN4;
+                fHtml = null;
+            }
+        }
+
+        return (ja, fHtml, vi);
+    }
+
+    private static string SoftenN5Keigo(string ja)
+    {
+        var replacements = new (string From, string To)[]
+        {
+            ("大変申し訳ございません。", "すみません。"),
+            ("大変申し訳ございません、", "すみません、"),
+            ("大変申し訳ございません", "すみません"),
+            ("申し訳ございません。", "すみません。"),
+            ("申し訳ございません、", "すみません、"),
+            ("申し訳ございません", "すみません"),
+            ("恐れ入りますが、", "すみません、"),
+            ("恐れ入りますが", "すみません、"),
+            ("恐れ入ります、", "すみません、"),
+            ("失礼いたしました。", "すみません。"),
+            ("失礼いたしました", "すみません"),
+            ("承知いたしました", "わかりました"),
+            ("ご案内いたしますので、", "席へ案内します。"),
+            ("ご案内いたします", "案内します"),
+            ("教えていただけますでしょうか", "教えてください"),
+            ("お話しいただけますでしょうか", "話してください"),
+            ("お選びいただけますでしょうか", "選んでください"),
+            ("お聞かせいただけますでしょうか", "教えてください"),
+            ("またお越しくださいませ", "また来てくださいね"),
+            ("どうぞご利用ください", "どうぞ使ってください"),
+            ("何のサイズになさいますか", "サイズはどれにしますか"),
+            ("いかがなさいますか", "どうしますか"),
+            ("どうなさいますか", "どうしますか"),
+            ("になさいますか", "にしますか"),
+            ("お伺いします", "聞きます"),
+            ("お作りします", "作ります"),
+            ("店内でのお召し上がり", "店内"),
+            ("お召し上がり", "食べます"),
+            ("ご用意もございます", "もあります"),
+            ("もございます", "もあります"),
+            ("でございます", "です"),
+            ("ございます", "あります"),
+            ("かしこまりました", "わかりました")
+        };
+
+        var result = ja;
+        foreach (var (from, to) in replacements)
+        {
+            result = result.Replace(from, to, StringComparison.Ordinal);
+        }
+        return result;
     }
 
     private static string PickByJlpt(string? jlptLevel, string n5, string n4, string n3)

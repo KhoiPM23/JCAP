@@ -362,6 +362,36 @@ public sealed record RoleplaySocialRegister
             return $"Yêu cầu về độ ngọt của {reg.LearnerSelf} gửi đến {reg.LearnerAddressAi}.";
         }
 
+        if (lower.Contains("おすすめ"))
+        {
+            return "Món gợi ý của quán là gì vậy ạ?";
+        }
+
+        if (lower.Contains("メニュー"))
+        {
+            return "Cho tôi xem thực đơn được không ạ?";
+        }
+
+        if (Regex.IsMatch(lower, @"^(すみません[、,\s]*|あの[、,\s]*)?(これ|それ|あれ)(を)?(ください|おねがいします|お願いします)?[\.!?。！？\s]*$"))
+        {
+            return $"Cho {reg.LearnerSelf} cái này ạ.";
+        }
+
+        if (Regex.IsMatch(lower, @"^(すみません[、,\s]*|あの[、,\s]*)?(ひとつ|1つ)(を)?(ください|おねがいします|お願いします)?[\.!?。！？\s]*$"))
+        {
+            return $"Cho {reg.LearnerSelf} một phần ạ.";
+        }
+
+        if (Regex.IsMatch(lower, @"^(はい|ええ|うん)[\.!?。！？\s]*$"))
+        {
+            return "Vâng ạ.";
+        }
+
+        if (lower.Contains("ラーメン"))
+        {
+            return $"Cho {reg.LearnerSelf} gọi mì ramen ạ.";
+        }
+
         return $"Lời thoại của bạn gửi đến {reg.LearnerAddressAi}.";
     }
 
@@ -388,12 +418,49 @@ public sealed record RoleplaySocialRegister
             }
 
             case SocialRegisterType.ServiceStaff:
+            {
+                var ctx = $"{scenario.Title} {levelConfig.AiPersona} {levelConfig.Description}".ToLowerInvariant();
+                if (ctx.Contains("ga") || ctx.Contains("tàu") || ctx.Contains("station") || ctx.Contains("駅") || ctx.Contains("切符") || ctx.Contains("案内係") || ctx.Contains("駅長"))
+                {
+                    string ja = jlpt == "N5"
+                        ? "こんにちは！何かお手伝いしましょうか？"
+                        : "こんにちは。何かお手伝いしましょうか？";
+                    var aiSelfCap = string.IsNullOrEmpty(reg.AiSelf) ? "Tôi" : char.ToUpper(reg.AiSelf[0]) + reg.AiSelf[1..];
+                    return new AiOpeningMessageResult
+                    {
+                        JapaneseText = ja,
+                        FuriganaHtml = GenerateFuriganaHtml(ja),
+                        VietnameseMeaning = $"Xin chào {reg.AiAddressLearner}! {aiSelfCap} có thể giúp gì cho {reg.AiAddressLearner} ạ?"
+                    };
+                }
+                if (ctx.Contains("tiện lợi") || ctx.Contains("konbini") || ctx.Contains("コンビニ") || ctx.Contains("siêu thị"))
+                {
+                    return new AiOpeningMessageResult
+                    {
+                        JapaneseText = "いらっしゃいませ！",
+                        FuriganaHtml = "いらっしゃいませ！",
+                        VietnameseMeaning = $"Kính chào {reg.AiAddressLearner}!"
+                    };
+                }
+                if (ctx.Contains("cafe") || ctx.Contains("cà phê") || ctx.Contains("カフェ") || ctx.Contains("đồ uống"))
+                {
+                    string ja = jlpt == "N5"
+                        ? "いらっしゃいませ！ご注文は何にしますか？"
+                        : "いらっしゃいませ！ご注文はお決まりですか？";
+                    return new AiOpeningMessageResult
+                    {
+                        JapaneseText = ja,
+                        FuriganaHtml = GenerateFuriganaHtml(ja),
+                        VietnameseMeaning = $"Kính chào {reg.AiAddressLearner}! {reg.AiAddressLearner} muốn gọi món gì ạ?"
+                    };
+                }
                 return new AiOpeningMessageResult
                 {
                     JapaneseText = "いらっしゃいませ！何名様ですか？",
                     FuriganaHtml = "いらっしゃいませ！<ruby>何名様<rt>なんめいさま</rt></ruby>ですか？",
                     VietnameseMeaning = $"Kính chào {reg.AiAddressLearner}! {reg.AiAddressLearner} đi mấy người ạ?"
                 };
+            }
 
             case SocialRegisterType.Interviewer:
             {
@@ -515,7 +582,7 @@ public sealed record RoleplaySocialRegister
                 });
             }
 
-            if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("order") || criteria.Contains("gọi món"))
+            if (criteria.Contains("price") || criteria.Contains("giá"))
             {
                 return EnrichScaffolding(new RoleplayHintDto
                 {
@@ -523,6 +590,38 @@ public sealed record RoleplaySocialRegister
                     RomajiOrReading = "Sumimasen, kore wa ikura desu ka?",
                     VietnameseMeaning = "Xin lỗi, món này bao nhiêu tiền vậy ạ?",
                     ContextExplanation = "Hỏi giá tiền một cách lịch sự bằng thể Desu ka."
+                });
+            }
+
+            if (criteria.Contains("order") || criteria.Contains("gọi món") || criteria.Contains("gọi "))
+            {
+                var ctx = $"{title} {persona} {desc}".ToLowerInvariant();
+                if (ctx.Contains("ramen") || ctx.Contains("mì"))
+                {
+                    return EnrichScaffolding(new RoleplayHintDto
+                    {
+                        JapaneseSuggestion = "すみません、豚骨ラーメンをお願いします。",
+                        RomajiOrReading = "Sumimasen, tonkotsu raamen wo onegaishimasu.",
+                        VietnameseMeaning = "Xin lỗi, cho tôi gọi một bát mì Tonkotsu Ramen ạ.",
+                        ContextExplanation = "Gọi món ăn cụ thể bằng mẫu ～をお願いします."
+                    });
+                }
+                if (ctx.Contains("cafe") || ctx.Contains("cà phê"))
+                {
+                    return EnrichScaffolding(new RoleplayHintDto
+                    {
+                        JapaneseSuggestion = "すみません、アイスコーヒーをお願いします。",
+                        RomajiOrReading = "Sumimasen, aisu koohii wo onegaishimasu.",
+                        VietnameseMeaning = "Xin lỗi, cho tôi một ly cà phê đá ạ.",
+                        ContextExplanation = "Gọi đồ uống lịch sự bằng mẫu ～をお願いします."
+                    });
+                }
+                return EnrichScaffolding(new RoleplayHintDto
+                {
+                    JapaneseSuggestion = "すみません、これをお願いします。",
+                    RomajiOrReading = "Sumimasen, kore wo onegaishimasu.",
+                    VietnameseMeaning = "Xin lỗi, cho tôi cái này ạ.",
+                    ContextExplanation = "Yêu cầu gọi món hoặc chọn sản phẩm lịch sự."
                 });
             }
         }
@@ -537,6 +636,12 @@ public sealed record RoleplaySocialRegister
         return EnrichScaffolding(defaultHint);
     }
 
+    private static readonly HashSet<string> ProtectedHintPhrases = new(StringComparer.Ordinal)
+    {
+        "すみません", "お願いします", "おねがいします", "ありがとうございます", "ありがとうございました",
+        "ごちそうさま", "ごちそうさまでした", "ください", "美味しかった", "おいしかった", "美味しい", "おいしい", "大丈夫"
+    };
+
     /// <summary>
     /// Bổ sung tự động danh sách từ khóa (Tier 1) và mẫu câu điền khuyết (Tier 2) cho giàn giáo thích ứng
     /// </summary>
@@ -544,6 +649,10 @@ public sealed record RoleplaySocialRegister
     {
         if (string.IsNullOrWhiteSpace(word)) return string.Empty;
         var clean = word.Trim();
+        if (ProtectedHintPhrases.Contains(clean))
+        {
+            return clean;
+        }
         clean = Regex.Replace(clean, @"(ですか|でしょうか|でした|ました|ません|ます|です|だ|か|ね|よ|を|に|は|が|で|と|の)$", "").Trim();
         return clean;
     }
@@ -561,7 +670,8 @@ public sealed record RoleplaySocialRegister
             var standardLexicon = new[]
             {
                 "豚骨ラーメン", "とんこつラーメン", "ラーメン", "カウンター席", "テーブル席",
-                "味濃いめ", "濃いめ", "辛め", "かため",
+                "ごちそうさまでした", "ごちそうさま", "ありがとうございます", "ありがとうございました",
+                "味濃いめ", "濃いめ", "辛め", "かため", "美味しかった", "おいしかった", "美味しい", "おいしい",
                 "おすすめ", "いくら", "お水", "水", "メニュー",
                 "一つ", "二つ", "三つ", "1つ", "2つ", "一人", "二人", "1人", "2人", "何名", "何人",
                 "お願いします", "おねがいします", "ください", "すみません"
@@ -690,13 +800,22 @@ public sealed record RoleplaySocialRegister
         string userMessage)
     {
         var reg = Deduce(scenario?.Title, levelConfig?.AiPersona, levelConfig?.Description);
-        string jaText = "すみません、ここは日本ですので、日本語でお話しいただけますか？";
+        var jlpt = (levelConfig?.JLPTLevel ?? "N5").Trim().ToUpperInvariant();
+        string jaText = jlpt == "N5"
+            ? "すみません、日本語で話してください。"
+            : jlpt == "N4"
+                ? "すみません、日本語でお話しください。"
+                : "すみません、ここは日本ですので、日本語でお話しいただけますか？";
         string viMeaning = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói lại bằng tiếng Nhật được không ạ?";
 
         if (reg.RegisterType == SocialRegisterType.ServiceStaff)
         {
-            jaText = "恐れ入ります、日本語でお話しいただけますでしょうか。ご注文やご用件をお伺いします。";
-            viMeaning = $"Kính xin {reg.AiAddressLearner} vui lòng dùng tiếng Nhật ạ. {reg.AiSelf} xin phép được lắng nghe yêu cầu của quý khách.";
+            jaText = jlpt == "N5"
+                ? "すみません、日本語で話してください。注文は何ですか？"
+                : jlpt == "N4"
+                    ? "すみません、日本語でお話しください。ご注文は何ですか？"
+                    : "恐れ入ります、日本語でお話しいただけますでしょうか。ご注文やご用件をお伺いします。";
+            viMeaning = $"Kính xin {reg.AiAddressLearner} vui lòng dùng tiếng Nhật ạ. {reg.AiSelf} xin phép được lắng nghe yêu cầu của {reg.AiAddressLearner}.";
         }
         else if (reg.RegisterType == SocialRegisterType.Elderly)
         {
@@ -847,21 +966,22 @@ public sealed record RoleplaySocialRegister
                 {
                     isMatched = lowerMsg.Contains("手伝") || lowerMsg.Contains("てつだ") || lowerMsg.Contains("助け") || lowerMsg.Contains("一緒") || lowerMsg.Contains("渡") || lowerMsg.Contains("大丈夫") || lowerMsg.Contains("喜んで");
                 }
-                else if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction") || criteria.Contains("đâu") || criteria.Contains("hỏi"))
+                else if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("tiền"))
+                {
+                    isMatched = lowerMsg.Contains("いくら") || lowerMsg.Contains("円") || lowerMsg.Contains("値段");
+                }
+                else if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction") || criteria.Contains("đâu"))
                 {
                     isMatched = lowerMsg.Contains("どちら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("行") || lowerMsg.Contains("向こう") || lowerMsg.Contains("病院") || lowerMsg.Contains("駅") || lowerMsg.Contains("方向") || lowerMsg.Contains("ですか") || lowerMsg.Contains("なん");
                 }
-                else if (criteria.Contains("order") || criteria.Contains("ramen") || criteria.Contains("gọi món") || criteria.Contains("món"))
+                else if (criteria.Contains("order") || criteria.Contains("gọi món") || criteria.Contains("gọi ") || criteria.Contains("món"))
                 {
-                    isMatched = lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("豚骨") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("お願い") || lowerMsg.Contains("ください") || lowerMsg.Contains("一杯") || lowerMsg.Contains("注文");
+                    isMatched = !criteria.Contains("giá") && !criteria.Contains("price") && !criteria.Contains("thanh toán")
+                        && (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("豚骨") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("お願い") || lowerMsg.Contains("ください") || lowerMsg.Contains("一杯") || lowerMsg.Contains("注文") || lowerMsg.Contains("にします"));
                 }
                 else if (criteria.Contains("độ cứng") || criteria.Contains("khẩu vị") || criteria.Contains("nước dùng") || criteria.Contains("hardness") || criteria.Contains("flavor"))
                 {
                     isMatched = lowerMsg.Contains("硬め") || lowerMsg.Contains("かため") || lowerMsg.Contains("固め") || lowerMsg.Contains("濃いめ") || lowerMsg.Contains("こいめ") || lowerMsg.Contains("普通") || lowerMsg.Contains("ふつう") || lowerMsg.Contains("薄め") || lowerMsg.Contains("辛め");
-                }
-                else if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("tiền"))
-                {
-                    isMatched = lowerMsg.Contains("いくら") || lowerMsg.Contains("円") || lowerMsg.Contains("値段");
                 }
                 else if (criteria.Contains("ngày") || criteria.Contains("tuần") || criteria.Contains("ca") || criteria.Contains("shift") || criteria.Contains("thời gian"))
                 {
@@ -943,22 +1063,33 @@ public sealed record RoleplaySocialRegister
             }
             else if (reg.RegisterType == SocialRegisterType.ServiceStaff)
             {
+                var simJlpt = (levelConfig?.JLPTLevel ?? "N5").Trim().ToUpperInvariant();
                 if (lowerMsg.Contains("いくら") || lowerMsg.Contains("値段"))
                 {
-                    jaReply = "こちらは一杯850円でございます。";
-                    fHtmlReply = "こちらは<ruby>一杯<rt>いっぱい</rt></ruby>850<ruby>円<rt>えん</rt></ruby>でございます。";
+                    jaReply = simJlpt == "N5"
+                        ? "ラーメンは850円です。"
+                        : "こちらは一杯850円でございます。";
+                    fHtmlReply = GenerateFuriganaHtml(jaReply);
                     viMeaning = $"Dạ món này có giá là 850 yên ạ.";
                 }
                 else if (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("注文") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("ください"))
                 {
-                    jaReply = "かしこまりました！ご注文内容を確かに承りました。少々お待ちくださいませ。他にご注文はございますか？";
-                    fHtmlReply = "かしこまりました！ご<ruby>注文内容<rt>ちゅうもんないよう</rt></ruby>を<ruby>確<rt>たし</rt></ruby>かに<ruby>承<rt>うけたまわ</rt></ruby>りました。<ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ちくださいませ。<ruby>他<rt>ほか</rt></ruby>にご<ruby>注文<rt>ちゅうもん</rt></ruby>はございますか？";
-                    viMeaning = $"Dạ {reg.AiSelf} đã ghi nhận yêu cầu của {reg.AiAddressLearner}. Xin {reg.AiAddressLearner} vui lòng đợi một lát. {reg.AiAddressLearner} còn muốn gọi thêm gì nữa không ạ?";
+                    jaReply = simJlpt == "N5"
+                        ? "わかりました！少々お待ちください。"
+                        : simJlpt == "N4"
+                            ? "わかりました！少々お待ちください。他にご注文はありますか？"
+                            : "かしこまりました！ご注文内容を確かに承りました。少々お待ちくださいませ。他にご注文はございますか？";
+                    fHtmlReply = GenerateFuriganaHtml(jaReply);
+                    viMeaning = $"Dạ {reg.AiSelf} đã ghi nhận yêu cầu của {reg.AiAddressLearner}. Xin {reg.AiAddressLearner} vui lòng đợi một lát.";
                 }
                 else
                 {
-                    jaReply = "はい、かしこまりました。他にご要望がございましたらお申し付けください。";
-                    fHtmlReply = "はい、かしこまりました。<ruby>他<rt>ほか</rt></ruby>にご<ruby>要望<rt>ようぼう</rt></ruby>がございましたらお<ruby>申<rt>もう</rt></ruby>し<ruby>付<rt>つ</rt></ruby>けください。";
+                    jaReply = simJlpt == "N5"
+                        ? "はい、わかりました。他に何かありますか？"
+                        : simJlpt == "N4"
+                            ? "はい、わかりました。他に何かご質問はありますか？"
+                            : "はい、かしこまりました。他にご要望がございましたらお申し付けください。";
+                    fHtmlReply = GenerateFuriganaHtml(jaReply);
                     viMeaning = $"Dạ vâng {reg.AiSelf} đã hiểu rõ. Nếu {reg.AiAddressLearner} có thêm yêu cầu gì xin vui lòng cứ bảo {reg.AiSelf} nhé.";
                 }
             }
@@ -1096,6 +1227,40 @@ public sealed record RoleplaySocialRegister
             ("来ます", "<ruby>来<rt>き</rt></ruby>ます"),
             ("行きます", "<ruby>行<rt>い</rt></ruby>きます"),
             ("大丈夫", "<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>"),
+            ("恐れ入ります", "<ruby>恐<rt>おそ</rt></ruby>れ<ruby>入<rt>い</rt></ruby>ります"),
+            ("恐れ入り", "<ruby>恐<rt>おそ</rt></ruby>れ<ruby>入<rt>い</rt></ruby>り"),
+            ("ご案内", "ご<ruby>案内<rt>あんない</rt></ruby>"),
+            ("案内", "<ruby>案内<rt>あんない</rt></ruby>"),
+            ("ご利用", "ご<ruby>利用<rt>りよう</rt></ruby>"),
+            ("利用", "<ruby>利用<rt>りよう</rt></ruby>"),
+            ("ご購入", "ご<ruby>購入<rt>こうにゅう</rt></ruby>"),
+            ("購入", "<ruby>購入<rt>こうにゅう</rt></ruby>"),
+            ("ご希望", "ご<ruby>希望<rt>きぼう</rt></ruby>"),
+            ("希望", "<ruby>希望<rt>きぼう</rt></ruby>"),
+            ("お決まり", "お<ruby>決<rt>き</rt></ruby>まり"),
+            ("決まり", "<ruby>決<rt>き</rt></ruby>まり"),
+            ("お回り", "お<ruby>回<rt>まわ</rt></ruby>り"),
+            ("回り", "<ruby>回<rt>まわ</rt></ruby>り"),
+            ("美味しい", "<ruby>美味<rt>おい</rt></ruby>しい"),
+            ("美味", "<ruby>美味<rt>おい</rt></ruby>"),
+            ("当店", "<ruby>当店<rt>とうてん</rt></ruby>"),
+            ("特製", "<ruby>特製<rt>とくせい</rt></ruby>"),
+            ("一枚", "<ruby>一枚<rt>いちまい</rt></ruby>"),
+            ("行き先", "<ruby>行<rt>い</rt></ruby>き<ruby>先<rt>さき</rt></ruby>"),
+            ("駅名", "<ruby>駅名<rt>えきめい</rt></ruby>"),
+            ("上がって", "<ruby>上<rt>あ</rt></ruby>がって"),
+            ("番号", "<ruby>番号<rt>ばんごう</rt></ruby>"),
+            ("番ホーム", "<ruby>番<rt>ばん</rt></ruby>ホーム"),
+            ("店内", "<ruby>店内<rt>てんない</rt></ruby>"),
+            ("持ち帰り", "<ruby>持<rt>も</rt></ruby>ち<ruby>帰<rt>かえ</rt></ruby>り"),
+            ("少々", "<ruby>少々<rt>しょうしょう</rt></ruby>"),
+            ("教えて", "<ruby>教<rt>おし</rt></ruby>えて"),
+            ("教え", "<ruby>教<rt>おし</rt></ruby>え"),
+            ("失礼", "<ruby>失礼<rt>しつれい</rt></ruby>"),
+            ("お越し", "お<ruby>越<rt>こ</rt></ruby>し"),
+            ("ご用意", "ご<ruby>用意<rt>ようい</rt></ruby>"),
+            ("用意", "<ruby>用意<rt>ようい</rt></ruby>"),
+            ("緑茶", "<ruby>緑茶<rt>りょくちゃ</rt></ruby>"),
             ("お会計", "お<ruby>会計<rt>かいけい</rt></ruby>"),
             ("お勘定", "お<ruby>勘定<rt>かんじょう</rt></ruby>"),
             ("お待ち", "お<ruby>待<rt>ま</rt></ruby>ち"),
@@ -1555,7 +1720,10 @@ public sealed record RoleplaySocialRegister
             return $"{prefix}<ruby>{baseText}<rt>{rtText}</rt></ruby>{suffix}";
         });
 
-        // 3. Quét lại loại bỏ khoảng trắng phát sinh xung quanh thẻ ruby
+        // 3. Quét lại loại bỏ khoảng trắng phát sinh xung quanh thẻ ruby và sửa các cụm tách ruby hỏng thường gặp
+        cleaned = cleaned
+            .Replace("<ruby>大丈<rt>だいじょう</rt></ruby>夫", "<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>", StringComparison.Ordinal)
+            .Replace("<ruby>少<rt>しょう</rt></ruby>々", "<ruby>少々<rt>しょうしょう</rt></ruby>", StringComparison.Ordinal);
         cleaned = JapaneseSpaceRegex.Replace(cleaned, "");
         return cleaned;
     }

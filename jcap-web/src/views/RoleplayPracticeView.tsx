@@ -453,10 +453,13 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const [isPlayingAlternativeAudio, setIsPlayingAlternativeAudio] = useState(false);
 
 
+  const syncedPeekSessionIdRef = useRef<number | string | null>(null);
   // Đồng bộ số lần đã dùng gợi ý và xem bản dịch trong phiên từ Backend DTO hoặc lịch sử tin nhắn
   useEffect(() => {
     if (session) {
       const currentSessionId = session.id || session.sessionId || sessionId;
+      const isSameSession = syncedPeekSessionIdRef.current === currentSessionId;
+      syncedPeekSessionIdRef.current = currentSessionId ?? null;
       const isUserMsg = (sender?: string) => {
         const s = (sender || '').toLowerCase().trim();
         return s === 'user' || s === 'learner' || s === 'me';
@@ -488,8 +491,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       setSessionHintOffersCount(initialOffers);
 
       const priorPeeks = session.totalTranslationPeeksUsed || 0;
-      sessionTranslationPeeksUsedRef.current = priorPeeks;
-      setSessionTranslationPeeksUsed(priorPeeks);
+      const nextPeeks = isSameSession
+        ? Math.max(sessionTranslationPeeksUsedRef.current, priorPeeks)
+        : priorPeeks;
+      sessionTranslationPeeksUsedRef.current = nextPeeks;
+      setSessionTranslationPeeksUsed(nextPeeks);
     }
   }, [session?.id, session?.sessionId, sessionId, session?.totalHintTurnsUsed, session?.totalTranslationPeeksUsed, session?.messages]);
 

@@ -716,7 +716,8 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                   {[...cfg.missions]
                     .sort((a, b) => a.order - b.order)
                     .map((m, idx, arr) => {
-                      const isCompleted = Boolean(active && (active.completedMissionsCount ?? 0) > idx);
+                      const isActiveSameLevel = Boolean(active && activeLevel === cfg.jlptLevel);
+                      const isCompleted = Boolean(isActiveSameLevel && (active?.completedMissionsCount ?? 0) > idx);
                       const hasNext = idx < arr.length - 1;
                       return (
                         <div
@@ -880,14 +881,23 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               <Badge tone="success">Tiếp tục</Badge>
             </div>
           ) : (
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-sumi-muted">{`Chi phí cấp ${cfg.jlptLevel}:`}</span>
-              <div className="flex items-center gap-2">
-                <CreditBadge amount={cost} variant="cost" low={credit < cost} />
-                <span className="text-[11px] text-sumi-faint font-mono">
-                  (còn {Math.max(0, credit - cost).toLocaleString('vi-VN')})
+            <div className="flex flex-col gap-0.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-sumi-muted">
+                  {cost === 0 ? `Khởi tạo cấp ${cfg.jlptLevel}:` : `Chi phí cấp ${cfg.jlptLevel}:`}
                 </span>
+                <div className="flex items-center gap-2">
+                  <CreditBadge amount={cost} variant="cost" low={credit < cost} />
+                  <span className="text-[11px] text-sumi-faint font-mono">
+                    (còn {Math.max(0, credit - cost).toLocaleString('vi-VN')})
+                  </span>
+                </div>
               </div>
+              {cost === 0 && (
+                <span className="text-[10px] text-sumi-muted text-right">
+                  Phiên mở miễn phí · 1–4 credit mỗi lượt hội thoại AI
+                </span>
+              )}
             </div>
           )}
 

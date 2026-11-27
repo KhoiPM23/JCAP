@@ -235,7 +235,7 @@ public class AiRoleplayServiceTests
             pendingMissions);
 
         Assert.NotNull(result);
-        Assert.Equal("はい、かしこまりました。", result.JapaneseReply);
+        Assert.Equal("はい、わかりました。", result.JapaneseReply);
         Assert.Equal("Vâng, tôi đã rõ ạ.", result.VietnameseMeaning);
         Assert.Contains(1, result.CompletedMissionIds);
         Assert.NotNull(result.LinguisticFeedback);
@@ -855,7 +855,8 @@ public class AiRoleplayServiceTests
 
         Assert.NotNull(result);
         Assert.Empty(result.CompletedMissionIds);
-        Assert.Contains("どうなさいますか", result.JapaneseReply);
+        Assert.Contains("どうしますか", result.JapaneseReply);
+        Assert.DoesNotContain("なさいます", result.JapaneseReply);
         Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Warning", result.LinguisticFeedback.Status);
         Assert.Contains("chưa hoàn chỉnh", result.LinguisticFeedback.Summary);
@@ -1259,5 +1260,223 @@ public class AiRoleplayServiceTests
         var openingResult = await foreignService.GenerateOpeningMessageAsync(scenario, levelConfig);
         Assert.Equal("いらっしゃいませ！何名様ですか？", RoleplaySocialRegister.StripRubyTags(openingResult.FuriganaHtml));
         Assert.Contains("<ruby>何名様<rt>なんめいさま</rt></ruby>", openingResult.FuriganaHtml);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_ServiceStaffRoleReversal_InterceptsPriceQuestionAtN5()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""userVietnameseMeaning"": ""Vâng, cho tôi gọi mì Tonkotsu Ramen ạ."",
+                ""replyJapanese"": ""かしこまりました。ラーメンはいくらですか？"",
+                ""replyVietnamese"": ""Vâng, tô mì giá bao nhiêu ạ?"",
+                ""completedMissionIds"": [1],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Good"", ""summary"": ""Tốt"", ""details"": [] }
+            }"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Id = 1, Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì - 店員" };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Gọi 1 bát Tonkotsu Ramen", CompletionCriteriaJson = "{}" },
+            new() { Id = 2, Order = 2, Content = "Hỏi giá tiền của bát Ramen", CompletionCriteriaJson = "{}" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, [], "はい、とんこつラーメンにします。", missions);
+
+        Assert.DoesNotContain("いくらですか", result.JapaneseReply);
+        Assert.DoesNotContain("かしこまりました", result.JapaneseReply);
+        Assert.Contains("わかりました", result.JapaneseReply);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_RamenOrder_DoesNotFalselyTickPriceMission()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""userVietnameseMeaning"": ""Tôi đi 1 người. Vâng, tôi chọn mì Tonkotsu Ramen ạ."",
+                ""replyJapanese"": ""わかりました！少々お待ちください。"",
+                ""replyVietnamese"": ""Vâng, xin đợi một chút ạ."",
+                ""completedMissionIds"": [1],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Good"", ""summary"": ""Tốt"", ""details"": [] }
+            }"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Id = 1, Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì - 店員" };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Gọi 1 bát Tonkotsu Ramen", CompletionCriteriaJson = "{}" },
+            new() { Id = 2, Order = 2, Content = "Hỏi giá tiền của bát Ramen", CompletionCriteriaJson = "{\"action\":\"Ask for price\"}" },
+            new() { Id = 3, Order = 3, Content = "Nói lời cảm ơn khi ra về", CompletionCriteriaJson = "{}" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, [], "1人です。はい、とんこつラーメンにします", missions);
+
+        Assert.Contains(1, result.CompletedMissionIds);
+        Assert.DoesNotContain(2, result.CompletedMissionIds);
+        Assert.DoesNotContain(3, result.CompletedMissionIds);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_N5ReplyWithHeavyKeigo_SoftensToN5Polite()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""userVietnameseMeaning"": ""Xin lỗi, nhà vệ sinh ở đâu vậy ạ?"",
+                ""replyJapanese"": ""トイレはあちらでございます。どうぞご利用ください。"",
+                ""replyVietnamese"": ""Nhà vệ sinh ở đằng kia ạ. Mời quý khách sử dụng."",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Good"", ""summary"": ""Tốt"", ""details"": [], ""naturalAlternative"": ""お手洗い（おてあらい）はどこですか？"" }
+            }"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Id = 1, Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì - 店員" };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, [], "すみません、トイレはどこですか？", []);
+
+        Assert.DoesNotContain("でございます", result.JapaneseReply);
+        Assert.DoesNotContain("ご利用ください", result.JapaneseReply);
+        Assert.Contains("です", result.JapaneseReply);
+        Assert.Contains("使ってください", result.JapaneseReply);
+        Assert.Equal("お手洗いはどこですか？", result.LinguisticFeedback?.NaturalAlternative);
+    }
+
+    [Fact]
+    public void EnrichScaffolding_PreservesSumimasenAndOishii()
+    {
+        var hint1 = RoleplaySocialRegister.EnrichScaffolding(new RoleplayHintDto
+        {
+            JapaneseSuggestion = "ごちそうさまでした。美味しかったです。"
+        });
+        Assert.DoesNotContain("美味し", hint1.Keywords);
+        Assert.Contains("美味しかった", hint1.Keywords);
+        Assert.Contains("ごちそうさまでした", hint1.Keywords);
+
+        var hint2 = RoleplaySocialRegister.EnrichScaffolding(new RoleplayHintDto
+        {
+            JapaneseSuggestion = "すみません、2番ホームですか？",
+            Keywords = ["すみません", "番", "ホーム"]
+        });
+        Assert.DoesNotContain("すみ", hint2.Keywords);
+        Assert.Contains("すみません", hint2.Keywords);
+    }
+
+    [Fact]
+    public void GenerateOpeningMessage_StationAndKonbini_DoesNotAskPartySize()
+    {
+        var stationScenario = new Scenario { Title = "Hỏi đường & mua vé tàu tại ga Shinjuku" };
+        var stationCfg = new ScenarioLevelConfiguration { JLPTLevel = "N4", AiPersona = "Nhân viên trung tâm thông tin ga - 案内係" };
+        var stationOpening = RoleplaySocialRegister.GenerateOpeningMessage(stationScenario, stationCfg);
+        Assert.DoesNotContain("何名様ですか", stationOpening.JapaneseText);
+
+        var konbiniScenario = new Scenario { Title = "Mua hàng tại cửa hàng tiện lợi" };
+        var konbiniCfg = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Thu ngân cửa hàng tiện lợi - コンビニ店員" };
+        var konbiniOpening = RoleplaySocialRegister.GenerateOpeningMessage(konbiniScenario, konbiniCfg);
+        Assert.DoesNotContain("何名様ですか", konbiniOpening.JapaneseText);
+    }
+
+    [Fact]
+    public void GenerateHint_OrderMission_DoesNotReturnPriceQuestion()
+    {
+        var cfg = new ScenarioLevelConfiguration
+        {
+            JLPTLevel = "N5",
+            AiPersona = "Nhân viên quán mì - 店員",
+            Scenario = new Scenario { Title = "Gọi món tại quán mì Ramen" }
+        };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Gọi 1 bát Tonkotsu Ramen", CompletionCriteriaJson = "{\"action\":\"Order Tonkotsu Ramen\"}" }
+        };
+
+        var hint = RoleplaySocialRegister.GenerateHint(cfg, missions);
+
+        Assert.DoesNotContain("いくらですか", hint.JapaneseSuggestion);
+        Assert.Contains("ラーメン", hint.JapaneseSuggestion);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_GuardrailTurn_ReturnsVietnameseUserMeaning()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì - 店員" };
+        var history = new List<RoleplayMessage>
+        {
+            new() { Sender = "Ai", JapaneseText = "いらっしゃいませ！何名様ですか？" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "おすすめは何ですか？", []);
+
+        Assert.False(string.IsNullOrWhiteSpace(result.UserVietnameseMeaning));
+        Assert.NotEqual("おすすめは何ですか？", result.UserVietnameseMeaning);
+        Assert.Contains("gợi ý", result.UserVietnameseMeaning!, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_CardQuestion_DoesNotFalselyTickSuicaMission()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""userVietnameseMeaning"": ""Cái này bao nhiêu tiền? Quẹt thẻ được không?"",
+                ""replyJapanese"": ""すみません、こちらは案内所ですので販売していません。"",
+                ""replyVietnamese"": ""Xin lỗi, đây là quầy thông tin nên không bán hàng ạ."",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Warning"", ""summary"": ""Cần dùng thể lịch sự"", ""details"": [] }
+            }"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Id = 2, Title = "Hỏi đường & mua vé tàu tại ga Shinjuku" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N4", AiPersona = "Nhân viên trung tâm thông tin ga - 案内係" };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Hỏi cách đổi tàu sang tuyến Chuo Line tàu nhanh", CompletionCriteriaJson = "{}" },
+            new() { Id = 2, Order = 2, Content = "Hỏi cách mua hoặc nạp tiền vào thẻ Suica/Pasmo", CompletionCriteriaJson = "{}" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, [], "ねえ、これいくら？カードオッケー？", missions);
+
+        Assert.DoesNotContain(2, result.CompletedMissionIds);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_N5KeigoLeakage_SoftensShouchiGozaiAndOmeshiagari()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""userVietnameseMeaning"": ""tôi không ăn cay"",
+                ""replyJapanese"": ""承知いたしました！辛さなしでお作りしますね。お茶のご用意もございます。店内でのお召し上がりですね。"",
+                ""replyVietnamese"": ""tôi đã rõ ạ!"",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Good"", ""summary"": ""Tốt"", ""details"": [], ""naturalAlternative"": ""おお手洗いはどこですか？"" }
+            }"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Id = 1, Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì - 店員" };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, [], "辛いものはだめです。", []);
+
+        Assert.DoesNotContain("承知いたしました", result.JapaneseReply);
+        Assert.DoesNotContain("お作りします", result.JapaneseReply);
+        Assert.DoesNotContain("ございます", result.JapaneseReply);
+        Assert.DoesNotContain("お召し上がり", result.JapaneseReply);
+        Assert.StartsWith("Tôi", result.VietnameseMeaning);
+        Assert.StartsWith("Tôi", result.UserVietnameseMeaning);
+        Assert.Equal("お手洗いはどこですか？", result.LinguisticFeedback?.NaturalAlternative);
     }
 }

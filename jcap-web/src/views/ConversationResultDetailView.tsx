@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -1395,7 +1395,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
       `• Từ vựng: ${result.vocabularyScore}/100`,
 
-      `• Kính ngữ & Văn phong: ${result.impressionScore}/100`,
+      `• Văn phong & Phép lịch sự: ${result.impressionScore}/100`,
 
       typeof result.fluencyScore === "number"
         ? `• Độ trôi chảy & Phản xạ: ${result.fluencyScore}/100`
@@ -2090,7 +2090,7 @@ export const ConversationResultDetailView: React.FC = () => {
                       pts: Math.round(result.vocabularyScore * 0.2),
                     },
                     {
-                      cat: "Kính ngữ & Văn phong (10%)",
+                      cat: "Văn phong & Phép lịch sự (10%)",
                       desc: `Văn phong giao tiếp phù hợp bối cảnh (${result.impressionScore}/100)`,
                       pts: Math.round(result.impressionScore * 0.1),
                     },
