@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { PracticeConfirmation } from '../../components/jcap/PracticeConfirmation';
+import { usePhoneViewport } from '../../hooks/usePhoneViewport';
 import { flashcardService } from '../../services/flashcardService';
 import { getDemoSetDetail, DEMO_VOCAB_SET, DEMO_GRAMMAR_SET } from './demoFlashcardData';
 import type { FlashcardCardItem, FlashcardContentType } from '../../types/flashcard';
@@ -111,6 +113,9 @@ export const FlashcardTestView: React.FC = () => {
 
   // Phase: 'setup' | 'testing' | 'result'
   const [phase, setPhase] = useState<'setup' | 'testing' | 'result'>('setup');
+  const mobile = usePhoneViewport();
+  const [pendingAction, setPendingAction] = useState<'submit' | 'setup' | 'exit' | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, UserAnswerRecord>>({});
   const [activeQuestionIdx, setActiveQuestionIdx] = useState<number>(0);
@@ -499,7 +504,7 @@ export const FlashcardTestView: React.FC = () => {
     setUnansweredWarning(false);
 
     // Smoothly scroll to next unanswered question if not written
-    if (autoAdvance && q.type !== 'written' && q.index < questions.length) {
+    if (!mobile && autoAdvance && q.type !== 'written' && q.index < questions.length) {
       const nextIdx = q.index; // 1-based index is next 0-based index
       setActiveQuestionIdx(nextIdx);
       setTimeout(() => {
@@ -539,7 +544,7 @@ export const FlashcardTestView: React.FC = () => {
       },
     }));
 
-    if (q.index < questions.length) {
+    if (!mobile && q.index < questions.length) {
       const nextIdx = q.index;
       setActiveQuestionIdx(nextIdx);
       setTimeout(() => {
@@ -560,7 +565,7 @@ export const FlashcardTestView: React.FC = () => {
         isSkipped: true,
       },
     }));
-    if (q.index < questions.length) {
+    if (!mobile && q.index < questions.length) {
       const nextIdx = q.index;
       setActiveQuestionIdx(nextIdx);
       setTimeout(() => {
@@ -658,6 +663,37 @@ export const FlashcardTestView: React.FC = () => {
     ? '/flashcards?tab=bookmarks'
     : `/flashcards/sets/${isDemo ? 'demo' : currentTopicId}/${currentContentType.toLowerCase()}`;
 
+  const goToQuestion = (index: number) => {
+    setActiveQuestionIdx(index);
+    const question = questionRefs.current[index];
+    if (!question) return;
+    if (!mobile) {
+      question.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    question.focus({ preventScroll: true });
+    const headerHeight = headerRef.current?.offsetHeight ?? 0;
+    window.scrollTo({ top: question.getBoundingClientRect().top + window.scrollY - headerHeight - 12 });
+  };
+
+  const requestSubmit = () => {
+    if (mobile) setPendingAction('submit');
+    else handleSubmitTest(false);
+  };
+
+  const confirmAction = () => {
+    setPendingAction(null);
+    if (pendingAction === 'submit') handleSubmitTest(true);
+    if (pendingAction === 'setup') {
+      setPhase('setup');
+      window.scrollTo({ top: 0 });
+    }
+    if (pendingAction === 'exit') navigate(backUrl);
+  };
+
+  const remainingCount = questions.length - answeredCount;
+
   const getQuestionTypeBadge = (type: QuizQuestionType) => {
     switch (type) {
       case 'true_false':
@@ -672,15 +708,21 @@ export const FlashcardTestView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F9FE] font-sans pb-16">
+    <div className="jx-flash-test min-h-screen bg-[#F4F9FE] font-sans pb-16">
       {/* ==================== TOP STICKY BAR ==================== */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <header ref={headerRef} className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
+        <div className="jx-flash-test-header max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               to={backUrl}
+              onClick={(event) => {
+                if (!mobile || phase !== 'testing') return;
+                event.preventDefault();
+                setPendingAction('exit');
+              }}
               className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition shrink-0"
               title="Quay lại bộ thẻ"
+              aria-label="Quay lại bộ thẻ"
             >
               ←
             </Link>
@@ -701,8 +743,8 @@ export const FlashcardTestView: React.FC = () => {
 
           {/* Right status / actions */}
           {phase === 'testing' && (
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700">
+            <div className="jx-flash-test-actions flex items-center gap-3 shrink-0">
+              <div className="jx-flash-test-status hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700">
                 <span>⏱️ {formatTime(elapsedSeconds)}</span>
                 <span className="text-slate-300">|</span>
                 <span className="text-blue-700">
@@ -710,13 +752,13 @@ export const FlashcardTestView: React.FC = () => {
                 </span>
               </div>
               <button
-                onClick={() => setPhase('setup')}
+                onClick={() => mobile ? setPendingAction('setup') : setPhase('setup')}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
               >
                 ⚙️ Tùy chỉnh
               </button>
               <button
-                onClick={() => handleSubmitTest(false)}
+                onClick={requestSubmit}
                 className="px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs transition cursor-pointer"
               >
                 Nộp bài ✓
@@ -725,7 +767,7 @@ export const FlashcardTestView: React.FC = () => {
           )}
 
           {phase === 'result' && (
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="jx-flash-test-actions flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setPhase('setup')}
                 className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
@@ -1102,7 +1144,7 @@ export const FlashcardTestView: React.FC = () => {
               <div className="space-y-6">
                 {/* Question Navigator Pills */}
                 <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
-                  <div className="flex items-center justify-between mb-2.5">
+                  <div className="jx-flash-question-nav-title flex items-center justify-between mb-2.5">
                     <span className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
                       Danh sách câu hỏi ({answeredCount}/{questions.length} đã trả lời)
                     </span>
@@ -1110,7 +1152,7 @@ export const FlashcardTestView: React.FC = () => {
                       Nhấn vào số câu để di chuyển nhanh
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="jx-flash-question-nav flex items-center gap-1.5 flex-wrap">
                     {questions.map((q, idx) => {
                       const rec = answers[q.id];
                       const isAnswered = rec && (rec.userAnswer.trim() !== '' || rec.isSkipped);
@@ -1129,13 +1171,9 @@ export const FlashcardTestView: React.FC = () => {
                         <button
                           key={q.id}
                           type="button"
-                          onClick={() => {
-                            setActiveQuestionIdx(idx);
-                            questionRefs.current[idx]?.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'center',
-                            });
-                          }}
+                          onClick={() => goToQuestion(idx)}
+                          aria-label={`Câu ${q.index}${isAnswered ? ', đã làm' : ', chưa làm'}`}
+                          aria-current={isCurrent ? 'step' : undefined}
                           className={`w-8 h-8 rounded-xl text-xs font-extrabold border transition cursor-pointer flex items-center justify-center ${pillStyle} ${
                             isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''
                           }`}
@@ -1148,7 +1186,7 @@ export const FlashcardTestView: React.FC = () => {
                 </div>
 
                 {/* Unanswered Warning Banner */}
-                {unansweredWarning && (
+                {!mobile && unansweredWarning && (
                   <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="text-xs text-amber-900 font-semibold">
                       ⚠️ Bạn còn <strong>{questions.length - answeredCount} câu hỏi</strong> chưa trả lời. Bạn muốn làm tiếp hay nộp bài luôn?
@@ -1176,8 +1214,12 @@ export const FlashcardTestView: React.FC = () => {
                         ref={(el) => {
                           questionRefs.current[idx] = el;
                         }}
-                        onClick={() => setActiveQuestionIdx(idx)}
-                        className={`bg-white rounded-3xl border p-6 sm:p-8 shadow-2xs transition-all space-y-6 ${
+                        onClick={mobile ? undefined : () => setActiveQuestionIdx(idx)}
+                        onFocusCapture={mobile ? () => setActiveQuestionIdx(idx) : undefined}
+                        tabIndex={mobile ? -1 : undefined}
+                        role={mobile ? 'region' : undefined}
+                        aria-label={mobile ? `Câu ${q.index}` : undefined}
+                        className={`jx-flash-question bg-white rounded-3xl border p-6 sm:p-8 shadow-2xs transition-all space-y-6 ${
                           activeQuestionIdx === idx
                             ? 'border-blue-400 ring-2 ring-blue-500/10'
                             : 'border-slate-200'
@@ -1418,7 +1460,7 @@ export const FlashcardTestView: React.FC = () => {
                                     value={rec?.userAnswer || ''}
                                     onChange={(e) => handleWrittenChange(q, e.target.value)}
                                     onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
+                                      if (e.key === 'Enter' && !e.nativeEvent.isComposing && (!mobile || e.currentTarget.value.trim())) {
                                         e.preventDefault();
                                         handleConfirmWritten(q);
                                       }
@@ -1433,6 +1475,7 @@ export const FlashcardTestView: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleConfirmWritten(q)}
+                                    disabled={mobile && !rec?.userAnswer.trim()}
                                     className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer shrink-0"
                                   >
                                     Xác nhận
@@ -1483,6 +1526,15 @@ export const FlashcardTestView: React.FC = () => {
                             </div>
                           </div>
                         )}
+                        {mobile && idx < questions.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => goToQuestion(idx + 1)}
+                            className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 bg-slate-50 cursor-pointer"
+                          >
+                            Câu tiếp theo →
+                          </button>
+                        )}
                       </div>
                     );
                   })}
@@ -1499,7 +1551,7 @@ export const FlashcardTestView: React.FC = () => {
                   </p>
                   <button
                     type="button"
-                    onClick={() => handleSubmitTest(false)}
+                    onClick={requestSubmit}
                     className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-md transition-all cursor-pointer"
                   >
                     Nộp bài kiểm tra & Xem kết quả ➔
@@ -1776,6 +1828,20 @@ export const FlashcardTestView: React.FC = () => {
           </>
         )}
       </div>
+      {mobile && phase === 'testing' && pendingAction && (
+        <PracticeConfirmation
+          title={pendingAction === 'submit' ? 'Nộp bài kiểm tra?' : pendingAction === 'setup' ? 'Quay lại thiết lập đề?' : 'Thoát bài kiểm tra?'}
+          description={pendingAction === 'submit'
+            ? remainingCount > 0
+              ? `Còn ${remainingCount} câu chưa làm. Khi nộp, các câu này sẽ được tính là bỏ qua.`
+              : 'Bạn đã làm hết các câu. Nộp bài để xem kết quả.'
+            : 'Câu trả lời trong bài kiểm tra này sẽ không được lưu.'}
+          cancelLabel="Tiếp tục làm bài"
+          confirmLabel={pendingAction === 'submit' ? 'Nộp bài' : pendingAction === 'setup' ? 'Về thiết lập' : 'Thoát bài'}
+          onCancel={() => setPendingAction(null)}
+          onConfirm={confirmAction}
+        />
+      )}
     </div>
   );
 };

@@ -165,7 +165,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
   }, [sessionDetail]);
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
+    <div className="jx-flash-library mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== 1. PAGE HEADER ==================== */}
         <div>
@@ -187,7 +187,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
         )}
 
         {/* ==================== 2. SUB-NAVIGATION TABS ==================== */}
-        <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
+        <div className="jx-flash-tabs flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
           <Link
             to="/flashcards"
             className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-muted hover:bg-paper-100 hover:text-sumi border border-line transition-all flex items-center gap-2"
@@ -505,11 +505,11 @@ export const FlashcardReviewHistoryView: React.FC = () => {
               onClick={(e) => {
                 if (e.target === e.currentTarget) handleCloseDetail();
               }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+            className="jx-flash-history-overlay fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-paper-50 rounded-3xl border border-line max-w-2xl w-full shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col my-auto text-sumi"
+                className="jx-flash-history-dialog bg-paper-50 rounded-3xl border border-line max-w-2xl w-full shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col my-auto text-sumi"
               >
               <div className="flex items-center justify-between border-b border-line pb-3">
                 <h3 className="text-base font-black text-sumi flex items-center gap-2">
@@ -518,6 +518,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                 </h3>
                 <button
                   onClick={handleCloseDetail}
+                  aria-label="Đóng chi tiết phiên ôn tập"
                   className="w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 text-sumi-muted hover:text-sumi font-bold flex items-center justify-center transition-colors cursor-pointer"
                 >
                   ✕
