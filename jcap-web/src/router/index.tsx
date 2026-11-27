@@ -52,6 +52,7 @@ const FlashcardSetsView = React.lazy(() => import('../views/self-study/Flashcard
 const FlashcardSetDetailView = React.lazy(() => import('../views/self-study/FlashcardSetDetailView').then((m) => ({ default: m.FlashcardSetDetailView })));
 const FlashcardSessionView = React.lazy(() => import('../views/self-study/FlashcardSessionView').then((m) => ({ default: m.FlashcardSessionView })));
 const FlashcardTestView = React.lazy(() => import('../views/self-study/FlashcardTestView').then((m) => ({ default: m.FlashcardTestView })));
+const FlashcardQuizHistoryView = React.lazy(() => import('../views/self-study/FlashcardQuizHistoryView').then((m) => ({ default: m.FlashcardQuizHistoryView })));
 const FlashcardReviewHistoryView = React.lazy(() => import('../views/self-study/FlashcardReviewHistoryView').then((m) => ({ default: m.FlashcardReviewHistoryView })));
 const LearnerFeedbackView = React.lazy(() => import('../views/LearnerFeedbackView').then((m) => ({ default: m.LearnerFeedbackView })));
 const AdminFeedbackView = React.lazy(() => import('../views/admin/AdminFeedbackView').then((m) => ({ default: m.AdminFeedbackView })));
@@ -493,6 +494,7 @@ export const AppRouter: React.FC = () => {
         <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
+        <Route path="/flashcards/test/history" element={<FlashcardQuizHistoryView />} />
 
         {/* Kho học liệu (Learning Topics & Content) */}
         <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>

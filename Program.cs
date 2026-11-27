@@ -121,6 +121,7 @@ builder.Services.AddSingleton<ISrsCalculationService, SrsCalculationService>();
 builder.Services.AddScoped<ILearningTopicLookup, DefaultLearningTopicLookup>();
 builder.Services.AddScoped<ILearnerBookmarkService, LearnerBookmarkService>();
 builder.Services.AddScoped<ILearnerFlashcardService, LearnerFlashcardService>();
+builder.Services.AddScoped<IFlashcardQuizService, FlashcardQuizService>();
 builder.Services.AddSingleton<GeminiModelCooldownTracker>();
 builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
