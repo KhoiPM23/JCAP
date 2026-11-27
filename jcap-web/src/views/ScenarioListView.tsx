@@ -263,7 +263,6 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               size="sm"
               value={filterLevel}
               onChange={(lvl) => {
-                ukiyoSound.playSubtleTap();
                 setFilterLevel(lvl);
               }}
               options={[
@@ -283,7 +282,6 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
             role="tab"
             aria-selected={filterTopic === 'ALL'}
             onClick={() => {
-              ukiyoSound.playSubtleTap();
               handleTopicChange('ALL');
             }}
             className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press shrink-0 ${
@@ -313,8 +311,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                 role="tab"
                 aria-selected={active}
                 onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  handleTopicChange(t.code);
+                    handleTopicChange(t.code);
                 }}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press shrink-0 ${
                   active
@@ -367,10 +364,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => {
-                      ukiyoSound.playWoodblockSnap();
-                      setSelectedId(s.id);
-                    }}
+                      onClick={() => setSelectedId(s.id)}
                     aria-pressed={selected}
                     className={`quest-card tactile-press flex w-full items-center gap-4 rounded-jc-xl p-4 text-left transition-all ${
                       selected
@@ -480,7 +474,6 @@ const InventoryPropBadge: React.FC<{
       }}
       onBlur={() => setIsHovered(false)}
       onClick={() => {
-        ukiyoSound.playSubtleTap();
         updatePopoverPos();
         setIsHovered((prev) => !prev);
       }}
@@ -693,8 +686,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                   size="sm"
                   value={cfg.jlptLevel}
                   onChange={(v) => {
-                    ukiyoSound.playSubtleTap();
-                    setLevel(v as Level);
+                        setLevel(v as Level);
                     setConfirmRestart(false);
                   }}
                   options={levels.map((l) => ({ value: l.jlptLevel, label: l.jlptLevel }))}
@@ -722,7 +714,6 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                       return (
                         <div
                           key={m.id}
-                          onClick={() => ukiyoSound.playWoodblockSnap()}
                           className={`group relative flex items-start gap-2 rounded-md px-2 py-1 transition-all cursor-pointer tactile-press ${
                             isCompleted
                               ? 'bg-emerald-50/80 border border-emerald-200'
@@ -769,8 +760,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                     <button
                       type="button"
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setIsVocabOpen((prev) => !prev);
+                                setIsVocabOpen((prev) => !prev);
                         if (!isVocabOpen) setIsGrammarOpen(false);
                       }}
                       className={`flex-1 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] transition-colors tactile-press cursor-pointer ${
@@ -794,8 +784,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                     <button
                       type="button"
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setIsGrammarOpen((prev) => !prev);
+                                setIsGrammarOpen((prev) => !prev);
                         if (!isGrammarOpen) setIsVocabOpen(false);
                       }}
                       className={`flex-1 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] transition-colors tactile-press cursor-pointer ${
@@ -854,8 +843,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                 <button
                   type="button"
                   onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    navigate(`/learning/topics?topic=${details.topicCode}`);
+                        navigate(`/learning/topics?topic=${details.topicCode}`);
                   }}
                   className="inline-flex items-center gap-1 text-[10px] font-semibold text-ai hover:underline transition-colors cursor-pointer"
                 >

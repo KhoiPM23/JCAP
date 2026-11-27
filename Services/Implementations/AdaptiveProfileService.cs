@@ -1,23 +1,58 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JCAP.Data;
 using JCAP.DTOs.Roleplay;
 using JCAP.Services.Interfaces;
+using JCAP.Services.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace JCAP.Services.Implementations;
 
 public class AdaptiveProfileService : IAdaptiveProfileService
 {
-    private readonly AppDbContext _dbContext;
+    private static readonly HashSet<string> ValidAxisKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "reflex",
+        "style",
+        "particle",
+        "mora",
+        "confidence",
+        "autonomy"
+    };
 
-    public AdaptiveProfileService(AppDbContext dbContext)
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
+    private static readonly Regex JargonRegex = new(
+        @"\b(IRT|ZPD|FSRS|EMA|Theta|P\s*\(\s*pass\s*\)|b-value|mora|E0\d|E10)\b",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex N5UnsafeFocusRegex = new(
+        @"(kính ngữ|keigo|sonkeigo|kenjougo|tôn kính|khiêm nhường|câu ghép phức tạp|câu dài|N3|N2|N1|敬語|尊敬語|謙譲語)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private readonly AppDbContext _dbContext;
+    private readonly IAiClient? _aiClient;
+    private readonly ILogger<AdaptiveProfileService>? _logger;
+
+    public AdaptiveProfileService(
+        AppDbContext dbContext,
+        IAiClient? aiClient = null,
+        ILogger<AdaptiveProfileService>? logger = null)
     {
         _dbContext = dbContext;
+        _aiClient = aiClient;
+        _logger = logger;
     }
 
     public Task<AdaptiveContextDto> GetAdaptiveContextAsync(
@@ -27,9 +62,18 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         return GetAdaptiveContextAsync(userId, null, cancellationToken);
     }
 
-    public async Task<AdaptiveContextDto> GetAdaptiveContextAsync(
+    public Task<AdaptiveContextDto> GetAdaptiveContextAsync(
         string userId,
         AdaptiveContextQuery? query,
+        CancellationToken cancellationToken = default)
+    {
+        return GetAdaptiveContextInternalAsync(userId, query, applyCoachingOverlay: true, cancellationToken);
+    }
+
+    private async Task<AdaptiveContextDto> GetAdaptiveContextInternalAsync(
+        string userId,
+        AdaptiveContextQuery? query,
+        bool applyCoachingOverlay,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -130,14 +174,15 @@ public class AdaptiveProfileService : IAdaptiveProfileService
 
         string recommendedDifficulty = DeriveRecommendedDifficulty(estimatedLevel, recentTrend, consecutiveFails);
 
-        var (recommendedScenarios, recommendedScenarioIds, recommendedShadowings) = await RankRecommendationsAsync(
-            userId,
-            theta,
-            consecutiveFails,
-            recommendedDifficulty,
-            weakKeywords,
-            query,
-            cancellationToken);
+        var (recommendedScenarios, recommendedScenarioIds, recommendedShadowingIds, recommendedShadowings) =
+            await RankRecommendationsAsync(
+                userId,
+                theta,
+                consecutiveFails,
+                recommendedDifficulty,
+                weakKeywords,
+                query,
+                cancellationToken);
 
         double autonomy = profile != null
             ? Math.Clamp(Math.Round(100.0 - profile.HintDependencyRate, 1), 0.0, 100.0)
@@ -148,7 +193,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
 
         string? directive = BuildRuntimeDirective(recentTrend, consecutiveFails, hotWeaknesses, chronicWeaknesses);
 
-        return new AdaptiveContextDto
+        var dto = new AdaptiveContextDto
         {
             UserId = userId,
             EstimatedJlptLevel = estimatedLevel,
@@ -173,10 +218,713 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             FocusSkillTags = focusTags,
             RecommendedScenarioIds = recommendedScenarioIds,
             RecommendedScenarios = recommendedScenarios,
-            RecommendedShadowingIds = recommendedShadowings,
+            RecommendedShadowingIds = recommendedShadowingIds,
+            RecommendedShadowings = recommendedShadowings,
             RecommendedFlashcardKeywords = flashcardKeywords,
+            FlashcardAdviceVi = BuildDeterministicFlashcardAdvice(flashcardKeywords, recommendedDifficulty),
             AiRuntimeDirective = directive
         };
+
+        // Phủ lớp AI Coaching đã cache từ InferredTraitsJson (nếu còn hợp lệ theo lastEvaluatedSessionId) — giữ nguyên 100% ID tất định
+        if (applyCoachingOverlay)
+        {
+            var cachedCoaching = TryParseAiCoachingFromTraits(profile?.InferredTraitsJson);
+            if (cachedCoaching != null && !IsCoachingSnapshotStale(profile?.InferredTraitsJson, cachedCoaching))
+            {
+                ApplyCoachingOverlay(dto, cachedCoaching);
+            }
+        }
+
+        return dto;
+    }
+
+    public async Task<AiCoachingSnapshotDto?> GenerateAndPersistCoachingSnapshotAsync(
+        string userId,
+        int sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || sessionId <= 0)
+        {
+            return null;
+        }
+
+        var profile = await _dbContext.LearnerIntelligenceProfiles
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+        if (profile == null)
+        {
+            return null;
+        }
+
+        // Idempotent cache hit: cùng sessionId và đã sinh bằng AI thì không gọi lại LLM
+        var existingCached = TryParseAiCoachingFromTraits(profile.InferredTraitsJson);
+        if (existingCached != null
+            && existingCached.SourceSessionId == sessionId
+            && string.Equals(existingCached.Source, "ai", StringComparison.OrdinalIgnoreCase))
+        {
+            return existingCached;
+        }
+
+        var sessionInfo = await _dbContext.RoleplaySessions
+            .AsNoTracking()
+            .Where(s => s.Id == sessionId && s.UserId == userId)
+            .Select(s => new
+            {
+                s.Id,
+                ScenarioId = s.ScenarioLevelConfiguration != null ? s.ScenarioLevelConfiguration.ScenarioId : 0,
+                ScenarioTitle = s.ScenarioLevelConfiguration != null && s.ScenarioLevelConfiguration.Scenario != null
+                    ? s.ScenarioLevelConfiguration.Scenario.Title
+                    : string.Empty,
+                JlptLevel = s.ScenarioLevelConfiguration != null ? s.ScenarioLevelConfiguration.JLPTLevel : "N5"
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        bool? sessionPassed = await _dbContext.RoleplayResults
+            .AsNoTracking()
+            .Where(r => r.RoleplaySessionId == sessionId && r.UserId == userId)
+            .Select(r => (bool?)r.PassStatus)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var adaptiveQuery = sessionInfo != null
+            ? new AdaptiveContextQuery
+            {
+                ExcludeScenarioId = sessionInfo.ScenarioId > 0 ? sessionInfo.ScenarioId : null,
+                SessionPassed = sessionPassed,
+                SessionLevel = sessionInfo.JlptLevel
+            }
+            : null;
+
+        var context = await GetAdaptiveContextInternalAsync(userId, adaptiveQuery, applyCoachingOverlay: false, cancellationToken);
+        var fallback = BuildDeterministicFallbackSnapshot(sessionId, context);
+
+        if (_aiClient == null)
+        {
+            profile.InferredTraitsJson = MergeAiCoachingIntoTraitsJson(profile.InferredTraitsJson, fallback);
+            profile.UpdatedAtUtc = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return fallback;
+        }
+
+        AiCoachingSnapshotDto finalSnapshot = fallback;
+
+        try
+        {
+            var recentUserTurns = await _dbContext.RoleplayMessages
+                .AsNoTracking()
+                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
+                .OrderByDescending(m => m.Id)
+                .Take(6)
+                .Select(m => new { m.JapaneseText, m.LinguisticFeedbackJson })
+                .ToListAsync(cancellationToken);
+            recentUserTurns.Reverse();
+
+            var scenarioIds = context.RecommendedScenarios.Select(s => s.ScenarioId).ToList();
+            var scenarioTitles = await _dbContext.Scenarios
+                .AsNoTracking()
+                .Where(s => scenarioIds.Contains(s.Id))
+                .ToDictionaryAsync(s => s.Id, s => s.Title, cancellationToken);
+
+            var shadowingIds = context.RecommendedShadowings.Select(s => s.DialogueId).ToList();
+            var shadowingTitles = await _dbContext.ShadowingDialogues
+                .AsNoTracking()
+                .Where(d => shadowingIds.Contains(d.Id))
+                .ToDictionaryAsync(d => d.Id, d => d.Title, cancellationToken);
+
+            var promptPayload = new
+            {
+                session = new
+                {
+                    title = sessionInfo?.ScenarioTitle ?? "Hội thoại thực tế",
+                    jlptLevel = sessionInfo?.JlptLevel ?? context.RecommendedDifficulty,
+                    passed = sessionPassed
+                },
+                learnerProfile = new
+                {
+                    estimatedJlptLevel = context.EstimatedJlptLevel,
+                    recommendedDifficulty = context.RecommendedDifficulty,
+                    proficiencyIndex = Math.Round(context.ProficiencyIndex, 1),
+                    recentTrend = context.RecentTrend,
+                    consecutiveFailCount = context.ConsecutiveFailCount,
+                    scores = new
+                    {
+                        reflex = Math.Round(profile.SpeakingReflexIndex, 1),
+                        style = Math.Round(profile.KeigoCommandScore, 1),
+                        particle = Math.Round(profile.ParticleAccuracyRate, 1),
+                        mora = Math.Round(profile.AverageMoraRate, 1),
+                        confidence = Math.Round(profile.CommunicativeConfidenceScore, 1),
+                        autonomy = Math.Clamp(Math.Round(100.0 - profile.HintDependencyRate, 1), 0, 100)
+                    },
+                    hotWeaknesses = context.HotWeaknesses,
+                    chronicWeaknesses = context.ChronicWeaknesses,
+                    flashcardKeywords = context.RecommendedFlashcardKeywords
+                },
+                recentTurns = recentUserTurns.Select(t => new
+                {
+                    utterance = t.JapaneseText,
+                    feedback = SummarizeFeedbackJson(t.LinguisticFeedbackJson)
+                }).ToList(),
+                candidateScenarios = context.RecommendedScenarios.Select(s => new
+                {
+                    scenarioId = s.ScenarioId,
+                    title = scenarioTitles.GetValueOrDefault(s.ScenarioId, $"Kịch bản #{s.ScenarioId}"),
+                    tier = s.Tier,
+                    level = s.RecommendedLevel
+                }).ToList(),
+                candidateShadowings = context.RecommendedShadowings.Select(d => new
+                {
+                    dialogueId = d.DialogueId,
+                    title = shadowingTitles.GetValueOrDefault(d.DialogueId, $"Bài Shadowing #{d.DialogueId}"),
+                    matchScore = d.MatchScore
+                }).ToList()
+            };
+
+            const string systemInstruction = """
+                You are JCAP's Senior Japanese Speaking Coach. Return strictly valid JSON (no markdown fences, no commentary).
+                RULES:
+                1. Write all explanations in natural, concise, encouraging Vietnamese grounded strictly in the learner's turns and scores.
+                2. NEVER mention internal algorithm or technical terms: IRT, ZPD, FSRS, EMA, Theta, P(pass), b-value, mora, or error codes like E01..E10 (say "nhịp nói" instead of "mora").
+                3. "axisInsights" keys MUST only use exact keys: "reflex", "style", "particle", "mora", "confidence", "autonomy". Each needs "diagnosticVi" (<= 180 chars) and "drillMethodVi" (<= 140 chars).
+                4. "scenarioReasons" keys MUST strictly be stringified scenarioIds from candidateScenarios ONLY (do NOT invent new IDs). Each <= 130 chars.
+                5. "shadowingReasons" keys MUST strictly be stringified dialogueIds from candidateShadowings ONLY (do NOT invent new IDs). Each <= 130 chars.
+                6. "nextSessionFocus" MUST be a single concise coaching focus <= 140 chars for the next conversation (never ask AI to break role or exceed JLPT level).
+                SCHEMA:
+                {
+                  "executiveDiagnosis": "string (1-2 sentences in Vietnamese, <= 240 chars)",
+                  "axisInsights": {
+                    "reflex": { "diagnosticVi": "...", "drillMethodVi": "..." },
+                    "style": { "diagnosticVi": "...", "drillMethodVi": "..." },
+                    "particle": { "diagnosticVi": "...", "drillMethodVi": "..." },
+                    "mora": { "diagnosticVi": "...", "drillMethodVi": "..." },
+                    "confidence": { "diagnosticVi": "...", "drillMethodVi": "..." },
+                    "autonomy": { "diagnosticVi": "...", "drillMethodVi": "..." }
+                  },
+                  "scenarioReasons": { "<scenarioId>": "..." },
+                  "shadowingReasons": { "<dialogueId>": "..." },
+                  "flashcardAdviceVi": "string (<= 160 chars)",
+                  "nextSessionFocus": "string (<= 140 chars)"
+                }
+                """;
+
+            var userPrompt = JsonSerializer.Serialize(promptPayload, JsonOptions);
+            var aiRequest = AiRequest.CreateJson(systemInstruction, userPrompt, temperature: 0.3);
+
+            // Chừa quỹ thời gian lưu DB nếu caller đặt timeout ngắn (ví dụ 4500ms -> gọi AI tối đa 3800ms)
+            using var aiTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            aiTimeoutCts.CancelAfter(TimeSpan.FromMilliseconds(3800));
+
+            var aiResponse = await _aiClient.GenerateAsync(aiRequest, aiTimeoutCts.Token);
+            if (aiResponse.IsSuccess && !string.IsNullOrWhiteSpace(aiResponse.Content))
+            {
+                var parsed = ParseAndSanitizeAiSnapshot(aiResponse.Content, sessionId, context, fallback);
+                if (parsed != null)
+                {
+                    finalSnapshot = parsed;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "AI adaptive coaching synthesis fallback to deterministic for session {SessionId}", sessionId);
+        }
+
+        try
+        {
+            profile.InferredTraitsJson = MergeAiCoachingIntoTraitsJson(profile.InferredTraitsJson, finalSnapshot);
+            profile.UpdatedAtUtc = DateTime.UtcNow;
+            // Dùng CancellationToken.None nếu AI call gần chạm deadline để không làm rớt snapshot
+            var saveToken = cancellationToken.IsCancellationRequested ? CancellationToken.None : cancellationToken;
+            await _dbContext.SaveChangesAsync(saveToken);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Không thể lưu AI coaching snapshot vào InferredTraitsJson cho session {SessionId}", sessionId);
+        }
+
+        return finalSnapshot;
+    }
+
+    public static string? ExtractNextSessionFocus(string? inferredTraitsJson, string? targetJlptLevel = null)
+    {
+        var snapshot = TryParseAiCoachingFromTraits(inferredTraitsJson);
+        if (snapshot == null || string.IsNullOrWhiteSpace(snapshot.NextSessionFocus))
+        {
+            return null;
+        }
+
+        if (IsCoachingSnapshotStale(inferredTraitsJson, snapshot))
+        {
+            return null;
+        }
+
+        return SanitizeNextSessionFocusForJlpt(snapshot.NextSessionFocus, targetJlptLevel);
+    }
+
+    public static string? SanitizeNextSessionFocusForJlpt(string? rawFocus, string? targetJlptLevel)
+    {
+        var cleaned = ScrubTechnicalJargon(rawFocus);
+        if (string.IsNullOrWhiteSpace(cleaned))
+        {
+            return null;
+        }
+
+        var level = (targetJlptLevel ?? string.Empty).Trim().ToUpperInvariant();
+        if (level == "N5" && N5UnsafeFocusRegex.IsMatch(cleaned))
+        {
+            return "Giữ câu lịch sự ngắn gọn (です・ます) và tạo cơ hội thực hành trợ từ cơ bản phù hợp mức N5.";
+        }
+
+        return cleaned.Length > 140 ? cleaned[..140].TrimEnd() : cleaned;
+    }
+
+    internal static bool IsCoachingSnapshotStale(string? inferredTraitsJson, AiCoachingSnapshotDto snapshot)
+    {
+        if (string.IsNullOrWhiteSpace(inferredTraitsJson) || snapshot.SourceSessionId <= 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(inferredTraitsJson);
+            if (doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty("lastEvaluatedSessionId", out var sidProp)
+                && sidProp.ValueKind == JsonValueKind.Number
+                && sidProp.TryGetInt32(out int lastEvalSessionId)
+                && lastEvalSessionId > 0)
+            {
+                return snapshot.SourceSessionId != lastEvalSessionId;
+            }
+        }
+        catch { }
+
+        return false;
+    }
+
+    public static AiCoachingSnapshotDto? TryParseAiCoachingFromTraits(string? inferredTraitsJson)
+    {
+        if (string.IsNullOrWhiteSpace(inferredTraitsJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(inferredTraitsJson);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            if (!doc.RootElement.TryGetProperty("aiCoaching", out var aiNode)
+                || aiNode.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            var parsed = JsonSerializer.Deserialize<AiCoachingSnapshotDto>(aiNode.GetRawText(), JsonOptions);
+            if (parsed == null)
+            {
+                return null;
+            }
+
+            parsed.ExecutiveDiagnosis = ScrubTechnicalJargon(parsed.ExecutiveDiagnosis);
+            parsed.FlashcardAdviceVi = string.IsNullOrWhiteSpace(parsed.FlashcardAdviceVi)
+                ? null
+                : ScrubTechnicalJargon(parsed.FlashcardAdviceVi);
+            parsed.NextSessionFocus = string.IsNullOrWhiteSpace(parsed.NextSessionFocus)
+                ? null
+                : ClampLength(ScrubTechnicalJargon(parsed.NextSessionFocus), 140);
+
+            var cleanAxes = new Dictionary<string, AiAxisInsightDto>(StringComparer.OrdinalIgnoreCase);
+            if (parsed.AxisInsights != null)
+            {
+                foreach (var kv in parsed.AxisInsights)
+                {
+                    if (!ValidAxisKeys.Contains(kv.Key) || kv.Value == null) continue;
+                    cleanAxes[kv.Key.ToLowerInvariant()] = new AiAxisInsightDto
+                    {
+                        DiagnosticVi = ScrubTechnicalJargon(kv.Value.DiagnosticVi),
+                        DrillMethodVi = ScrubTechnicalJargon(kv.Value.DrillMethodVi)
+                    };
+                }
+            }
+            parsed.AxisInsights = cleanAxes;
+
+            var cleanScenarioReasons = new Dictionary<int, string>();
+            if (parsed.ScenarioReasons != null)
+            {
+                foreach (var kv in parsed.ScenarioReasons)
+                {
+                    var scrubbed = ScrubTechnicalJargon(kv.Value);
+                    if (!string.IsNullOrWhiteSpace(scrubbed))
+                    {
+                        cleanScenarioReasons[kv.Key] = scrubbed;
+                    }
+                }
+            }
+            parsed.ScenarioReasons = cleanScenarioReasons;
+
+            var cleanShadowingReasons = new Dictionary<int, string>();
+            if (parsed.ShadowingReasons != null)
+            {
+                foreach (var kv in parsed.ShadowingReasons)
+                {
+                    var scrubbed = ScrubTechnicalJargon(kv.Value);
+                    if (!string.IsNullOrWhiteSpace(scrubbed))
+                    {
+                        cleanShadowingReasons[kv.Key] = scrubbed;
+                    }
+                }
+            }
+            parsed.ShadowingReasons = cleanShadowingReasons;
+
+            return parsed;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    internal static string MergeAiCoachingIntoTraitsJson(string? existingTraitsJson, AiCoachingSnapshotDto snapshot)
+    {
+        JsonObject rootObj;
+        try
+        {
+            rootObj = !string.IsNullOrWhiteSpace(existingTraitsJson)
+                ? (JsonNode.Parse(existingTraitsJson)?.AsObject() ?? new JsonObject())
+                : new JsonObject();
+        }
+        catch
+        {
+            rootObj = new JsonObject();
+        }
+
+        rootObj["aiCoaching"] = JsonSerializer.SerializeToNode(snapshot, JsonOptions);
+        return rootObj.ToJsonString();
+    }
+
+    internal static HashSet<string> ExtractSemanticDomainTags(IEnumerable<string> corpusTexts)
+    {
+        var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var joined = string.Join(" ", corpusTexts.Where(t => !string.IsNullOrWhiteSpace(t)));
+        if (string.IsNullOrWhiteSpace(joined))
+        {
+            return tags;
+        }
+
+        var lower = joined.ToLowerInvariant();
+        if (ContainsAny(lower, "trợ từ", "particle", "は", "が", "に", "で", "へ", "を", "e01", "hỏi đường", "chỉ đường", "ga ", "shinjuku", "tàu", "địa điểm", "phương tiện", "di chuyển", "vé", "cổng"))
+        {
+            tags.Add("Particles_Location");
+        }
+        if (ContainsAny(lower, "văn phong", "lịch sự", "です", "ます", "thể ngắn", "khách sạn", "kyoto", "check-in", "dịch vụ", "lễ tân", "e03"))
+        {
+            tags.Add("Polite_Service");
+        }
+        if (ContainsAny(lower, "kính ngữ", "keigo", "baito", "phỏng vấn", "công sở", "văn phòng", "xin việc", "thu ngân", "khách hàng", "khiêm nhường", "e08"))
+        {
+            tags.Add("Business_Keigo");
+        }
+        if (ContainsAny(lower, "gọi món", "ramen", "nhà hàng", "ẩm thực", "quán ăn", "đồ ăn", "bento", "cafe", "nước dùng", "sợi mì", "món"))
+        {
+            tags.Add("Fast_Order");
+        }
+        if (ContainsAny(lower, "mua sắm", "tiện lợi", "combini", "konbini", "thanh toán", "giá", "tiền", "thẻ", "suica", "pasmo", "hâm nóng", "túi", "thìa", "đũa", "yen", "円"))
+        {
+            tags.Add("Shopping_Price");
+        }
+        if (ContainsAny(lower, "bệnh viện", "bác sĩ", "khám", "thuốc", "đau", "sức khỏe", "triệu chứng"))
+        {
+            tags.Add("Medical_Daily");
+        }
+        if (ContainsAny(lower, "phát âm", "mora", "nhịp", "trường âm", "âm ngắt", "shadowing", "e05", "e09", "e10"))
+        {
+            tags.Add("Pronunciation_Mora");
+        }
+
+        return tags;
+    }
+
+    private static bool ContainsAny(string lowerText, params string[] terms)
+    {
+        foreach (var term in terms)
+        {
+            if (lowerText.Contains(term, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void ApplyCoachingOverlay(AdaptiveContextDto dto, AiCoachingSnapshotDto snapshot)
+    {
+        dto.AiCoaching = snapshot;
+
+        if (!string.IsNullOrWhiteSpace(snapshot.FlashcardAdviceVi))
+        {
+            dto.FlashcardAdviceVi = ScrubTechnicalJargon(snapshot.FlashcardAdviceVi);
+        }
+
+        foreach (var rec in dto.RecommendedScenarios)
+        {
+            if (snapshot.ScenarioReasons.TryGetValue(rec.ScenarioId, out var aiReason)
+                && !string.IsNullOrWhiteSpace(aiReason))
+            {
+                rec.ReasonVi = ScrubTechnicalJargon(aiReason);
+            }
+        }
+
+        foreach (var shad in dto.RecommendedShadowings)
+        {
+            if (snapshot.ShadowingReasons.TryGetValue(shad.DialogueId, out var aiReason)
+                && !string.IsNullOrWhiteSpace(aiReason))
+            {
+                shad.ReasonVi = ScrubTechnicalJargon(aiReason);
+            }
+        }
+    }
+
+    private static AiCoachingSnapshotDto BuildDeterministicFallbackSnapshot(int sessionId, AdaptiveContextDto context)
+    {
+        string weakFocus = context.HotWeaknesses.FirstOrDefault()
+            ?? context.ChronicWeaknesses.FirstOrDefault()
+            ?? "giữ mạch hội thoại tự nhiên";
+
+        string executiveDiagnosis = context.ConsecutiveFailCount >= 2
+            ? $"Ở mức {context.EstimatedJlptLevel}, bạn nên ưu tiên câu ngắn, chắc trợ từ và củng cố phần {weakFocus} trước khi tăng tốc."
+            : string.Equals(context.RecentTrend, "Improving", StringComparison.OrdinalIgnoreCase)
+                ? $"Phong độ ở mức {context.EstimatedJlptLevel} đang tiến bộ rõ rệt (trung bình {Math.Round(context.ProficiencyIndex)}đ). Hãy tiếp tục rèn thêm phần {weakFocus}."
+                : $"Năng lực thực chiến hiện ở mức {context.EstimatedJlptLevel}. Trọng tâm cải thiện hiệu quả nhất lúc này là {weakFocus}.";
+
+        var scenarioReasons = context.RecommendedScenarios
+            .ToDictionary(s => s.ScenarioId, s => s.ReasonVi);
+
+        var shadowingReasons = context.RecommendedShadowings
+            .ToDictionary(d => d.DialogueId, d => d.ReasonVi);
+
+        string? flashcardAdvice = context.FlashcardAdviceVi
+            ?? BuildDeterministicFlashcardAdvice(context.RecommendedFlashcardKeywords, context.RecommendedDifficulty);
+
+        string nextFocus = context.HotWeaknesses.Count > 0
+            ? $"Chú ý dùng đúng {context.HotWeaknesses[0]} với câu ngắn rõ ràng."
+            : $"Giữ nhịp phản xạ tự nhiên và dùng từ khóa chuẩn ở mức {context.RecommendedDifficulty}.";
+
+        return new AiCoachingSnapshotDto
+        {
+            SourceSessionId = sessionId,
+            GeneratedAtUtc = DateTime.UtcNow,
+            Source = "deterministic",
+            ExecutiveDiagnosis = ScrubTechnicalJargon(executiveDiagnosis),
+            AxisInsights = new Dictionary<string, AiAxisInsightDto>(StringComparer.OrdinalIgnoreCase),
+            ScenarioReasons = scenarioReasons,
+            ShadowingReasons = shadowingReasons,
+            FlashcardAdviceVi = string.IsNullOrWhiteSpace(flashcardAdvice) ? null : ScrubTechnicalJargon(flashcardAdvice),
+            NextSessionFocus = ClampLength(ScrubTechnicalJargon(nextFocus), 140)
+        };
+    }
+
+    private static AiCoachingSnapshotDto? ParseAndSanitizeAiSnapshot(
+        string rawJson,
+        int sessionId,
+        AdaptiveContextDto context,
+        AiCoachingSnapshotDto fallback)
+    {
+        var cleanedJson = StripCodeFences(rawJson);
+        if (string.IsNullOrWhiteSpace(cleanedJson))
+        {
+            return null;
+        }
+
+        using var doc = JsonDocument.Parse(cleanedJson);
+        if (doc.RootElement.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var root = doc.RootElement;
+        var allowedScenarioIds = context.RecommendedScenarios.Select(s => s.ScenarioId).ToHashSet();
+        var allowedShadowingIds = context.RecommendedShadowings.Select(s => s.DialogueId).ToHashSet();
+
+        string execDiag = TryReadString(root, "executiveDiagnosis");
+        execDiag = !string.IsNullOrWhiteSpace(execDiag)
+            ? ClampLength(ScrubTechnicalJargon(execDiag), 260)
+            : fallback.ExecutiveDiagnosis;
+
+        var axisInsights = new Dictionary<string, AiAxisInsightDto>(StringComparer.OrdinalIgnoreCase);
+        if (root.TryGetProperty("axisInsights", out var axesNode) && axesNode.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var prop in axesNode.EnumerateObject())
+            {
+                if (!ValidAxisKeys.Contains(prop.Name) || prop.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                string diag = ScrubTechnicalJargon(TryReadString(prop.Value, "diagnosticVi"));
+                string drill = ScrubTechnicalJargon(TryReadString(prop.Value, "drillMethodVi"));
+                if (string.IsNullOrWhiteSpace(diag) && string.IsNullOrWhiteSpace(drill))
+                {
+                    continue;
+                }
+
+                axisInsights[prop.Name.ToLowerInvariant()] = new AiAxisInsightDto
+                {
+                    DiagnosticVi = ClampLength(diag, 220),
+                    DrillMethodVi = ClampLength(drill, 180)
+                };
+            }
+        }
+
+        var scenarioReasons = new Dictionary<int, string>(fallback.ScenarioReasons);
+        if (root.TryGetProperty("scenarioReasons", out var scnNode) && scnNode.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var prop in scnNode.EnumerateObject())
+            {
+                if (!int.TryParse(prop.Name, out int id) || !allowedScenarioIds.Contains(id))
+                {
+                    continue;
+                }
+
+                var reason = prop.Value.ValueKind == JsonValueKind.String ? prop.Value.GetString() : null;
+                var scrubbed = ScrubTechnicalJargon(reason);
+                if (!string.IsNullOrWhiteSpace(scrubbed))
+                {
+                    scenarioReasons[id] = ClampLength(scrubbed, 160);
+                }
+            }
+        }
+
+        var shadowingReasons = new Dictionary<int, string>(fallback.ShadowingReasons);
+        if (root.TryGetProperty("shadowingReasons", out var shadNode) && shadNode.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var prop in shadNode.EnumerateObject())
+            {
+                if (!int.TryParse(prop.Name, out int id) || !allowedShadowingIds.Contains(id))
+                {
+                    continue;
+                }
+
+                var reason = prop.Value.ValueKind == JsonValueKind.String ? prop.Value.GetString() : null;
+                var scrubbed = ScrubTechnicalJargon(reason);
+                if (!string.IsNullOrWhiteSpace(scrubbed))
+                {
+                    shadowingReasons[id] = ClampLength(scrubbed, 160);
+                }
+            }
+        }
+
+        string rawFlashcardAdvice = TryReadString(root, "flashcardAdviceVi");
+        string flashcardAdvice = !string.IsNullOrWhiteSpace(rawFlashcardAdvice)
+            ? ClampLength(ScrubTechnicalJargon(rawFlashcardAdvice), 200)
+            : (fallback.FlashcardAdviceVi ?? string.Empty);
+
+        string rawNextFocus = TryReadString(root, "nextSessionFocus");
+        string nextFocus = !string.IsNullOrWhiteSpace(rawNextFocus)
+            ? ClampLength(ScrubTechnicalJargon(rawNextFocus), 140)
+            : (fallback.NextSessionFocus ?? string.Empty);
+
+        bool hasMeaningfulAi = !string.IsNullOrWhiteSpace(TryReadString(root, "executiveDiagnosis"))
+            || axisInsights.Count > 0;
+
+        return new AiCoachingSnapshotDto
+        {
+            SourceSessionId = sessionId,
+            GeneratedAtUtc = DateTime.UtcNow,
+            Source = hasMeaningfulAi ? "ai" : "deterministic",
+            ExecutiveDiagnosis = execDiag,
+            AxisInsights = axisInsights,
+            ScenarioReasons = scenarioReasons,
+            ShadowingReasons = shadowingReasons,
+            FlashcardAdviceVi = string.IsNullOrWhiteSpace(flashcardAdvice) ? null : flashcardAdvice,
+            NextSessionFocus = string.IsNullOrWhiteSpace(nextFocus) ? null : nextFocus
+        };
+    }
+
+    private static string StripCodeFences(string raw)
+    {
+        var trimmed = raw.Trim();
+        if (trimmed.StartsWith("```", StringComparison.Ordinal))
+        {
+            var firstNewLine = trimmed.IndexOf('\n');
+            if (firstNewLine >= 0)
+            {
+                trimmed = trimmed[(firstNewLine + 1)..];
+            }
+            if (trimmed.EndsWith("```", StringComparison.Ordinal))
+            {
+                trimmed = trimmed[..^3];
+            }
+        }
+        return trimmed.Trim();
+    }
+
+    private static string TryReadString(JsonElement obj, string propertyName)
+    {
+        if (obj.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String)
+        {
+            return prop.GetString()?.Trim() ?? string.Empty;
+        }
+        return string.Empty;
+    }
+
+    internal static string ScrubTechnicalJargon(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        var scrubbed = JargonRegex.Replace(text, "");
+        scrubbed = Regex.Replace(scrubbed, @"\(\s*[,;/\-]*\s*\)", "");
+        scrubbed = Regex.Replace(scrubbed, @"\s{2,}", " ");
+        scrubbed = Regex.Replace(scrubbed, @"\s+([.,!?;:])", "$1");
+        return scrubbed.Trim();
+    }
+
+    private static string ClampLength(string text, int maxLen)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLen) return text;
+        return $"{text[..(maxLen - 1)].TrimEnd()}…";
+    }
+
+    private static string SummarizeFeedbackJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return string.Empty;
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var parts = new List<string>();
+            if (root.TryGetProperty("grammarFeedback", out var gf) && gf.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(gf.GetString()))
+            {
+                parts.Add(gf.GetString()!.Trim());
+            }
+            if (root.TryGetProperty("naturalAlternative", out var na) && na.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(na.GetString()))
+            {
+                parts.Add($"Mẫu tự nhiên: {na.GetString()!.Trim()}");
+            }
+            if (parts.Count == 0 && root.TryGetProperty("explanation", out var exp) && exp.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(exp.GetString()))
+            {
+                parts.Add(exp.GetString()!.Trim());
+            }
+            return ClampLength(string.Join(" | ", parts), 140);
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static string? BuildDeterministicFlashcardAdvice(List<string> keywords, string difficulty)
+    {
+        if (keywords.Count == 0)
+        {
+            return null;
+        }
+
+        var sample = string.Join(", ", keywords.Take(3));
+        return $"Ưu tiên ôn bộ từ & mẫu câu đang cần củng cố ({sample}) để bật lời nhanh hơn trong tình huống mức {difficulty}.";
     }
 
     private sealed class ScenarioCandidateRaw
@@ -205,6 +953,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         public double GapScore { get; set; }
         public double FreshnessScore { get; set; }
         public List<string> MatchedWeakTerms { get; set; } = new();
+        public int SemanticDomainOverlapCount { get; set; }
         public bool IsFailed { get; set; }
         public bool IsUnattempted { get; set; }
         public int AttemptCount { get; set; }
@@ -215,7 +964,8 @@ public class AdaptiveProfileService : IAdaptiveProfileService
     private async Task<(
         List<AdaptiveScenarioRecommendationDto> Scenarios,
         List<int> ScenarioIds,
-        List<int> ShadowingIds)> RankRecommendationsAsync(
+        List<int> ShadowingIds,
+        List<AdaptiveShadowingRecommendationDto> Shadowings)> RankRecommendationsAsync(
         string userId,
         double theta,
         int consecutiveFails,
@@ -228,6 +978,8 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             query.ExcludeScenarioId.HasValue
             || query.SessionPassed.HasValue
             || !string.IsNullOrWhiteSpace(query.SessionLevel));
+
+        var weakDomainTags = ExtractSemanticDomainTags(weakKeywords);
 
         var scenarioRows = await _dbContext.Scenarios
             .AsNoTracking()
@@ -364,9 +1116,14 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            var candidateDomains = ExtractSemanticDomainTags(searchCorpus);
+            int semanticOverlapCount = weakDomainTags.Count > 0
+                ? weakDomainTags.Count(tag => candidateDomains.Contains(tag))
+                : 0;
+
             double gapScore = weakKeywords.Count == 0
                 ? 60.0
-                : Math.Min(100.0, 42.0 + matchedWeakTerms.Count * 24.0);
+                : Math.Min(100.0, 42.0 + matchedWeakTerms.Count * 22.0 + semanticOverlapCount * 14.0);
 
             bool hasHistory = historyByScenario.TryGetValue(s.Id, out var hist);
             bool isFailed = hasHistory && !hist.LastPassed;
@@ -409,6 +1166,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 GapScore = gapScore,
                 FreshnessScore = freshnessScore,
                 MatchedWeakTerms = matchedWeakTerms,
+                SemanticDomainOverlapCount = semanticOverlapCount,
                 IsFailed = isFailed,
                 IsUnattempted = isUnattempted,
                 AttemptCount = hasHistory ? hist.AttemptCount : 0,
@@ -438,8 +1196,9 @@ public class AdaptiveProfileService : IAdaptiveProfileService
 
             ScoredScenarioCandidate? consolidate = scoredCandidates
                 .Where(c => !usedIds.Contains(c.Id))
-                .OrderByDescending(c => c.IsFailed)
-                .ThenByDescending(c => c.SupportsConsolidateLevel)
+                .OrderByDescending(c => c.SupportsConsolidateLevel)
+                .ThenByDescending(c => c.IsFailed && c.SupportsConsolidateLevel)
+                .ThenByDescending(c => c.PublishedLevels.Any(l => GetLevelRank(l) <= recRank))
                 .ThenByDescending(c => c.RawScore)
                 .ThenBy(c => c.Id)
                 .FirstOrDefault();
@@ -492,27 +1251,49 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             .Take(40)
             .ToListAsync(cancellationToken);
 
-        var rankedShadowing = shadowingRows
+        var rankedShadowingItems = shadowingRows
             .Select(d =>
             {
                 string level = NormalizeJlptLevel(d.JLPTLevel);
                 double pPass = ComputeIrtPassProbability(thetaEff, level);
                 double zpdScore = 100.0 * Math.Max(0.0, 1.0 - Math.Abs(pPass - 0.72) / 0.50);
-                int matched = weakKeywords.Count(kw =>
+                int literalMatched = weakKeywords.Count(kw =>
                     (d.Title?.Contains(kw, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (d.Description?.Contains(kw, StringComparison.OrdinalIgnoreCase) ?? false));
-                double gapScore = weakKeywords.Count == 0 ? 55.0 : Math.Min(100.0, 40.0 + matched * 25.0);
+                var shadDomains = ExtractSemanticDomainTags(new[] { d.Title ?? string.Empty, d.Description ?? string.Empty });
+                int domainMatched = weakDomainTags.Count > 0
+                    ? weakDomainTags.Count(tag => shadDomains.Contains(tag))
+                    : 0;
+                double gapScore = weakKeywords.Count == 0
+                    ? 55.0
+                    : Math.Min(100.0, 40.0 + literalMatched * 22.0 + domainMatched * 16.0);
                 double diffBonus = string.Equals(level, effectiveTargetDifficulty, StringComparison.OrdinalIgnoreCase) ? 100.0 : 50.0;
                 double totalScore = 0.45 * zpdScore + 0.35 * gapScore + 0.20 * diffBonus;
-                return (d.Id, Score: totalScore);
+                int matchScore = (int)Math.Clamp(Math.Round(totalScore), 64, 97);
+                string fallbackReason = domainMatched > 0 || literalMatched > 0
+                    ? $"Luyện nhịp nói chuẩn bản xứ bám sát điểm cần củng cố ở mức {level}."
+                    : $"Bài đọc mức {level} phù hợp nhịp độ tiếp thu hiện tại để rèn ngữ điệu tự nhiên.";
+                return new
+                {
+                    d.Id,
+                    Score = totalScore,
+                    Dto = new AdaptiveShadowingRecommendationDto
+                    {
+                        DialogueId = d.Id,
+                        MatchScore = matchScore,
+                        ReasonVi = fallbackReason
+                    }
+                };
             })
             .OrderByDescending(x => x.Score)
             .ThenBy(x => x.Id)
             .Take(3)
-            .Select(x => x.Id)
             .ToList();
 
-        return (recommendations, idOrder, rankedShadowing);
+        var rankedShadowingIds = rankedShadowingItems.Select(x => x.Id).ToList();
+        var rankedShadowingDtos = rankedShadowingItems.Select(x => x.Dto).ToList();
+
+        return (recommendations, idOrder, rankedShadowingIds, rankedShadowingDtos);
     }
 
     private static AdaptiveScenarioRecommendationDto BuildRecommendationDto(
@@ -533,6 +1314,10 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         if (candidate.MatchedWeakTerms.Count > 0)
         {
             reasonVi = $"Ôn trúng {candidate.MatchedWeakTerms.Count} điểm còn yếu ({candidate.MatchedWeakTerms[0]}) ở mức {chosenLevel}.";
+        }
+        else if (candidate.SemanticDomainOverlapCount > 0)
+        {
+            reasonVi = $"Tình huống mức {chosenLevel} giúp luyện đúng nhóm mẫu câu bạn đang cần củng cố.";
         }
         else if (candidate.IsFailed)
         {
@@ -672,8 +1457,16 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         var raw = !string.IsNullOrWhiteSpace(skillName) ? skillName.Trim() : (skillCode ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
         raw = Regex.Replace(raw, @"^(Từ vựng|Ngữ pháp)\s*:\s*", "", RegexOptions.IgnoreCase).Trim();
+        raw = Regex.Replace(raw, @"^Quy tắc giao tiếp\s*[:\-]?\s*", "", RegexOptions.IgnoreCase).Trim();
+        raw = Regex.Replace(raw, @"\(\s*E\d{2}[A-Z0-9_]*\s*\)", "", RegexOptions.IgnoreCase).Trim();
         var parenIdx = raw.IndexOf('(');
         if (parenIdx > 0) raw = raw[..parenIdx].Trim();
+        if (string.IsNullOrWhiteSpace(raw)
+            || string.Equals(raw, "Quy tắc giao tiếp", StringComparison.OrdinalIgnoreCase)
+            || Regex.IsMatch(raw, @"^\(?E\d{2}[A-Z0-9_]*\)?$", RegexOptions.IgnoreCase))
+        {
+            return string.Empty;
+        }
         return raw;
     }
 

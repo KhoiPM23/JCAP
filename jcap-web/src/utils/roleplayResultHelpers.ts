@@ -27,6 +27,23 @@ export type AdaptiveContextSummary = {
     reasonVi: string;
     isTopPick: boolean;
   }>;
+  recommendedShadowings?: Array<{
+    dialogueId: number;
+    matchScore: number;
+    reasonVi: string;
+  }>;
+  flashcardAdviceVi?: string | null;
+  aiCoaching?: {
+    sourceSessionId: number;
+    generatedAtUtc: string;
+    source: 'ai' | 'deterministic' | string;
+    executiveDiagnosis?: string;
+    axisInsights?: Record<string, { diagnosticVi?: string; drillMethodVi?: string }>;
+    scenarioReasons?: Record<string, string>;
+    shadowingReasons?: Record<string, string>;
+    flashcardAdviceVi?: string | null;
+    nextSessionFocus?: string | null;
+  } | null;
 };
 
 const DEFAULT_SCENARIOS_CATALOG: Array<{
@@ -152,6 +169,8 @@ export function buildAdaptiveRecommendations(
     return c.length > maxLen ? `${c.slice(0, maxLen - 1).trimEnd()}…` : c;
   };
 
+  const aiExecutiveDiagnosis = adaptiveContext?.aiCoaching?.executiveDiagnosis?.trim();
+
   const backendRecs = adaptiveContext?.recommendedScenarios;
   if (backendRecs && backendRecs.length > 0) {
     const mapped = backendRecs
@@ -197,7 +216,9 @@ export function buildAdaptiveRecommendations(
     if (mapped.length > 0) {
       return {
         items: mapped,
-        weaknessSummary: `Bạn ${vocabDesc} (~${Math.max(1, avgUtteranceLen)} ký tự/lượt). Hệ thống đề xuất ưu tiên trình độ ${adaptiveContext?.recommendedDifficulty || sameLevel}.`,
+        weaknessSummary:
+          aiExecutiveDiagnosis ||
+          `Bạn ${vocabDesc} (~${Math.max(1, avgUtteranceLen)} ký tự/lượt). Hệ thống đề xuất ưu tiên trình độ ${adaptiveContext?.recommendedDifficulty || sameLevel}.`,
       };
     }
   }

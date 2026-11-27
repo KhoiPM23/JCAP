@@ -5,12 +5,12 @@ import { roleplayResultService } from '../../services/roleplayResultService';
 import { scenarioService } from '../../services/scenarioService';
 import { flashcardService } from '../../services/flashcardService';
 import { scenarioVoiceService } from '../../services/scenarioVoiceService';
-import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../../utils/japaneseSanitizer';
 import { resolveMediaUrl, resolveApiUrl } from '../../utils/apiBase';
 import { TargetIcon, BarChartIcon, SparkIcon, BookmarkIcon, ArrowRightIcon, VolumeIcon, CompassIcon } from '../common/Icons';
 import type { LearnerIntelligenceProfileDto } from '../../types/roleplay';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
+import type { AdaptiveContextSummary } from '../../utils/roleplayResultHelpers';
 
 export interface LearnerIntelligenceRadarCardProps {
   onRefresh?: () => void;
@@ -106,22 +106,11 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 }) => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<LearnerIntelligenceProfileDto | null>(null);
-  const [adaptiveContext, setAdaptiveContext] = useState<{
-    recommendedDifficulty?: string;
-    recentTrend?: string;
+  const [adaptiveContext, setAdaptiveContext] = useState<(AdaptiveContextSummary & {
     hotWeaknesses?: string[];
     chronicWeaknesses?: string[];
     recommendedScenarioIds?: number[];
-    recommendedScenarios?: Array<{
-      scenarioId: number;
-      recommendedLevel: string;
-      tier: 'Consolidate' | 'Core' | 'Stretch' | string;
-      matchScore: number;
-      predictedPassRate: number;
-      reasonVi: string;
-      isTopPick: boolean;
-    }>;
-  } | null>(null);
+  }) | null>(null);
   const [availableScenarios, setAvailableScenarios] = useState<ScenarioListItem[]>([]);
   const [completedScenarioIds, setCompletedScenarioIds] = useState<Set<number>>(new Set());
   const [completedScenarioTitles, setCompletedScenarioTitles] = useState<Set<string>>(new Set());
@@ -267,6 +256,58 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     const confidenceTheme = getSkillStatusTheme(confidence);
     const autonomyTheme = getSkillStatusTheme(autonomy);
 
+    const axisInsights = adaptiveContext?.aiCoaching?.axisInsights;
+    const withAiInsight = (axisId: string, fallbackDiagnostic: string, fallbackDrill: string) => {
+      const insight = axisInsights?.[axisId];
+      return {
+        diagnosticDetail: insight?.diagnosticVi?.trim() || fallbackDiagnostic,
+        drillMethod: insight?.drillMethodVi?.trim() || fallbackDrill,
+      };
+    };
+
+    const reflexInsight = withAiInsight(
+      'reflex',
+      reflex >= 75
+        ? 'Bạn bắt nhịp câu hỏi rất nhanh, giữ luồng đối thoại tự nhiên.'
+        : 'Thời gian từ lúc AI dứt lời đến khi bạn mở lời còn trễ. Hãy tập bật ngay từ khóa hoặc lời đáp ngắn.',
+      'Luyện phản xạ nhanh tại quán ăn và cửa hàng.',
+    );
+    const styleInsight = withAiInsight(
+      'style',
+      styleScore >= 80
+        ? 'Bạn chọn đúng thể lịch sự hoặc thân mật theo vai vế tình huống.'
+        : 'Đôi lúc còn trộn lẫn thể ngắn và thể lịch sự trong cùng cuộc trò chuyện.',
+      'Luyện chuyển đổi cách xưng hô và thể văn theo vai vế.',
+    );
+    const particleInsight = withAiInsight(
+      'particle',
+      particles >= 85
+        ? 'Khung câu vững vàng, dùng chính xác các trợ từ cơ bản.'
+        : 'Cần phân biệt rõ trợ từ に và で khi nói về địa điểm, phương tiện.',
+      'Luyện hỏi đường và mua vé với nhiều trợ từ chỉ nơi chốn.',
+    );
+    const moraInsight = withAiInsight(
+      'mora',
+      rawMora >= 4.0
+        ? 'Bạn giữ nhịp trường âm, âm ngắt ổn định, dễ nghe.'
+        : 'Tốc độ nói còn ngắt quãng. Hãy luyện nối cụm từ thành một hơi liền mạch.',
+      'Nghe mẫu rồi lặp lại theo nhịp câu đời thường.',
+    );
+    const confidenceInsight = withAiInsight(
+      'confidence',
+      confidence >= 75
+        ? 'Hệ thống nhận diện giọng nói rõ ràng, âm lượng ổn định.'
+        : 'Một số âm cuối câu còn nhỏ hoặc bị nuốt âm. Hãy giữ hơi đều tới cuối câu.',
+      'Luyện đọc rõ tên món, số lượng và số tiền qua micro.',
+    );
+    const autonomyInsight = withAiInsight(
+      'autonomy',
+      autonomy >= 80
+        ? 'Bạn tự diễn đạt tốt bằng vốn từ của mình, ít cần mở gợi ý.'
+        : 'Vẫn còn mở gợi ý hoặc xem dịch sớm. Hãy thử tự ghép câu ngắn trước.',
+      'Thử đối thoại không dùng gợi ý Cấp 2/3.',
+    );
+
     return [
       {
         id: 'reflex',
@@ -278,10 +319,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         statusLabel: reflexTheme.statusLabel,
         statusText: getReflexAssessment(reflex),
         scopeBadge: 'Tốc độ bật lời sau câu hỏi',
-        diagnosticDetail: reflex >= 75
-          ? 'Bạn bắt nhịp câu hỏi rất nhanh, giữ luồng đối thoại tự nhiên.'
-          : 'Thời gian từ lúc AI dứt lời đến khi bạn mở lời còn trễ. Hãy tập bật ngay từ khóa hoặc lời đáp ngắn.',
-        drillMethod: 'Luyện phản xạ nhanh tại quán ăn và cửa hàng.',
+        diagnosticDetail: reflexInsight.diagnosticDetail,
+        drillMethod: reflexInsight.drillMethod,
         topicCode: 'DINING',
         topicName: 'Ẩm thực',
         accentColor: reflexTheme.hex,
@@ -297,10 +336,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         statusLabel: styleTheme.statusLabel,
         statusText: styleScore >= 80 ? 'Đúng vai vế giao tiếp' : 'Cần đồng nhất thể văn',
         scopeBadge: 'Linh hoạt lịch sự / thân mật',
-        diagnosticDetail: styleScore >= 80
-          ? 'Bạn chọn đúng thể lịch sự hoặc thân mật theo vai vế tình huống.'
-          : 'Đôi lúc còn trộn lẫn thể ngắn và thể lịch sự trong cùng cuộc trò chuyện.',
-        drillMethod: 'Luyện chuyển đổi cách xưng hô và thể văn theo vai vế.',
+        diagnosticDetail: styleInsight.diagnosticDetail,
+        drillMethod: styleInsight.drillMethod,
         topicCode: 'STUDY_WORK',
         topicName: 'Công sở',
         accentColor: styleTheme.hex,
@@ -316,10 +353,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         statusLabel: particleTheme.statusLabel,
         statusText: particles >= 85 ? 'Chuẩn xác は, が, を, に, で' : 'Lưu ý trợ từ に, で, を',
         scopeBadge: 'Cấu trúc trợ từ trong câu',
-        diagnosticDetail: particles >= 85
-          ? 'Khung câu vững vàng, dùng chính xác các trợ từ cơ bản.'
-          : 'Cần phân biệt rõ trợ từ に và で khi nói về địa điểm, phương tiện.',
-        drillMethod: 'Luyện hỏi đường và mua vé với nhiều trợ từ chỉ nơi chốn.',
+        diagnosticDetail: particleInsight.diagnosticDetail,
+        drillMethod: particleInsight.drillMethod,
         topicCode: 'TRANSPORT',
         topicName: 'Di chuyển',
         accentColor: particleTheme.hex,
@@ -335,10 +370,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         statusLabel: moraTheme.statusLabel,
         statusText: getMoraAssessment(rawMora),
         scopeBadge: 'Chuẩn giao tiếp: 4.0–6.0 âm/giây',
-        diagnosticDetail: rawMora >= 4.0
-          ? 'Bạn giữ nhịp trường âm, âm ngắt ổn định, dễ nghe.'
-          : 'Tốc độ nói còn ngắt quãng. Hãy luyện nối cụm từ thành một hơi liền mạch.',
-        drillMethod: 'Nghe mẫu rồi lặp lại theo nhịp câu đời thường.',
+        diagnosticDetail: moraInsight.diagnosticDetail,
+        drillMethod: moraInsight.drillMethod,
         topicCode: 'DAILY_LIFE',
         topicName: 'Đời sống',
         accentColor: moraTheme.hex,
@@ -354,10 +387,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         statusLabel: confidenceTheme.statusLabel,
         statusText: confidence >= 75 ? 'Khẩu hình sáng, rõ âm' : 'Cần nói tròn vành rõ chữ',
         scopeBadge: 'Độ rõ khi nói qua micro',
-        diagnosticDetail: confidence >= 75
-          ? 'Hệ thống nhận diện giọng nói rõ ràng, âm lượng ổn định.'
-          : 'Một số âm cuối câu còn nhỏ hoặc bị nuốt âm. Hãy giữ hơi đều tới cuối câu.',
-        drillMethod: 'Luyện đọc rõ tên món, số lượng và số tiền qua micro.',
+        diagnosticDetail: confidenceInsight.diagnosticDetail,
+        drillMethod: confidenceInsight.drillMethod,
         topicCode: 'SHOPPING',
         topicName: 'Mua sắm',
         accentColor: confidenceTheme.hex,
@@ -373,17 +404,15 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         statusLabel: autonomyTheme.statusLabel,
         statusText: autonomy >= 80 ? 'Độc lập không cần gợi ý' : 'Cần giảm mở gợi ý',
         scopeBadge: 'Tỷ lệ tự lập câu không trợ giúp',
-        diagnosticDetail: autonomy >= 80
-          ? 'Bạn tự diễn đạt tốt bằng vốn từ của mình, ít cần mở gợi ý.'
-          : 'Vẫn còn mở gợi ý hoặc xem dịch sớm. Hãy thử tự ghép câu ngắn trước.',
-        drillMethod: 'Thử đối thoại không dùng gợi ý Cấp 2/3.',
+        diagnosticDetail: autonomyInsight.diagnosticDetail,
+        drillMethod: autonomyInsight.drillMethod,
         topicCode: 'DINING',
         topicName: 'Tự chủ',
         accentColor: autonomyTheme.hex,
         badgeClass: autonomyTheme.badgeClass,
       },
     ];
-  }, [profile]);
+  }, [profile, adaptiveContext?.aiCoaching]);
 
   // Mặc định chọn kỹ năng có điểm thấp nhất để người học thấy ngay điểm cần bứt phá
   const activeAxis = useMemo(() => {
@@ -672,7 +701,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
   }, [allDeckItems]);
 
   const handleBookmarkSkillItem = async (parsed: ParsedSkillItem, idx: number) => {
-    ukiyoSound.playSubtleTap();
     const key = `${parsed.type}:${parsed.japanese}`;
     const isVocab = parsed.type === 'vocab';
     const wasSaved = savedItems.has(key);
@@ -715,10 +743,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     window.dispatchEvent(new CustomEvent('jcap_profile_updated'));
 
     if (!wasSaved) {
-      ukiyoSound.playMigotoChime();
       setToastMsg(`Đã đồng bộ 「${parsed.japanese}」 vào Kho Flashcard Đã Lưu!`);
     } else {
-      ukiyoSound.playSubtleTap();
       setToastMsg(`Đã bỏ lưu 「${parsed.japanese}」 khỏi Flashcard.`);
     }
     setTimeout(() => setToastMsg(null), 2800);
@@ -735,7 +761,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
   };
 
   const handleTriggerAxisDrill = (axis: RadarAxisConfig) => {
-    ukiyoSound.playTaikoThud();
     const matchedScn = availableScenarios.find((s) => s.topicCode === axis.topicCode);
     if (matchedScn) {
       navigate(`/scenarios/${matchedScn.id}`);
@@ -776,10 +801,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         </p>
         <button
           type="button"
-          onClick={() => {
-            ukiyoSound.playSubtleTap();
-            setRetryNonce((n) => n + 1);
-          }}
+          onClick={() => setRetryNonce((n) => n + 1)}
           className="inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2 text-xs font-bold text-white shadow-xs transition cursor-pointer"
         >
           Thử lại
@@ -800,7 +822,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         </p>
         <Link
           to="/scenarios"
-          onClick={() => ukiyoSound.playSubtleTap()}
           className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2 text-xs font-bold text-white shadow-xs transition"
         >
           <span>Bắt đầu phiên hội thoại đầu tiên</span>
@@ -1009,6 +1030,23 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
       {/* 2. BODY CONTENT                                                       */}
       {/* ===================================================================== */}
       <div className="p-5 sm:p-7 space-y-6">
+        {/* Nhận định tổng hợp thích ứng theo hành trình học */}
+        {adaptiveContext?.aiCoaching?.executiveDiagnosis && (
+          <div className="rounded-2xl border border-[var(--ai)]/25 bg-[var(--paper-100)]/90 px-4 py-3.5 flex items-start gap-3 shadow-2xs">
+            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[var(--ai-soft)] text-[var(--ai)] border border-[var(--ai)]/20">
+              <SparkIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--ai)] block">
+                Nhận định năng lực cá nhân hóa
+              </span>
+              <p className="mt-0.5 text-xs sm:text-[13px] text-[var(--sumi)] leading-relaxed font-medium">
+                {adaptiveContext.aiCoaching.executiveDiagnosis}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Cảnh báo hành vi động: Fail liên tiếp / Lỗi lặp lại */}
         {coachingAlerts.length > 0 && (
           <div className={`grid gap-3 ${coachingAlerts.length > 1 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
@@ -1134,10 +1172,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                     <g
                       key={`node-${pt.axis.id}`}
                       className="cursor-pointer"
-                      onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setSelectedAxisId(pt.axis.id);
-                      }}
+                      onClick={() => setSelectedAxisId(pt.axis.id)}
                     >
                       {/* Halo khi đang chọn */}
                       {isSelected && (
@@ -1294,10 +1329,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   return (
                     <div
                       key={axis.id}
-                      onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setSelectedAxisId(axis.id);
-                      }}
+                      onClick={() => setSelectedAxisId(axis.id)}
                       className={`group py-3.5 px-3.5 -mx-3 rounded-2xl transition-all cursor-pointer flex items-start gap-3 ${
                         isSelected
                           ? 'bg-[var(--ai-soft)]/55 ring-1 ring-[var(--ai)]/30 shadow-2xs'
@@ -1538,7 +1570,9 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   </div>
                 </div>
                 <p className="text-xs text-[var(--sumi-muted)] mt-1">
-                  Tổng hợp từ hội thoại và các thẻ đã lưu.
+                  {adaptiveContext?.flashcardAdviceVi ||
+                    adaptiveContext?.aiCoaching?.flashcardAdviceVi ||
+                    'Tổng hợp từ hội thoại và các thẻ đã lưu.'}
                 </p>
               </div>
 
@@ -1554,7 +1588,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                       key={tab.key}
                       type="button"
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
                         setDeckFilter(tab.key as any);
                         setDeckPage(1);
                       }}
@@ -1571,7 +1604,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 
                 <Link
                   to="/flashcards/bookmarks?level=All&type=All"
-                  onClick={() => ukiyoSound.playSubtleTap()}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 px-3.5 py-2 text-xs font-extrabold text-white shadow-xs transition active:scale-95 cursor-pointer"
                 >
                   <BookmarkIcon className="w-3.5 h-3.5 text-white" />
@@ -1657,7 +1689,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                           <button
                             type="button"
                             onClick={() => {
-                              ukiyoSound.playSubtleTap();
                               void scenarioVoiceService.playAiSpeech(parsed.japanese.replace(/[～〜]/g, ''), 2);
                             }}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--paper-50)] text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
@@ -1689,7 +1720,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                       </span>
                       <Link
                         to="/flashcards/bookmarks"
-                        onClick={() => ukiyoSound.playSubtleTap()}
                         className="text-[var(--ai)] font-extrabold hover:underline inline-flex items-center gap-1"
                         title="Mở bộ thẻ đã lưu để ôn tập"
                       >
@@ -1711,10 +1741,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      ukiyoSound.playSubtleTap();
-                      setDeckPage((prev) => Math.max(1, prev - 1));
-                    }}
+                    onClick={() => setDeckPage((prev) => Math.max(1, prev - 1))}
                     disabled={deckPage === 1}
                     className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--sumi)] hover:bg-[var(--paper-100)] disabled:opacity-40 disabled:pointer-events-none transition shadow-2xs cursor-pointer"
                   >
@@ -1725,10 +1752,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      ukiyoSound.playSubtleTap();
-                      setDeckPage((prev) => Math.min(Math.ceil(filteredReviewItems.length / DECK_PAGE_SIZE), prev + 1));
-                    }}
+                    onClick={() => setDeckPage((prev) => Math.min(Math.ceil(filteredReviewItems.length / DECK_PAGE_SIZE), prev + 1))}
                     disabled={deckPage >= Math.ceil(filteredReviewItems.length / DECK_PAGE_SIZE)}
                     className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--sumi)] hover:bg-[var(--paper-100)] disabled:opacity-40 disabled:pointer-events-none transition shadow-2xs cursor-pointer"
                   >
@@ -1879,7 +1903,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   <div className="pt-3 border-t border-[var(--line)]/80 mt-auto">
                     <Link
                       to={`/scenarios/${item.id}`}
-                      onClick={() => ukiyoSound.playTaikoThud()}
                       className={`w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition active:scale-95 shadow-sm ${
                         item.isTopPick
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white'

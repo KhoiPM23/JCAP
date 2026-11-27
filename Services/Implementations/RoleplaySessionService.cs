@@ -890,11 +890,14 @@ public class RoleplaySessionService : IRoleplaySessionService
             ddaOrSupportDirective = ddaDecision.PromptModifier;
         }
 
+        string? nextSessionCoachingFocus = null;
         try
         {
             var learnerProf = await _telemetryEvaluator.GetOrCreateProfileAsync(userId);
             if (learnerProf != null)
             {
+                nextSessionCoachingFocus = AdaptiveProfileService.ExtractNextSessionFocus(learnerProf.InferredTraitsJson, jlptLevelUpper);
+
                 if ((learnerProf.SpeakingReflexIndex < 55 || learnerProf.AverageMoraRate < 3.4) && ddaDecision.SpeedScale >= 1.0)
                 {
                     ddaDecision.SpeedScale = 0.88;
@@ -928,6 +931,12 @@ public class RoleplaySessionService : IRoleplaySessionService
         else if (priorityDirectives.Count < 3 && !string.IsNullOrWhiteSpace(ddaOrSupportDirective))
         {
             priorityDirectives.Add(ddaOrSupportDirective);
+        }
+
+        // Bơm mục tiêu rèn riêng từ AI Coaching (nếu còn slot < 3, tuyệt đối giữ vai và cấp độ JLPT)
+        if (priorityDirectives.Count < 3 && !string.IsNullOrWhiteSpace(nextSessionCoachingFocus))
+        {
+            priorityDirectives.Add($"[ADAPTIVE COACHING FOCUS (giữ nguyên vai nhân vật & đúng cấp độ JLPT {jlptLevelUpper}): {nextSessionCoachingFocus}]");
         }
 
         // Chỉ giữ ký ức NPC ngắn gọn (1 dòng) nếu còn slot
@@ -1793,6 +1802,24 @@ public class RoleplaySessionService : IRoleplaySessionService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Lỗi khi lưu LearnerMemory/CharacterMemory khi kết thúc phiên {SessionId}", sessionId);
+        }
+
+        // Tổng hợp AI Coaching Snapshot một lần lúc kết thúc phiên (strict 4000ms timeout, tự động fallback an toàn)
+        if (_adaptiveProfileService != null)
+        {
+            try
+            {
+                using var coachingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                coachingCts.CancelAfter(TimeSpan.FromMilliseconds(4000));
+                await _adaptiveProfileService.GenerateAndPersistCoachingSnapshotAsync(
+                    userId,
+                    sessionId,
+                    coachingCts.Token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Bỏ qua hoặc timeout khi tổng hợp AI Adaptive Coaching cho phiên {SessionId}", sessionId);
+            }
         }
 
         return ApiResponse<bool>.Ok(true, "Phiên luyện tập đã kết thúc thành công.");

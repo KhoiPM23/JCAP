@@ -44,4 +44,28 @@ describe('ukiyoSoundEngine', () => {
       assert.equal(ukiyoSound.getIsMuted(), false);
     });
   });
+
+  describe('semantic feedback & anti-duplicate cooldowns', () => {
+    it('executes playSuccessChime, playWarningTone, and playErrorTone safely', () => {
+      ukiyoSound.setMuted(false);
+      ukiyoSound.resetCooldowns();
+      assert.doesNotThrow(() => {
+        ukiyoSound.playSuccessChime();
+        ukiyoSound.resetCooldowns();
+        ukiyoSound.playWarningTone();
+        ukiyoSound.resetCooldowns();
+        ukiyoSound.playErrorTone();
+      });
+    });
+
+    it('blocks rapid duplicate triggers on the same cue or feedback channel', () => {
+      ukiyoSound.setMuted(false);
+      ukiyoSound.resetCooldowns();
+
+      assert.equal(ukiyoSound.canPlay('feedback_success', 450, true), true);
+      assert.equal(ukiyoSound.canPlay('feedback_success', 450, true), false);
+      assert.equal(ukiyoSound.canPlay('feedback_warning', 450, true), false);
+      assert.equal(ukiyoSound.canPlay('migoto', 800, true, true), false);
+    });
+  });
 });

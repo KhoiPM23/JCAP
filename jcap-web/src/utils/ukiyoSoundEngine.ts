@@ -22,6 +22,44 @@ class UkiyoSoundEngine {
   private ambientSource: AudioNode | null = null;
   private ambientGain: GainNode | null = null;
   private ambientType: AmbientTheme | null = null;
+  private lastSoundAt: Map<string, number> = new Map();
+  private lastFeedbackAt: number = 0;
+
+  private getNowMs(): number {
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+      return performance.now();
+    }
+    return Date.now();
+  }
+
+  /**
+   * Anti-duplicate cooldown gate: ngăn phát lặp 2 lần cùng một âm thanh hoặc đè chồng âm phản hồi liên tiếp.
+   */
+  public canPlay(key: string, cooldownMs: number = 320, isFeedbackChannel: boolean = false, allowOverrideNonMigoto: boolean = false): boolean {
+    if (this.isMuted) return false;
+    const now = this.getNowMs();
+
+    const prevKeyAt = this.lastSoundAt.get(key);
+    if (prevKeyAt !== undefined && now - prevKeyAt < cooldownMs) {
+      return false;
+    }
+
+    if (isFeedbackChannel) {
+      const minGap = allowOverrideNonMigoto ? 120 : 450;
+      if (this.lastFeedbackAt > 0 && now - this.lastFeedbackAt < minGap) {
+        return false;
+      }
+      this.lastFeedbackAt = now;
+    }
+
+    this.lastSoundAt.set(key, now);
+    return true;
+  }
+
+  public resetCooldowns() {
+    this.lastSoundAt.clear();
+    this.lastFeedbackAt = 0;
+  }
 
   private initContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -46,34 +84,34 @@ class UkiyoSoundEngine {
   }
 
   /**
-   * Tiếng trống Taiko (Thud): Âm bass trầm, rền, dùng cho Eki-Stamp slam hoặc khi vào phòng luyện.
+   * Tiếng trống Taiko dịu nhẹ (Thud): Âm bass trầm nhẹ, dùng khi mở phòng luyện / khai cuộc.
    */
   public playTaikoThud() {
-    if (this.isMuted) return;
+    if (!this.canPlay('taiko', 400, false)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
     const now = ctx.currentTime;
 
-    // 1. Bass Oscillator (Màng trống)
+    // 1. Bass Oscillator (Màng trống nhẹ nhàng)
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'sine';
     osc.frequency.setValueAtTime(140, now);
-    osc.frequency.exponentialRampToValueAtTime(42, now + 0.35);
+    osc.frequency.exponentialRampToValueAtTime(42, now + 0.32);
 
-    gain.gain.setValueAtTime(0.7, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start(now);
-    osc.stop(now + 0.45);
+    osc.stop(now + 0.38);
 
-    // 2. Skin Noise (Tiếng đập mặt da)
-    const bufferSize = ctx.sampleRate * 0.05;
+    // 2. Skin Noise (Tiếng chạm da nhẹ)
+    const bufferSize = Math.floor(ctx.sampleRate * 0.04);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -85,11 +123,11 @@ class UkiyoSoundEngine {
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(320, now);
+    filter.frequency.setValueAtTime(280, now);
 
     const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.4, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+    noiseGain.gain.setValueAtTime(0.07, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.005, now + 0.04);
 
     noise.connect(filter);
     filter.connect(noiseGain);
@@ -99,10 +137,10 @@ class UkiyoSoundEngine {
   }
 
   /**
-   * Tiếng phách gỗ Hyoshigi (Woodblock Snap): Đanh gọn, dùng khi chuyển lượt hoặc ghi âm xong.
+   * Tiếng phách gỗ Hyoshigi (Woodblock Snap) nhẹ nhàng.
    */
   public playWoodblockSnap() {
-    if (this.isMuted) return;
+    if (!this.canPlay('woodblock', 260, false)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
@@ -119,8 +157,8 @@ class UkiyoSoundEngine {
     osc2.frequency.setValueAtTime(1320, now);
     osc2.frequency.exponentialRampToValueAtTime(940, now + 0.035);
 
-    gain.gain.setValueAtTime(0.35, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    gain.gain.setValueAtTime(0.09, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
 
     osc1.connect(gain);
     osc2.connect(gain);
@@ -134,10 +172,9 @@ class UkiyoSoundEngine {
 
   /**
    * Âm phản xạ đệm tức thì Aizuchi (Harmonic conversational acknowledgment cue).
-   * Phát ngay khi người học nhấn gửi để xoá bỏ dead-air trong lúc chờ Gemini & VOICEVOX.
    */
   public playAizuchi() {
-    if (this.isMuted) return;
+    if (!this.canPlay('aizuchi', 350, false)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
@@ -147,7 +184,6 @@ class UkiyoSoundEngine {
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
 
-    // 2 tone nhẹ nhàng mô phỏng phản xạ "はい / うん" ấm áp
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(440, now);
     osc1.frequency.exponentialRampToValueAtTime(554.37, now + 0.12);
@@ -157,11 +193,11 @@ class UkiyoSoundEngine {
     osc2.frequency.exponentialRampToValueAtTime(440, now + 0.12);
 
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(2200, now);
+    filter.frequency.setValueAtTime(1800, now);
 
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.38, now + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    gain.gain.linearRampToValueAtTime(0.09, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
 
     osc1.connect(filter);
     osc2.connect(filter);
@@ -170,25 +206,22 @@ class UkiyoSoundEngine {
 
     osc1.start(now);
     osc2.start(now);
-    osc1.stop(now + 0.4);
-    osc2.stop(now + 0.4);
+    osc1.stop(now + 0.36);
+    osc2.stop(now + 0.36);
   }
 
   /**
-   * Chuỗi chuông ngũ cung Hirajoshi (Migoto Chime): Cung điệu truyền thống Nhật Bản (C, Db, F, G, Ab).
-   * Dùng khi hoàn thành nhiệm vụ (Mission Complete) hoặc kết thúc hội thoại thành công.
+   * Âm phản hồi TÍCH CỰC (Success Chime): 2 nốt thanh thoát, dịu nhẹ cho lượt nói tốt hoặc đạt chuẩn.
    */
-  public playMigotoChime() {
-    if (this.isMuted) return;
+  public playSuccessChime() {
+    if (!this.canPlay('feedback_success', 450, true)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
-    // Hirajoshi Pentatonic Frequencies (Hz)
-    const notes = [523.25, 554.37, 698.46, 783.99, 830.61, 1046.50];
+    const notes = [523.25, 783.99];
     const now = ctx.currentTime;
-
     notes.forEach((freq, idx) => {
-      const noteTime = now + idx * 0.07;
+      const noteTime = now + idx * 0.085;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -196,32 +229,129 @@ class UkiyoSoundEngine {
       osc.frequency.setValueAtTime(freq, noteTime);
 
       gain.gain.setValueAtTime(0, noteTime);
-      gain.gain.linearRampToValueAtTime(0.18, noteTime + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.65);
+      gain.gain.linearRampToValueAtTime(0.07, noteTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.28);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start(noteTime);
-      osc.stop(noteTime + 0.7);
+      osc.stop(noteTime + 0.3);
     });
   }
 
   /**
-   * Tiếng đồng xu vàng rơi lẻng kẻng (Coin Jingle / Shopee Lucky Coins):
-   * Va chạm kim loại trong trẻo, vui tươi khi nhận xu may mắn hoặc phúc lộc đền thờ.
+   * Âm phản hồi LƯU Ý NHẸ (Warning Tone): 1 nốt mềm trầm ấm báo sắc thái/chưa đạt nhẹ (không gắt).
    */
-  public playCoinJingle() {
-    if (this.isMuted) return;
+  public playWarningTone() {
+    if (!this.canPlay('feedback_warning', 450, true)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    // 2 nhịp lẻng kẻng liên tiếp: nốt 1 (B5 ~ 987Hz), nốt 2 (E6 ~ 1318Hz) kèm overtone kim loại
+    const osc = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(392, now + 0.16);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1200, now);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.065, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.22);
+  }
+
+  /**
+   * Âm phản hồi LỖI CẦN SỬA (Error Tone): 2 nốt trầm ngắn (300Hz -> 220Hz), rõ ràng mà êm tai.
+   */
+  public playErrorTone() {
+    if (!this.canPlay('feedback_error', 450, true)) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    const notes = [300, 220];
+    const now = ctx.currentTime;
+    notes.forEach((freq, idx) => {
+      const noteTime = now + idx * 0.095;
+      const osc = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, noteTime);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(900, noteTime);
+
+      gain.gain.setValueAtTime(0, noteTime);
+      gain.gain.linearRampToValueAtTime(0.075, noteTime + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.16);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.18);
+    });
+  }
+
+  /**
+   * Chuỗi chuông ngũ cung nhẹ nhàng (Migoto Chime): Chỉ dùng khi hoàn thành nhiệm vụ.
+   * Cooldown 800ms tránh lặp 2 lần liên tiếp.
+   */
+  public playMigotoChime() {
+    if (!this.canPlay('migoto', 800, true, true)) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    const now = ctx.currentTime;
+
+    notes.forEach((freq, idx) => {
+      const noteTime = now + idx * 0.075;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, noteTime);
+
+      gain.gain.setValueAtTime(0, noteTime);
+      gain.gain.linearRampToValueAtTime(0.07, noteTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.42);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.45);
+    });
+  }
+
+  /**
+   * Tiếng đồng xu vàng nhẹ nhàng (Coin Jingle).
+   */
+  public playCoinJingle() {
+    if (!this.canPlay('coin', 400, false)) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
     const coinTones = [
-      { freq: 987.77, time: now, vol: 0.16 },
-      { freq: 1318.51, time: now + 0.075, vol: 0.22 },
-      { freq: 2637.02, time: now + 0.075, vol: 0.08 },
+      { freq: 987.77, time: now, vol: 0.065 },
+      { freq: 1318.51, time: now + 0.075, vol: 0.085 },
+      { freq: 2637.02, time: now + 0.075, vol: 0.03 },
     ];
 
     coinTones.forEach(({ freq, time, vol }) => {
@@ -233,26 +363,26 @@ class UkiyoSoundEngine {
 
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(vol, time + 0.006);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.42);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start(time);
-      osc.stop(time + 0.5);
+      osc.stop(time + 0.45);
     });
   }
 
   /**
-   * Tiếng giấy Washi sột soạt nhẹ: Dùng khi mở bảng gợi ý hoặc lật trang.
+   * Tiếng giấy Washi sột soạt nhẹ: Dùng khi mở bảng gợi ý hoặc lật thẻ.
    */
   public playPaperRustle() {
-    if (this.isMuted) return;
+    if (!this.canPlay('paper', 300, false)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    const bufferSize = ctx.sampleRate * 0.12;
+    const bufferSize = Math.floor(ctx.sampleRate * 0.12);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -268,7 +398,7 @@ class UkiyoSoundEngine {
     filter.Q.setValueAtTime(1.5, now);
 
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.setValueAtTime(0.045, now);
     gain.gain.exponentialRampToValueAtTime(0.005, now + 0.12);
 
     noise.connect(filter);
@@ -279,10 +409,10 @@ class UkiyoSoundEngine {
   }
 
   /**
-   * Tiếng gõ nhẹ (Subtle Tap): Dùng khi ấn nút hoặc chọn gợi ý.
+   * Tiếng gõ nhẹ (Subtle Tap) rất nhỏ.
    */
   public playSubtleTap() {
-    if (this.isMuted) return;
+    if (!this.canPlay('tap', 180, false)) return;
     const ctx = this.initContext();
     if (!ctx) return;
 
@@ -294,7 +424,7 @@ class UkiyoSoundEngine {
     osc.frequency.setValueAtTime(1050, now);
     osc.frequency.exponentialRampToValueAtTime(450, now + 0.02);
 
-    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.setValueAtTime(0.04, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
 
     osc.connect(gain);

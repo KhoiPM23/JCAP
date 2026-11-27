@@ -536,10 +536,7 @@ const UnifiedHexagonEvaluationPanel: React.FC<{
                   <g
                     key={`vertex-${axis.id}`}
                     className="cursor-pointer"
-                    onClick={() => {
-                      ukiyoSound.playWoodblockSnap();
-                      setSelectedAxis(axis.id);
-                    }}
+                    onClick={() => setSelectedAxis(axis.id)}
                   >
                     {isSel && (
                       <circle cx={nodeX} cy={nodeY} r="12" fill={axis.accentHex} opacity="0.3" className="animate-pulse" />
@@ -640,10 +637,7 @@ const UnifiedHexagonEvaluationPanel: React.FC<{
                 <button
                   key={axis.id}
                   type="button"
-                  onClick={() => {
-                    ukiyoSound.playWoodblockSnap();
-                    setSelectedAxis(axis.id);
-                  }}
+                  onClick={() => setSelectedAxis(axis.id)}
                   className={`group relative overflow-hidden flex flex-col justify-between rounded-2xl p-3.5 sm:p-4 text-left transition-all duration-200 cursor-pointer tactile-press min-h-[120px] ${
                     isSel
                       ? 'border-2 border-[var(--ai)] bg-sky-50/70 shadow-sm ring-2 ring-[var(--ai)]/20'
@@ -775,7 +769,6 @@ export const ConversationResultDetailView: React.FC = () => {
   const [hiddenTranscriptFuriIds, setHiddenTranscriptFuriIds] = useState<Set<number | string>>(() => new Set());
 
   const toggleAllTranscriptTranslations = () => {
-    ukiyoSound.playSubtleTap();
     if (!result?.messages) return;
     setRevealedTranscriptTranslationIds((prev) => {
       if (prev.size >= Math.ceil(result.messages.length / 2)) {
@@ -786,7 +779,6 @@ export const ConversationResultDetailView: React.FC = () => {
   };
 
   const toggleAllTranscriptFurigana = () => {
-    ukiyoSound.playSubtleTap();
     if (!result?.messages) return;
     setHiddenTranscriptFuriIds((prev) => {
       if (prev.size === 0) {
@@ -867,7 +859,6 @@ export const ConversationResultDetailView: React.FC = () => {
       vocabs.forEach((v) => newSavedVocabIds.add(v.id));
       setSavedVocabIds(newSavedVocabIds);
       setIsAllSaved(true);
-      ukiyoSound.playMigotoChime();
       setToastMessage(
         `Đã lưu ${vocabs.length + grammars.length} mục vào Kho thẻ đã lưu!`,
       );
@@ -913,7 +904,6 @@ export const ConversationResultDetailView: React.FC = () => {
           "jcap_saved_flashcards",
           JSON.stringify([...existing, item]),
         );
-        ukiyoSound.playMigotoChime();
         setToastMessage(`Đã thêm "${vocab.word}" vào Kho thẻ đã lưu!`);
       } else {
         const filtered = existing.filter(
@@ -921,7 +911,6 @@ export const ConversationResultDetailView: React.FC = () => {
             !(i.type === "vocab" && (i.id === vocab.id || i.word === vocab.word)),
         );
         localStorage.setItem("jcap_saved_flashcards", JSON.stringify(filtered));
-        ukiyoSound.playSubtleTap();
         setToastMessage(`Đã bỏ lưu "${vocab.word}" khỏi Flashcard.`);
       }
       window.dispatchEvent(new CustomEvent('jcap_bookmarks_updated'));
@@ -964,7 +953,6 @@ export const ConversationResultDetailView: React.FC = () => {
   const [expandedWeakGrammarDetailIds, setExpandedWeakGrammarDetailIds] = useState<Set<number>>(new Set());
 
   const toggleWeakGrammarDetail = (id: number) => {
-    ukiyoSound.playSubtleTap();
     setExpandedWeakGrammarDetailIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -1009,7 +997,6 @@ export const ConversationResultDetailView: React.FC = () => {
           "jcap_saved_flashcards",
           JSON.stringify([...existing, item]),
         );
-        ukiyoSound.playMigotoChime();
         setToastMessage(`Đã thêm "${vocab.word}" vào Flashcards!`);
       } else {
         const filtered = existing.filter(
@@ -1017,7 +1004,6 @@ export const ConversationResultDetailView: React.FC = () => {
             !(i.type === "vocab" && (i.id === vocab.id || i.word === vocab.word)),
         );
         localStorage.setItem("jcap_saved_flashcards", JSON.stringify(filtered));
-        ukiyoSound.playSubtleTap();
         setToastMessage(`Đã bỏ lưu "${vocab.word}" khỏi Flashcards.`);
       }
       window.dispatchEvent(new CustomEvent('jcap_bookmarks_updated'));
@@ -1063,7 +1049,6 @@ export const ConversationResultDetailView: React.FC = () => {
           "jcap_saved_flashcards",
           JSON.stringify([...existing, item]),
         );
-        ukiyoSound.playMigotoChime();
         setToastMessage(
           `Đã thêm mẫu ngữ pháp "${grammar.pattern}" vào Flashcards!`,
         );
@@ -1076,7 +1061,6 @@ export const ConversationResultDetailView: React.FC = () => {
             ),
         );
         localStorage.setItem("jcap_saved_flashcards", JSON.stringify(filtered));
-        ukiyoSound.playSubtleTap();
         setToastMessage(`Đã bỏ lưu "${grammar.pattern}" khỏi Flashcard.`);
       }
       window.dispatchEvent(new CustomEvent('jcap_bookmarks_updated'));
@@ -1158,7 +1142,6 @@ export const ConversationResultDetailView: React.FC = () => {
       setSavedWeakGrammarIds(nextGrammarIds);
 
       setIsAllWeakSaved(true);
-      ukiyoSound.playMigotoChime();
       setToastMessage(
         `Đã lưu tất cả ${totalCount} từ và mẫu câu vào Flashcards!`,
       );
@@ -1205,14 +1188,12 @@ export const ConversationResultDetailView: React.FC = () => {
   }, [result?.messages]);
 
   const handleSetTurnFilter = (filter: 'all' | 'good' | 'warning') => {
-    ukiyoSound.playWoodblockSnap();
     setTurnFilter(filter);
     // Luôn giữ mặc định thu gọn để giao diện tinh tế, người học chủ động mở từng lượt
     setExpandedTurnIds(new Set());
   };
 
   const toggleTurnExpansion = (turnId: number) => {
-    ukiyoSound.playSubtleTap();
     setExpandedTurnIds((prev) => {
       const next = new Set(prev);
       if (next.has(turnId)) {
@@ -1225,14 +1206,12 @@ export const ConversationResultDetailView: React.FC = () => {
   };
 
   const handleExpandAllTurns = () => {
-    ukiyoSound.playSubtleTap();
     if (!result?.messages) return;
     const allTurnIds = result.messages.map((m, idx) => m.id || idx);
     setExpandedTurnIds(new Set(allTurnIds));
   };
 
   const handleCollapseAllTurns = () => {
-    ukiyoSound.playSubtleTap();
     setExpandedTurnIds(new Set());
   };
 
@@ -1372,8 +1351,6 @@ export const ConversationResultDetailView: React.FC = () => {
     localStorage.setItem("jcap_saved_flashcards", JSON.stringify(merged));
     window.dispatchEvent(new CustomEvent('jcap_bookmarks_updated'));
 
-    ukiyoSound.playMigotoChime();
-
     setToastMessage(
       `Đã lưu ${itemsToSave.length} từ vựng & câu chuẩn vào Sổ tay Flashcard!`,
     );
@@ -1457,7 +1434,11 @@ export const ConversationResultDetailView: React.FC = () => {
         setError(response.message || "Không thể tải kết quả luyện tập.");
       } else {
         setResult(response.data);
-        ukiyoSound.playTaikoThud();
+        if (response.data.passStatus) {
+          ukiyoSound.playSuccessChime();
+        } else {
+          ukiyoSound.playWarningTone();
+        }
 
         // Nạp thêm danh sách kịch bản và hồ sơ năng lực (để phát hiện lỗi lặp lại / fail liên tiếp)
         void scenarioService.getScenarios().then((res) => {
@@ -1815,7 +1796,6 @@ export const ConversationResultDetailView: React.FC = () => {
               </div>
               <Link
                 to="/profile/competency"
-                onClick={() => ukiyoSound.playSubtleTap()}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[var(--ai)] border border-[var(--line)] hover:border-[var(--ai)] transition shrink-0 shadow-2xs"
               >
                 <span>Xem Năng lực cá nhân</span>
@@ -1903,7 +1883,6 @@ export const ConversationResultDetailView: React.FC = () => {
                 </div>
                 <Link
                   to="/profile/competency"
-                  onClick={() => ukiyoSound.playSubtleTap()}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--ai)]/30 bg-[var(--ai-soft)]/60 hover:bg-[var(--ai)] hover:text-white px-3.5 py-2 text-xs font-bold text-[var(--ai)] transition shrink-0"
                 >
                   <span>Mở Hồ sơ Năng lực</span>
@@ -2158,7 +2137,6 @@ export const ConversationResultDetailView: React.FC = () => {
                 key={tab.key}
                 type="button"
                 onClick={() => {
-                  ukiyoSound.playSubtleTap();
                   setActiveResultTab(tab.key);
                   if (tab.key === 'transcript') {
                     setIsTranscriptOpen(true);
@@ -2776,10 +2754,7 @@ export const ConversationResultDetailView: React.FC = () => {
                 <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
-                    onClick={() => {
-                      ukiyoSound.playSubtleTap();
-                      navigate(`/learning/topics?topic=${topicCode}`);
-                    }}
+                    onClick={() => navigate(`/learning/topics?topic=${topicCode}`)}
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] active:scale-95 text-white font-bold text-xs shadow-xs transition cursor-pointer tactile-press"
                   >
                     <BookOpenIcon className="w-4 h-4" />
@@ -2849,6 +2824,11 @@ export const ConversationResultDetailView: React.FC = () => {
                         <h4 className="text-sm sm:text-base font-bold text-[var(--sumi)] font-sans whitespace-nowrap">
                           Điểm cần ôn tập ({totalWeakCount})
                         </h4>
+                        {(adaptiveContext?.flashcardAdviceVi || adaptiveContext?.aiCoaching?.flashcardAdviceVi) && (
+                          <p className="text-[11px] text-[var(--sumi-muted)] mt-1 leading-relaxed font-sans">
+                            {adaptiveContext.flashcardAdviceVi || adaptiveContext.aiCoaching?.flashcardAdviceVi}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -3206,7 +3186,13 @@ export const ConversationResultDetailView: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    recommendedShadowing.map((dialogue) => (
+                    recommendedShadowing.map((dialogue) => {
+                      const adaptiveShadowingReason =
+                        adaptiveContext?.recommendedShadowings?.find((s) => s.dialogueId === dialogue.id)?.reasonVi ||
+                        adaptiveContext?.aiCoaching?.shadowingReasons?.[String(dialogue.id)] ||
+                        dialogue.matchReason;
+
+                      return (
                       <div
                         key={dialogue.id}
                         className="rounded-2xl border border-sky-200/70 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-md hover:border-sky-400 transition-all duration-300 group"
@@ -3230,10 +3216,10 @@ export const ConversationResultDetailView: React.FC = () => {
                           {dialogue.title}
                         </h4>
 
-                        {dialogue.matchReason && (
+                        {adaptiveShadowingReason && (
                           <div className="mt-2.5 bg-sky-50/50 p-2.5 rounded-xl border border-sky-100 text-[11px] text-[var(--sumi-muted)] flex items-start gap-1.5 leading-relaxed font-sans">
                             <CompassIcon className="w-3.5 h-3.5 text-sky-600 shrink-0 mt-0.5" />
-                            <span>{dialogue.matchReason}</span>
+                            <span>{adaptiveShadowingReason}</span>
                           </div>
                         )}
 
@@ -3255,7 +3241,8 @@ export const ConversationResultDetailView: React.FC = () => {
                           </Link>
                         </div>
                       </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -3494,7 +3481,6 @@ export const ConversationResultDetailView: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  ukiyoSound.playSubtleTap();
                                   const key = msg.id || index;
                                   setRevealedTranscriptTranslationIds((prev) => {
                                     const next = new Set(prev);
@@ -3518,7 +3504,6 @@ export const ConversationResultDetailView: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                ukiyoSound.playSubtleTap();
                                 const key = msg.id || index;
                                 setHiddenTranscriptFuriIds((prev) => {
                                   const next = new Set(prev);
@@ -3582,7 +3567,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
                         {msg.furiganaHtml && !hiddenTranscriptFuriIds.has(msg.id || index) ? (
                           <div
-                            className="text-sm sm:text-base font-bold text-[var(--sumi)] leading-relaxed break-words font-jp tracking-normal"
+                            className="text-sm sm:text-base font-bold text-[var(--sumi)] leading-[2.05] break-words font-jp tracking-normal"
                             dangerouslySetInnerHTML={{
                               __html: alignFuriganaWithOriginal(msg.furiganaHtml, msg.japaneseText),
                             }}
