@@ -266,4 +266,97 @@ public class HostingConfigurationTests
         Assert.True(policy.IsOriginAllowed("https://beta.example.com"));
         Assert.False(policy.IsOriginAllowed("https://evil.example.com"));
     }
+
+    [Fact]
+    public async Task ForwardedHeaders_DefaultTrustAllProxies_UpdatesForwardedHost()
+    {
+        var services = new ServiceCollection();
+        services.AddJcapForwardedHeaders(BuildConfig(new Dictionary<string, string?>()));
+        using var provider = services.BuildServiceProvider();
+
+        var options = provider.GetRequiredService<IOptions<ForwardedHeadersOptions>>();
+        var middleware = new ForwardedHeadersMiddleware(
+            _ => Task.CompletedTask,
+            NullLoggerFactory.Instance,
+            options);
+
+        var context = new DefaultHttpContext();
+        context.Connection.RemoteIpAddress = IPAddress.Parse("172.18.0.5");
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("localhost:5254");
+        context.Request.Headers["X-Forwarded-Proto"] = "https";
+        context.Request.Headers["X-Forwarded-Host"] = "jcap.ddns.net";
+
+        await middleware.Invoke(context);
+
+        Assert.Equal("https", context.Request.Scheme);
+        Assert.Equal("jcap.ddns.net", context.Request.Host.Value);
+    }
+
+    [Fact]
+    public void PublicUrlResolver_WhenConfigIsLocalhostAndRequestIsPublic_UsesDynamicRequestDomain()
+    {
+        var config = BuildConfig(new Dictionary<string, string?>
+        {
+            ["BackendUrl"] = "http://localhost:5254",
+            ["FrontendUrl"] = "http://localhost:5173",
+            ["Authentication:Google:RedirectUri"] = "http://localhost:5254/api/auth/google/callback"
+        });
+
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("jcap-demo.ddns.net");
+
+        Assert.Equal("https://jcap-demo.ddns.net", PublicUrlResolver.ResolveBackendUrl(config, context));
+        Assert.Equal("https://jcap-demo.ddns.net", PublicUrlResolver.ResolveFrontendUrl(config, context));
+        Assert.Equal(
+            "https://jcap-demo.ddns.net/api/auth/google/callback",
+            PublicUrlResolver.ResolveGoogleRedirectUri(config, context));
+    }
+
+    [Fact]
+    public void PublicUrlResolver_WhenConfigIsExplicitPublicUrl_PrefersConfiguredValues()
+    {
+        var config = BuildConfig(new Dictionary<string, string?>
+        {
+            ["BackendUrl"] = "https://api.jcap.example/",
+            ["FrontendUrl"] = "https://app.jcap.example/",
+            ["Authentication:Google:RedirectUri"] = "https://api.jcap.example/api/auth/google/callback"
+        });
+
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("other.ddns.net");
+        context.Request.Headers.Origin = "https://other.ddns.net";
+
+        Assert.Equal("https://api.jcap.example", PublicUrlResolver.ResolveBackendUrl(config, context));
+        Assert.Equal("https://app.jcap.example", PublicUrlResolver.ResolveFrontendUrl(config, context));
+        Assert.Equal(
+            "https://api.jcap.example/api/auth/google/callback",
+            PublicUrlResolver.ResolveGoogleRedirectUri(config, context));
+    }
+
+    [Fact]
+    public void PublicUrlResolver_WhenRequestIsLocalhostOrNull_PreservesLocalFallback()
+    {
+        var config = BuildConfig(new Dictionary<string, string?>
+        {
+            ["BackendUrl"] = "http://localhost:5254",
+            ["FrontendUrl"] = "http://localhost:5173",
+            ["Authentication:Google:RedirectUri"] = "http://localhost:5254/api/auth/google/callback"
+        });
+
+        var localContext = new DefaultHttpContext();
+        localContext.Request.Scheme = "http";
+        localContext.Request.Host = new HostString("localhost:5173");
+
+        Assert.Equal("http://localhost:5254", PublicUrlResolver.ResolveBackendUrl(config, localContext));
+        Assert.Equal("http://localhost:5173", PublicUrlResolver.ResolveFrontendUrl(config, localContext));
+        Assert.Equal(
+            "http://localhost:5254/api/auth/google/callback",
+            PublicUrlResolver.ResolveGoogleRedirectUri(config, localContext));
+
+        Assert.Equal("http://localhost:5254", PublicUrlResolver.ResolveBackendUrl(config, null));
+        Assert.Equal("http://localhost:5173", PublicUrlResolver.ResolveFrontendUrl(config, null));
+    }
 }

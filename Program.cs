@@ -97,6 +97,7 @@ builder.Services.AddJcapForwardedHeaders(builder.Configuration);
 builder.Services.AddJcapCors(builder.Configuration);
 
 // 5. Đăng ký Dependency Injection cho Services
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOsSettings.SectionName));
