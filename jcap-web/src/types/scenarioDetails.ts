@@ -51,6 +51,7 @@ export interface ScenarioMission {
 
 export interface ScenarioVocabulary {
   id: number;
+  vocabularyId?: number;
   word: string;
   reading?: string;
   meaning: string;
@@ -58,9 +59,21 @@ export interface ScenarioVocabulary {
 
 export interface ScenarioGrammar {
   id: number;
+  grammarId?: number;
   pattern: string;
   meaning: string;
   exampleSentence?: string;
+}
+
+export interface KnowledgeSearchItem {
+  id: number;
+  type: 'vocab' | 'grammar';
+  primaryText: string;
+  reading?: string;
+  meaning: string;
+  exampleSentence?: string;
+  jlptLevel?: string;
+  partOfSpeech?: string;
 }
 
 export interface ScenarioLevelConfiguration {
@@ -105,11 +118,13 @@ export interface GeneratedLevelContent {
     conditions?: string[];
   }[];
   targetVocabularies: {
+    vocabularyId?: number;
     word: string;
     reading?: string;
     meaning: string;
   }[];
   targetGrammars: {
+    grammarId?: number;
     pattern: string;
     meaning: string;
     exampleSentence?: string;
