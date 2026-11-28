@@ -305,9 +305,11 @@ namespace JCAP.Services.Implementations
             profile.ThetaEstimate = Math.Round(profile.ThetaEstimate * 0.75 + estimatedTheta * 0.25, 2);
 
             int totalCompletedSessions = await CountCompletedStandardSessionsAsync(_context, userId);
+            int totalVoiceTurns = await CountVoiceStandardTurnsAsync(_context, userId);
+            bool hasVoiceData = totalVoiceTurns > 0 || voiceMoraValues.Count > 0;
             var recentResults = await GetRecentStandardResultsAsync(_context, userId, 6);
             int consecutiveFailCount = recentResults.TakeWhile(r => !r.PassStatus).Count();
-            double alignedProficiency = ComputeEffectiveAlignedProficiency(profile, totalCompletedSessions);
+            double alignedProficiency = ComputeEffectiveAlignedProficiency(profile, totalCompletedSessions, hasVoiceData);
             string estimatedJlptLevel = DeriveDynamicJlptLevel(profile.ThetaEstimate, alignedProficiency, consecutiveFailCount);
 
             // 6. Cập nhật InferredTraitsJson (TikTok-style deep behavioral profile & trajectory)
@@ -323,7 +325,7 @@ namespace JCAP.Services.Implementations
             if (profile.KeigoCommandScore >= 70) strengths.Add("Làm chủ tốt thể lịch sự và văn phong ngữ cảnh");
             else weaknesses.Add("Cần củng cố văn phong giao tiếp phù hợp đối tượng");
 
-            if (profile.AverageMoraRate >= 4.2) strengths.Add("Tốc độ phát âm tự nhiên theo nhịp phách Tokyo");
+            if (hasVoiceData && profile.AverageMoraRate >= 4.2) strengths.Add("Tốc độ phát âm tự nhiên theo nhịp phách Tokyo");
             if (profile.HintDependencyRate <= 20) strengths.Add("Tự tin đối thoại chủ động không lệ thuộc gợi ý");
 
             // Đo lường hành vi ngầm bổ sung (TikTok-Style Telemetry):
@@ -708,26 +710,49 @@ namespace JCAP.Services.Implementations
             return rows.Select(x => (x.OverallScore, x.PassStatus)).ToList();
         }
 
+        public static Task<int> CountVoiceStandardTurnsAsync(
+            AppDbContext context,
+            string userId,
+            CancellationToken cancellationToken = default)
+        {
+            return context.LearnerBehaviorSignals
+                .AsNoTracking()
+                .Join(context.RoleplaySessions.AsNoTracking(), sig => sig.SessionId, ses => ses.Id, (sig, ses) => new { sig, ses })
+                .CountAsync(
+                    x => x.ses.UserId == userId
+                        && x.ses.SessionType != "PlacementTest"
+                        && !x.sig.FallbackToTextInput
+                        && x.sig.MoraRate > 0,
+                    cancellationToken);
+        }
+
         public static double ComputeEffectiveAlignedProficiency(
             LearnerIntelligenceProfile profile,
-            int totalCompletedStandardSessions)
+            int totalCompletedStandardSessions,
+            bool hasVoiceData = true)
         {
             return totalCompletedStandardSessions > 0
-                ? ComputeAlignedProficiency(profile)
+                ? ComputeAlignedProficiency(profile, hasVoiceData)
                 : profile.CommunicativeProficiencyIndex;
         }
 
-        public static double ComputeAlignedProficiency(LearnerIntelligenceProfile profile)
+        public static double ComputeAlignedProficiency(LearnerIntelligenceProfile profile, bool hasVoiceData = true)
         {
-            double moraNorm = Math.Clamp((profile.AverageMoraRate / 6.0) * 100.0, 18.0, 100.0);
             double autonomyScore = Math.Clamp(100.0 - profile.HintDependencyRate, 0.0, 100.0);
-            return Math.Round((
+            double baseSum =
                 profile.SpeakingReflexIndex +
                 profile.KeigoCommandScore +
                 profile.ParticleAccuracyRate +
-                moraNorm +
                 profile.CommunicativeConfidenceScore +
-                autonomyScore) / 6.0, 1);
+                autonomyScore;
+
+            if (!hasVoiceData || profile.AverageMoraRate <= 0)
+            {
+                return Math.Round(baseSum / 5.0, 1);
+            }
+
+            double moraNorm = Math.Clamp((profile.AverageMoraRate / 6.0) * 100.0, 18.0, 100.0);
+            return Math.Round((baseSum + moraNorm) / 6.0, 1);
         }
 
         public static (string Level, string Label) DeriveDynamicJlptDetails(

@@ -282,6 +282,13 @@ namespace JCAP.Data
                 entity.Property(e => e.Meaning)
                     .IsRequired()
                     .HasMaxLength(200);
+
+                entity.HasIndex(e => e.VocabularyId);
+
+                entity.HasOne(e => e.Vocabulary)
+                    .WithMany()
+                    .HasForeignKey(e => e.VocabularyId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // TargetGrammar configuration
@@ -297,6 +304,13 @@ namespace JCAP.Data
 
                 entity.Property(e => e.ExampleSentence)
                     .HasMaxLength(500);
+
+                entity.HasIndex(e => e.GrammarId);
+
+                entity.HasOne(e => e.Grammar)
+                    .WithMany()
+                    .HasForeignKey(e => e.GrammarId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 // ShadowingDialogue configuration
             modelBuilder.Entity<ShadowingDialogue>(entity =>

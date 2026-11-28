@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { User, RegisterPayload, RegisterResponseDto } from '../types/auth';
 import { authService } from '../services/authService';
+import { forgetRoleplaySession } from '../components/jcap/shell/recentRoleplay';
 import {
   clearStoredAuthSession,
   isValidStoredUser,
@@ -301,6 +302,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Loi khi goi API logout:', err);
     } finally {
       clearStoredAuthSession();
+      forgetRoleplaySession();
       setToken(null);
       setUser(null);
       setLoginError(null);

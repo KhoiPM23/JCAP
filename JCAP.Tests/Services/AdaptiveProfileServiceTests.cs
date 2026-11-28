@@ -661,4 +661,68 @@ public class AdaptiveProfileServiceTests
         var stretch = Assert.Single(ctx.RecommendedScenarios, r => r.Tier == "Stretch");
         Assert.Equal("N4", stretch.RecommendedLevel);
     }
+
+    [Fact]
+    public async Task GetAdaptiveContextAsync_ColdStartFirstN5Pass_NeverJumpsToN3InAnyTier()
+    {
+        using var db = CreateInMemoryDbContext();
+        db.LearnerIntelligenceProfiles.Add(new LearnerIntelligenceProfile
+        {
+            UserId = "learner-cold-n5",
+            ThetaEstimate = 0.18,
+            CommunicativeProficiencyIndex = 67.0
+        });
+
+        var sPassedN5 = new Scenario { Id = 1, Title = "Gọi món Ramen", IsActive = true };
+        var cfg1 = new ScenarioLevelConfiguration { Id = 3001, ScenarioId = 1, JLPTLevel = "N5", Status = "Published" };
+        sPassedN5.LevelConfigurations.Add(cfg1);
+
+        var sN5Alt = new Scenario { Id = 2, Title = "Đi máy bay", IsActive = true };
+        sN5Alt.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 3002, ScenarioId = 2, JLPTLevel = "N5", Status = "Published" });
+
+        var sN4Alt = new Scenario { Id = 3, Title = "Phỏng vấn Baito", IsActive = true };
+        sN4Alt.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 3003, ScenarioId = 3, JLPTLevel = "N4", Status = "Published" });
+
+        var sN3Jump = new Scenario { Id = 4, Title = "7-Eleven", IsActive = true };
+        sN3Jump.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 3004, ScenarioId = 4, JLPTLevel = "N3", Status = "Published" });
+        sN3Jump.LevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 3005, ScenarioId = 4, JLPTLevel = "N4", Status = "Published" });
+
+        db.Scenarios.AddRange(sPassedN5, sN5Alt, sN4Alt, sN3Jump);
+        db.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 9001,
+            UserId = "learner-cold-n5",
+            ScenarioLevelConfigurationId = 3001,
+            Status = "Completed"
+        });
+        db.RoleplayResults.Add(new RoleplayResult
+        {
+            Id = 9001,
+            UserId = "learner-cold-n5",
+            RoleplaySessionId = 9001,
+            OverallScore = 96,
+            PassStatus = true,
+            CompletedAt = DateTime.UtcNow.AddMinutes(-5)
+        });
+        await db.SaveChangesAsync();
+
+        var service = new AdaptiveProfileService(db);
+
+        // 1. Post-session Tactical mode after 1st N5 pass
+        var tacticalCtx = await service.GetAdaptiveContextAsync(
+            "learner-cold-n5",
+            new JCAP.DTOs.Roleplay.AdaptiveContextQuery
+            {
+                ExcludeScenarioId = 1,
+                SessionPassed = true,
+                SessionLevel = "N5"
+            });
+
+        Assert.Equal(3, tacticalCtx.RecommendedScenarios.Count);
+        Assert.All(tacticalCtx.RecommendedScenarios, r => Assert.NotEqual("N3", r.RecommendedLevel));
+
+        // 2. Strategic competency profile mode for cold-start (< 3 sessions)
+        var strategicCtx = await service.GetAdaptiveContextAsync("learner-cold-n5");
+        Assert.All(strategicCtx.RecommendedScenarios, r => Assert.NotEqual("N3", r.RecommendedLevel));
+    }
 }

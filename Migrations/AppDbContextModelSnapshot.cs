@@ -2750,6 +2750,9 @@ namespace JCAP.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int?>("GrammarId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Meaning")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -2764,6 +2767,8 @@ namespace JCAP.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GrammarId");
 
                     b.HasIndex("ScenarioLevelConfigurationId");
 
@@ -2790,6 +2795,9 @@ namespace JCAP.Migrations
                     b.Property<int>("ScenarioLevelConfigurationId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("VocabularyId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Word")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -2798,6 +2806,8 @@ namespace JCAP.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ScenarioLevelConfigurationId");
+
+                    b.HasIndex("VocabularyId");
 
                     b.ToTable("TargetVocabularies");
                 });
@@ -3866,11 +3876,18 @@ namespace JCAP.Migrations
 
             modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
                 {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany()
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
                         .WithMany("TargetGrammars")
                         .HasForeignKey("ScenarioLevelConfigurationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Grammar");
 
                     b.Navigation("ScenarioLevelConfiguration");
                 });
@@ -3883,7 +3900,14 @@ namespace JCAP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("ScenarioLevelConfiguration");
+
+                    b.Navigation("Vocabulary");
                 });
 
             modelBuilder.Entity("JCAP.Models.TopicGrammar", b =>

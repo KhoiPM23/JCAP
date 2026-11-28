@@ -232,6 +232,8 @@ export interface LearnerIntelligenceProfileDto {
   communicativeProficiencyIndex: number;
   totalSessionsCompleted: number;
   totalPracticeTurns: number;
+  voicePracticeTurns?: number;
+  hasVoiceData?: boolean;
   strengths: string[];
   targetFocusAreas: string[];
   omikujiRank: string;

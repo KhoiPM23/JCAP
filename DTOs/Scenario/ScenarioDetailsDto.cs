@@ -51,6 +51,7 @@ public class MissionCompletionCriteriaDto
 public class TargetVocabularyDto
 {
     public int Id { get; set; }
+    public int? VocabularyId { get; set; }
     public string Word { get; set; } = string.Empty;
     public string? Reading { get; set; }
     public string Meaning { get; set; } = string.Empty;
@@ -59,6 +60,7 @@ public class TargetVocabularyDto
 public class TargetGrammarDto
 {
     public int Id { get; set; }
+    public int? GrammarId { get; set; }
     public string Pattern { get; set; } = string.Empty;
     public string Meaning { get; set; } = string.Empty;
     public string? ExampleSentence { get; set; }

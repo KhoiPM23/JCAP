@@ -1,6 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildAdaptiveRecommendations } from './roleplayResultHelpers.ts';
+import {
+  buildAdaptiveRecommendations,
+  cleanAdjustmentCategory,
+  cleanAdjustmentDescription,
+  formatMissionTargetVi,
+} from './roleplayResultHelpers.ts';
 
 describe('buildAdaptiveRecommendations (Hybrid AI-Adaptive)', () => {
   const sampleResult: any = {
@@ -93,5 +98,19 @@ describe('buildAdaptiveRecommendations (Hybrid AI-Adaptive)', () => {
 
     assert.match(out.weaknessSummary, /Hệ thống đề xuất ưu tiên trình độ N5/);
     assert.equal(out.items[0].actionReason, 'Phù hợp mức N5 hiện tại.');
+  });
+
+  it('cleans technical adjustment category/description and maps mission targets to Vietnamese', () => {
+    assert.equal(cleanAdjustmentCategory('Lưu loát Mora'), 'Lưu loát');
+    assert.equal(
+      cleanAdjustmentDescription('Sử dụng giàn giáo gợi ý ZPD (0.1 mora/s) (88/100)'),
+      'Lưu loát và nhịp điệu phát âm tự nhiên (88/100)'
+    );
+    assert.equal(
+      cleanAdjustmentDescription('Tốc độ 3.2 mora/s, Phản xạ: nhanh (chuẩn học viên N5)'),
+      'Tốc độ 3.2 âm/giây · Phản xạ: nhanh'
+    );
+    assert.equal(formatMissionTargetVi('Payment Method'), 'Phương thức thanh toán');
+    assert.equal(formatMissionTargetVi('custom target'), 'custom target');
   });
 });

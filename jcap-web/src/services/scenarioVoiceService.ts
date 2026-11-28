@@ -939,6 +939,15 @@ class ScenarioVoiceService {
     this.audioChunks = [];
   }
 
+  private getAuthHeaders(): Record<string, string> | undefined {
+    try {
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('jcap_token') : null;
+      return token ? { Authorization: `Bearer ${token}` } : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   /**
    * Kích hoạt lệnh khởi động Whisper STT Engine ngầm qua Backend
    */
@@ -946,7 +955,10 @@ class ScenarioVoiceService {
     if (this.isAutoStartingWhisper) return;
     this.isAutoStartingWhisper = true;
     try {
-      await fetch(resolveApiUrl('/api/stt/start-engine'), { method: 'POST' });
+      await fetch(resolveApiUrl('/api/stt/start-engine'), {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+      });
     } catch {
       // ignore
     } finally {
@@ -984,6 +996,7 @@ class ScenarioVoiceService {
       const timeout1 = setTimeout(() => controller1.abort(), 6000);
       const res = await fetch(resolveApiUrl('/api/stt/transcribe?language=ja'), {
         method: 'POST',
+        headers: this.getAuthHeaders(),
         body: formData,
         signal: controller1.signal,
       }).finally(() => clearTimeout(timeout1));
@@ -1023,6 +1036,7 @@ class ScenarioVoiceService {
       formData.append('file', audioBlob, `recording.${ext}`);
       const res = await fetch(resolveApiUrl('/api/stt/save-audio'), {
         method: 'POST',
+        headers: this.getAuthHeaders(),
         body: formData,
       });
       if (res.ok) {
@@ -1043,10 +1057,9 @@ class ScenarioVoiceService {
   public async deleteTempAudio(audioUrl?: string | null): Promise<void> {
     if (!audioUrl || !audioUrl.startsWith('/audio/roleplay/')) return;
     try {
-      const token = localStorage.getItem('jcap_token');
       await fetch(resolveApiUrl(`/api/stt/audio?url=${encodeURIComponent(audioUrl)}`), {
         method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: this.getAuthHeaders(),
       });
     } catch {
       // Best-effort cleanup
@@ -1064,7 +1077,10 @@ class ScenarioVoiceService {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 1500);
-      const res = await fetch(resolveApiUrl('/api/stt/health'), { signal: controller.signal })
+      const res = await fetch(resolveApiUrl('/api/stt/health'), {
+        headers: this.getAuthHeaders(),
+        signal: controller.signal,
+      })
         .finally(() => clearTimeout(timeout));
       if (res.ok) {
         const json = await res.json();

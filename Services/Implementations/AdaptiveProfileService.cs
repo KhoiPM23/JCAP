@@ -105,9 +105,12 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             .Take(40)
             .ToListAsync(cancellationToken);
 
+        int voiceTurns = await TelemetryEvaluatorService.CountVoiceStandardTurnsAsync(_dbContext, userId, cancellationToken);
+        bool hasVoiceData = voiceTurns > 0;
+
         double theta = profile?.ThetaEstimate ?? 0.0;
         double proficiencyIndex = profile != null
-            ? TelemetryEvaluatorService.ComputeEffectiveAlignedProficiency(profile, totalCompleted)
+            ? TelemetryEvaluatorService.ComputeEffectiveAlignedProficiency(profile, totalCompleted, hasVoiceData)
             : 50.0;
 
         int consecutiveFails = recentResults.TakeWhile(r => !r.PassStatus).Count();
@@ -329,6 +332,9 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 .Where(d => shadowingIds.Contains(d.Id))
                 .ToDictionaryAsync(d => d.Id, d => d.Title, cancellationToken);
 
+            int voiceTurnsForPrompt = await TelemetryEvaluatorService.CountVoiceStandardTurnsAsync(_dbContext, userId, cancellationToken);
+            bool hasVoiceDataForPrompt = voiceTurnsForPrompt > 0;
+
             var promptPayload = new
             {
                 session = new
@@ -344,12 +350,13 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                     proficiencyIndex = Math.Round(context.ProficiencyIndex, 1),
                     recentTrend = context.RecentTrend,
                     consecutiveFailCount = context.ConsecutiveFailCount,
+                    hasVoiceData = hasVoiceDataForPrompt,
                     scores = new
                     {
                         reflex = Math.Round(profile.SpeakingReflexIndex, 1),
                         style = Math.Round(profile.KeigoCommandScore, 1),
                         particle = Math.Round(profile.ParticleAccuracyRate, 1),
-                        mora = Math.Round(profile.AverageMoraRate, 1),
+                        mora = hasVoiceDataForPrompt ? Math.Round(profile.AverageMoraRate, 1) : (double?)null,
                         confidence = Math.Round(profile.CommunicativeConfidenceScore, 1),
                         autonomy = Math.Clamp(Math.Round(100.0 - profile.HintDependencyRate, 1), 0, 100)
                     },
@@ -382,7 +389,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 RULES:
                 1. Write all explanations in natural, concise, encouraging Vietnamese grounded strictly in the learner's turns and scores.
                 2. NEVER mention internal algorithm or technical terms: IRT, ZPD, FSRS, EMA, Theta, P(pass), b-value, mora, or error codes like E01..E10 (say "nhịp nói" instead of "mora").
-                3. "axisInsights" keys MUST only use exact keys: "reflex", "style", "particle", "mora", "confidence", "autonomy". Each needs "diagnosticVi" (<= 180 chars) and "drillMethodVi" (<= 140 chars).
+                3. "axisInsights" keys MUST only use exact keys: "reflex", "style", "particle", "mora", "confidence", "autonomy". Each needs "diagnosticVi" (<= 180 chars) and "drillMethodVi" (<= 140 chars). Note: "confidence" means communicative confidence/fluency (Độ tự tin giao tiếp), NOT microphone acoustics. If "hasVoiceData" is false, NEVER claim the learner spoke slowly or had pronunciation issues — for "mora", note that no voice recording has been recorded yet.
                 4. "scenarioReasons" keys MUST strictly be stringified scenarioIds from candidateScenarios ONLY (do NOT invent new IDs). Each <= 130 chars.
                 5. "shadowingReasons" keys MUST strictly be stringified dialogueIds from candidateShadowings ONLY (do NOT invent new IDs). Each <= 130 chars.
                 6. "nextSessionFocus" MUST be a single concise coaching focus <= 140 chars for the next conversation (never ask AI to break role or exceed JLPT level).
@@ -1087,6 +1094,17 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             int failedRank = GetLevelRank(NormalizeJlptLevel(query.SessionLevel));
             stretchMaxRank = Math.Min(stretchMaxRank, failedRank);
         }
+
+        // Cold-start & N5-session guardrail: never jump straight to N3 when learner has < 3 completed sessions
+        // or just finished an N5 session (prevents e.g. 1st N5 pass -> Stretch N3 with 32% pass rate).
+        bool isColdStartLearner = historyRows.Count < 3;
+        bool isPostN5Session = isTactical
+            && !string.IsNullOrWhiteSpace(query?.SessionLevel)
+            && string.Equals(NormalizeJlptLevel(query!.SessionLevel), "N5", StringComparison.OrdinalIgnoreCase);
+        if (isColdStartLearner || isPostN5Session)
+        {
+            stretchMaxRank = Math.Min(stretchMaxRank, 2);
+        }
         DateTime nowUtc = DateTime.UtcNow;
 
         var scoredCandidates = scenarioRows.Select(s =>
@@ -1095,7 +1113,13 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 ? s.Levels.Select(l => NormalizeJlptLevel(l.JLPTLevel)).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                 : new List<string> { effectiveTargetDifficulty };
 
-            var bestLevelEval = levelList
+            var eligibleCoreLevels = levelList.Where(l => GetLevelRank(l) <= stretchMaxRank).ToList();
+            if (eligibleCoreLevels.Count == 0)
+            {
+                eligibleCoreLevels = levelList;
+            }
+
+            var bestLevelEval = eligibleCoreLevels
                 .Select(lv =>
                 {
                     double p = ComputeIrtPassProbability(thetaEff, lv);

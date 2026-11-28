@@ -107,6 +107,7 @@ public class ScenarioController : ControllerBase
     /// <summary>
     /// GET /api/scenarios/admin/all - Lấy toàn bộ danh sách scenario dành cho Admin (bao gồm cả bị vô hiệu hóa).
     /// </summary>
+    /// <remarks>Route tương thích ngược; API quản trị Scenario chính thức hiện dùng <c>api/admin/scenarios</c>.</remarks>
     [HttpGet("admin/all")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
@@ -118,6 +119,7 @@ public class ScenarioController : ControllerBase
     /// <summary>
     /// POST /api/scenarios - UC-22: Tạo mới một kịch bản đàm thoại (Admin).
     /// </summary>
+    /// <remarks>Route tương thích ngược; API quản trị Scenario chính thức hiện dùng <c>api/admin/scenarios</c>.</remarks>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateScenario([FromBody] CreateScenarioDto dto, CancellationToken cancellationToken)
@@ -139,6 +141,7 @@ public class ScenarioController : ControllerBase
     /// <summary>
     /// PUT /api/scenarios/{scenarioId} - UC-23: Chỉnh sửa thông tin kịch bản đàm thoại (Admin).
     /// </summary>
+    /// <remarks>Route tương thích ngược; API quản trị Scenario chính thức hiện dùng <c>api/admin/scenarios</c>.</remarks>
     [HttpPut("{scenarioId:int}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateScenario(int scenarioId, [FromBody] UpdateScenarioDto dto, CancellationToken cancellationToken)
@@ -165,6 +168,7 @@ public class ScenarioController : ControllerBase
     /// <summary>
     /// DELETE /api/scenarios/{scenarioId} - UC-24: Xóa mềm kịch bản đàm thoại (IsActive = false) (Admin).
     /// </summary>
+    /// <remarks>Route tương thích ngược; API quản trị Scenario chính thức hiện dùng <c>api/admin/scenarios</c>.</remarks>
     [HttpDelete("{scenarioId:int}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteScenario(int scenarioId, CancellationToken cancellationToken)
