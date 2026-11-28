@@ -1,0 +1,64 @@
+name: JCAP CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+  workflow_dispatch:
+
+jobs:
+  backend-ci:
+    name: "Stage 1: Backend .NET Build & Unit Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Prepare Frontend Directory Placeholder
+        run: mkdir -p jcap-web/node_modules
+
+      - name: Restore .NET Dependencies
+        run: dotnet restore JCAP.csproj
+
+      - name: Build Backend (Release Mode)
+        run: dotnet build JCAP.csproj --no-restore --configuration Release
+
+      - name: Run Backend Unit Tests (JCAP.Tests)
+        run: dotnet test JCAP.Tests/JCAP.Tests.csproj --configuration Release --verbosity normal
+
+  frontend-ci:
+    name: "Stage 2: Frontend React/TypeScript Build & Verify"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: jcap-web/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./jcap-web
+        run: npm ci
+
+      - name: Build Production Bundle (TypeScript + Vite)
+        working-directory: ./jcap-web
+        run: npm run build
+
+      - name: Upload Frontend Production Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jcap-web-dist
+          path: jcap-web/dist
+          retention-days: 7
