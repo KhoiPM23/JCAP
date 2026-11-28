@@ -2,7 +2,7 @@
 
 **Project Name:** Japanese Conversation AI Platform (JCAP)  
 **Project Code:** SEP490-SE\_54 (FPT University Da Nang)  
-**Tech Stack:** ASP.NET Core 8 Web API, React \+ TypeScript, SQL Server, OpenAI API (STT/LLM/TTS), Azure AI Speech (Pronunciation Assessment / Pitch Accent)  
+**Tech Stack:** ASP.NET Core 8 Web API, React 19 + TypeScript, SQL Server, Google Gemini API (with OpenAI-compatible fallback), Self-hosted Faster-Whisper (STT/ASR), VOICEVOX Engine (TTS), ONNX Runtime (HuBERT), payOS, Cloudinary  
 **Target Audience:** Vietnamese learners of Japanese at JLPT N5–N3 levels
 
 ## **1\. Project Overview & Objectives**
@@ -10,9 +10,9 @@
 JCAP is an AI-powered web platform designed to provide scenario-based Japanese conversation practice with adaptive learning and automated performance evaluation. It addresses the gap between theoretical knowledge (grammar, vocabulary) and practical speaking (Kaiwa) by simulating real-world Japanese communication scenarios with custom AI personas.
 
 > * **Scenario-Based AI Roleplay:** Simulate real-life situations (e.g., ordering food, job interviews, reporting to supervisors using Keigo) with context-aware AI characters.  
-> * **Multi-Dimensional Performance Evaluation:** Evaluate learner responses across pronunciation, pitch accent/prosody, fluency, vocabulary, grammar, and Keigo appropriateness.  
+> * **Multi-Dimensional Performance Evaluation:** Evaluate AI roleplay responses across content/task fulfillment, grammar accuracy, vocabulary range, and register/Keigo appropriateness; evaluate shadowing sessions across Kana/Mora content accuracy (ASR) and reference fluency/pacing, plus AI-generated session review.  
 > * **Adaptive Learning Engine:** Automatically detect recurring learner weaknesses and recommend targeted flashcards, grammar exercises, and follow-up scenarios.  
-> * **Shadowing & Pronunciation Practice:** Provide audio-visual shadowing practice aligned with Japanese textbooks and native audio references.
+> * **Shadowing & Content Practice:** Provide audio-visual shadowing practice aligned with Japanese textbooks and native/VOICEVOX reference audio, combining Kana/Mora content scoring with fluency analysis.
 
 ## **2\. Project Team & Responsibilities**
 
@@ -27,32 +27,43 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 
 ## **3\. High-Level Architecture & Tech Stack**
 
-┌────────────────────────────────────────────────────────────────────────┐  
-│                        React \+ TypeScript Frontend                      │  
-└───────────────────────────────────┬────────────────────────────────────┘  
-                                    │ HTTP / REST / WebSockets  
-                                    ▼  
-┌────────────────────────────────────────────────────────────────────────┐  
-│                       ASP.NET Core 8 Web API Backend                   │  
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐  │  
-│  │ Auth & Credit    │  │ AI Roleplay Engine│  │ Adaptive Learning    │  │  
-│  └──────────────────┘  └──────────────────┘  └──────────────────────┘  │  
-└──────────┬────────────────────────┬────────────────────────┬───────────┘  
-           │                        │                        │  
-           ▼                        ▼                        ▼  
-┌────────────────────┐   ┌────────────────────┐   ┌────────────────────┐  
-│ SQL Server Database│   │ OpenAI API         │   │ Azure AI Speech    │  
-│ (ERD Core Schema)  │   │ (Whisper/LLM/TTS)  │   │ (Pronunciation/    │  
-│                    │   │                    │   │  Pitch Accent)     │  
-└────────────────────┘   └────────────────────┘   └────────────────────┘
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                   React 19 + TypeScript Frontend (jcap-web)                │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │ HTTP / REST JSON
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│              ASP.NET Core 8 Web API Backend (Layered Architecture)         │
+│  ┌─────────────────────┐  ┌──────────────────────┐  ┌───────────────────┐  │
+│  │ Auth, Credit & Forum│  │ AI Roleplay,         │  │ Self-Study,       │  │
+│  │ (Identity/JWT/payOS)│  │ Placement & Adaptive │  │ Explore & Shadow  │  │
+│  └─────────────────────┘  └──────────────────────┘  └───────────────────┘  │
+└───┬───────────────────────┬──────────────────────────┬──────────────────┬──┘
+    │                       │                          │                  │
+    ▼                       ▼                          ▼                  ▼
+┌──────────────┐   ┌──────────────────┐   ┌───────────────────────┐   ┌──────────────────┐
+│ SQL Server   │   │ LLM Cloud API    │   │ Local Speech Services │   │ External Services│
+│ 2022         │   │ Google Gemini    │   │ VOICEVOX (:50021)     │   │ payOS, Cloudinary│
+│ (EF Core 8,  │   │ (Primary) /      │   │ Faster-Whisper (:50022│   │ Google OAuth 2.0,│
+│  59 DbSets)  │   │ OpenAI-compatible│   │ Shadowing ASR (:50023)│   │ SMTP / MailKit   │
+│              │   │                  │   │ ONNX HuBERT (CPU)     │   │                  │
+└──────────────┘   └──────────────────┘   └───────────────────────┘   └──────────────────┘
+```
 
-> * **Frontend:** React, TypeScript, Tailwind CSS / Ant Design, Vite.  
-> * **Backend:** ASP.NET Core 8 Web API, Entity Framework Core (Code First), Clean Architecture.  
-> * **Database:** SQL Server 2022\.  
-> * **AI & External Services:**  
-  * **OpenAI API:** Whisper (Speech-to-Text), GPT-4o / GPT-3.5-Turbo (Roleplay Chat & Feedback), OpenAI TTS (Voice Generation).  
-  * **Azure AI Speech:** Pronunciation Assessment API (Accuracy, Fluency, Prosody/Pitch Accent, Completeness).  
-  * **Payment Gateway:** Domestic Payment Gateway Webhook/IPN for Credit top-up.
+> * **Frontend:** React 19, TypeScript 6, Tailwind CSS 3.4, React Router 7, Vite 8.  
+> * **Backend:** ASP.NET Core 8 Web API, Entity Framework Core 8 (Code First), Layered Architecture (`Controllers` → `Services/Interfaces` & `Services/Implementations` → `Data/AppDbContext`, `Models`, `DTOs`) in a single project (`JCAP.csproj`) with `Microsoft.AspNetCore.SpaProxy` for `jcap-web/`.  
+> * **Database:** SQL Server 2022 (`Microsoft.EntityFrameworkCore.SqlServer`).  
+> * **AI & Speech Services:**  
+>   * **LLM:** Google Gemini API (`GeminiAiClient` with model fallback chain and `GeminiModelCooldownTracker`) as the default provider; pluggable OpenAI-compatible / Groq client (`OpenAiCompatibleAiClient` via `AiClientResolver`).  
+>   * **Roleplay STT:** Self-hosted Faster-Whisper service (`tools/whisper_engine`, FastAPI/Uvicorn on `127.0.0.1:50022`, `WhisperSttService`) with browser Web Speech API fallback.  
+>   * **Japanese TTS:** Self-hosted VOICEVOX Engine (`127.0.0.1:50021`, `VoiceVoxService` with in-memory & disk cache in `wwwroot/audio-cache/voicevox`) with browser Web Speech API fallback.  
+>   * **Shadowing Assessment (Shadowing V2 — no Azure AI Speech):** Self-hosted open-source backend pipeline (`ShadowingEvaluationService`): `ShadowingAudioValidator` → dedicated Faster-Whisper + `pyopenjtalk-plus` ASR service (`tools/shadowing-asr`, `127.0.0.1:50023`, `FasterWhisperSpeechRecognitionService`) + Kana/Mora comparison (`KanaMoraComparer`, `StoredKanaReader` / `VoiceVoxKanaReader`), optional CPU ONNX Runtime (`Microsoft.ML.OnnxRuntime`) HuBERT phoneme-CTC model (`OnnxPhonemeRecognizer`), reference fluency/pacing analysis (`FluencyAnalyzer`), and LLM post-session review (`ShadowingSessionReviewService`).  
+> * **External Integrations & Supporting Libraries:**  
+>   * **Payment Gateway:** payOS (`payOS` SDK v2.1.0) with Webhook/IPN handling (`CreditService`).  
+>   * **Auth & Email:** ASP.NET Core Identity + JWT Bearer + Google OAuth 2.0; MailKit SMTP (`SmtpEmailService`).  
+>   * **Media Storage & Cleanup:** Cloudinary (`CloudinaryDotNet`, `CloudinaryStorageService`) + local temporary audio cleanup via `BackgroundAudioCleanupService` (24-hour retention for `stt_*` files).  
+>   * **Import & Rate Limiting:** ClosedXML (Excel batch import for vocabulary/grammar) and ASP.NET Core Rate Limiter (`shadowing-evaluate`, `community-write`, `feedback-write`, `attachment-upload`).
 
 ## **4\. Core Feature Breakdown (WBS Scope)**
 
@@ -60,7 +71,6 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 
 > * Account registration, authentication, password management, and Google login.
 > * Learner Profile setup and management, including Japanese learning level.
-> * Admin user management: Search, Filter, Ban/Unban learner accounts.
 
 **Use Cases:**
 * **UC-01:** Register Account
@@ -219,56 +229,31 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 
 ## **5\. Global Database Schema (Unified ERD Overview)**
 
-                          ┌───────────────────────────┐  
-                          │       User / Learner      │  
-                          │ (UserID, JLPT, CreditBal) │  
-                          └─────────────┬─────────────┘  
-                                        │  
-      ┌─────────────────┬───────────────┼───────────────┬─────────────────┐  
-      │ (1-n)           │ (1-n)         │ (1-n)         │ (1-n)           │ (1-n)  
-      ▼                 ▼               ▼               ▼                 ▼  
-┌───────────┐   ┌───────────────┐ ┌───────────┐ ┌───────────────┐ ┌────────────────┐  
-│  Credit   │   │  Flashcard    │ │  Learner  │ │ Shadowing     │ │ Roleplay       │  
-│Transaction│   │  (Bookmarked) │ │ Progress  │ │ Session       │ │ Session        │  
-└───────────┘   └───────────────┘ └───────────┘ └───────┬───────┘ └───────┬────────┘  
-                                                        │ (n-1)           │ (n-1)  
-                                                        ▼                 ▼  
-                                                ┌───────────────┐ ┌────────────────┐  
-                                                │ Shadowing     │ │ Roleplay       │  
-                                                │ Dialogue      │ │ Scenario       │  
-                                                └───────────────┘ └───────┬────────┘  
-                                                                          │ (n-n)  
-                                                        ┌─────────────────┴────────────────┐  
-                                                        ▼                                  ▼  
-                                                ┌───────────────┐                  ┌───────────────┐  
-                                                │  Vocabulary   │                  │    Grammar    │  
-                                                └───────────────┘                  └───────────────┘
+The database is managed in SQL Server 2022 via EF Core 8 (`AppDbContext` with 59 `DbSet` entities plus ASP.NET Core Identity tables), grouped across the 8 platform modules:
 
-> 1. **User / Learner:** Identity, auth, JLPT level, preferences, Credit balance.  
-> 2. **CreditTransaction:** Logs credit purchases, top-ups, voucher usage, session deductions.  
-> 3. **RoleplayScenario:** Scenario context, AI role, difficulty, Keigo level, target vocab/grammar.  
-> 4. **RoleplayTask:** Mission objectives for a scenario.  
-> 5. **RoleplaySession:** Learner's roleplay practice session.  
-> 6. **RoleplayRecording:** Audio recording files per turn.  
-> 7. **RoleplayResult:** Multi-dimensional scores, feedback, Pass/Fail status.  
-> 8. **Shadowing entities:** ShadowingDialogue, ShadowingSentence, ShadowingSession, ShadowingResult.  
-> 9. **Learning materials:** Vocabulary, Grammar, GrammarExample.  
-> 10. **Flashcard:** Personalized study cards from bookmarks/adaptive recommendations.
+> 1. **Auth & Identity:** `ApplicationUser` (Identity user with JLPT level, `CreditBalance`, subscription metadata, and placement test status).  
+> 2. **Credit & Payment (`FE-02`):** `CreditPackage`, `CreditTransaction` (logs credit purchases, top-ups, subscriptions, and per-turn session deductions).  
+> 3. **Scenario & AI Roleplay (`FE-03` & Placement sessions):** `Scenario`, `ScenarioLevelConfiguration`, `Mission`, `TargetVocabulary`, `TargetGrammar`, `RoleplaySession`, `RoleplayMessage`, `RoleplaySessionMission`, `RoleplayResult`.  
+> 4. **Shadowing (`FE-04`):** `ShadowingDialogue`, `ShadowingSentence`, `ShadowingDialogueVocabulary`, `ShadowingDialogueGrammar`, `ShadowingSentenceAsset`, `ShadowingPracticeSession`, `ShadowingSentenceEvaluation`, `ShadowingPracticeProgress`.  
+> 5. **Self-Study, Bookmarks, Flashcards & Quizzes (`FE-05`):** `LearningTopic`, `Vocabulary`, `VocabularyExample`, `Grammar`, `GrammarExample`, `TopicVocabulary`, `TopicGrammar`, `LearningContentSource`, `VocabularySource`, `GrammarSource`, `LearningContentSeedState`, `LearnerBookmark`, `LearnerFlashcardProgress`, `FlashcardStudySession`, `FlashcardReviewLog`, `LearnerDailyFlashcardQuota`, `FlashcardQuizAttempt`, `FlashcardQuizAttemptItem`.  
+> 6. **Explore Journey Map (`FE-06`):** `ExploreChapter`, `ExplorePrefecture`, `ExploreChapterPrefecture`, `ExploreSpot`, `ExploreSpotLesson`, `ExploreSpotLessonVocabulary`, `ExploreSpotLessonGrammar`, `ExploreSpotActivity`, `ExploreProvinceWord`, `ExploreProgress`.  
+> 7. **Placement & Adaptive Learning (`FE-07`):** Placement sessions persisted via `RoleplaySession` / `RoleplayMessage` + `ApplicationUser`; adaptive telemetry & memory stored in `LearnerIntelligenceProfile`, `LearnerSkillMastery`, `LearnerBehaviorSignal`, `UserNpcRelationship`, `LearnerMemory`, `CharacterMemory`.  
+> 8. **Community Forum & Feedback (`FE-08` & Support):** `CommunityPost`, `CommunityComment`, `CommunityAttachment`, `CommunityPostUpvote`; `FeedbackTicket`, `FeedbackMessage`, `FeedbackAttachment`.
 
 ## **6\. Development Rules & Antigravity Instructions**
 
 ### **ASP.NET Core Backend Conventions**
 
-> * Clean Architecture: Domain, Application, Infrastructure, API.  
-> * Entity Framework Core Code First with clear foreign keys connecting back to User/Learner.  
-> * Store API keys strictly in appsettings.json / Environment Variables (NEVER hardcode).  
-> * Idempotency checks for Webhook handling (Payment IPN).  
-> * Retry policies (Polly) for external AI service rate limits/timeouts.
+> * Layered Architecture (Single Web API Project): `Controllers`, `Services` (`Interfaces` / `Implementations`), `Data` (`AppDbContext`), `Models`, `DTOs`, `Hosting`.  
+> * Entity Framework Core Code First with clear foreign keys connecting back to `ApplicationUser`.  
+> * Store API keys and secrets strictly in `appsettings.Local.json` (gitignored) or Environment Variables (NEVER hardcode secrets in `appsettings.json`).  
+> * Idempotency checks for Webhook handling (payOS Payment IPN).  
+> * Built-in AI resilience: model fallback chain, per-model timeout, transient retry, and `GeminiModelCooldownTracker` for 429/503/timeout handling.
 
 ### **React / TypeScript Frontend Conventions**
 
 > * Strict typing with TypeScript interfaces matching DTOs.  
-> * Modular UI components (AudioRecorder, TranscriptViewer, PitchAccentChart).
+> * Modular UI components (e.g., `AudioRecorder`, `JapanMap`, `RoleplayPracticeView`, `ShadowingHistoryPanel`).
 
 ### **Git Branching Strategy**
 
@@ -283,7 +268,7 @@ Example: feature/authentication-login
 
 ## **7. File Encoding Convention**
 
-> * All files created or modified in this project must be saved as **UTF-8 without signature (without BOM)** to ensure consistent encoding across agents and development environments.
+> * All files created or modified in this project must be saved as **UTF-8 without signature (without BOM)** and **100% CRLF (`\r\n`)** line endings to match `.editorconfig` and `.gitattributes`.
 
 ## **8. Detailed Domain Specifications: FE-03 (Scenario AI) & FE-04 (Shadowing)**
 
@@ -305,31 +290,33 @@ Example: feature/authentication-login
    - Provide an **On-Demand Next-Turn Hint / Suggestion** (hidden by default; learner clicks a button to reveal when stuck).
 4. **Interaction Modes:**
    - Dual-input support: Speech (Voice recording/STT) OR direct Text-based input.
-5. **Credit Deduction Strategies (Dual Mechanism Support):**
-   - The system supports both models for testing/evaluation:
-     - **Model 1 (Fixed Session Cost):** Deducts a predetermined credit amount upon initiating a session.
-     - **Model 2 (Turn-Based Cost):** Deducts credits per learner turn, with a low-balance warning notification before starting or when balance is critically low.
+5. **Credit Deduction & Subscription Coverage (`RoleplaySessionService`):**
+   - Implemented **Turn-Based Credit Deduction**: deducts `1–4` credits per learner turn (`EstimateCreditCost`) based on learner message length, AI reply length, and conversation context depth, plus hint usage cost when hints are requested.
+   - Learners with an active monthly subscription (`SubscriptionExpiresAt > UtcNow`) are covered by their plan (`CoveredBySubscription = true`) instead of deducting pay-as-you-go credits.
 6. **Session Resumption Rule:**
    - Learners are allowed to resume an interrupted/unfinished conversation session.
    - **Constraint:** Exactly ONE active unfinished session is preserved per Scenario (unified across JLPT levels of that scenario, not multiple drafts), solely for resumption purposes.
 7. **Post-Conversation Evaluation:**
-   - Content Assessment: Appropriateness of vocabulary and grammar used by the learner.
-   - Acoustic/Speech Quality Assessment: Fluency, clarity, pronunciation (when voice mode is used).
+   - Content Assessment: Appropriateness of vocabulary and grammar used by the learner, mission completion, and Keigo/register suitability evaluated via `RoleplayEvaluationService` / `IAiClient`.
    - Evaluation metrics serve as direct reference data for the Adaptive Learning Engine (recommending remedial vocabulary, grammar, and shadowing exercises).
 
 ### **FE-04: Shadowing Module**
 1. **Content Provenance & Structure:**
    - Dialogues are strictly fixed content extracted from textbooks (e.g., Minna no Nihongo) or native Japanese speaker videos.
-   - The AI **does NOT generate or hallucinate** shadowing dialogue; its role is strictly assessment.
+   - The AI **does NOT generate or hallucinate** shadowing dialogue during practice; assessment is strictly backend-driven.
    - **Scenario Association:** Every shadowing content/dialogue is thematic and directly references the topic of an existing Scenario (1 Scenario topic $\rightarrow$ multiple Shadowing contents from diverse sources), tagged with a specific JLPT level.
 2. **Detailed Content Preview (UC-27):**
-   - Dedicated **View Shadowing Content Details (UC-27)** displaying full transcript, native audio preview, associated target vocabulary, and target grammar.
+   - Dedicated **View Shadowing Content Details (UC-27)** displaying full transcript, native/VOICEVOX reference audio preview, associated target vocabulary, and target grammar.
 3. **Role Selection & Locking Rule:**
    - For multi-speaker dialogues (e.g., Speaker A & Speaker B), the learner selects their practicing role **prior to starting**.
    - **Constraint:** Once the shadowing session starts, role switching is locked (to switch roles, the learner must restart/retry the session).
 4. **Session Resumption:**
    - Similar to Scenarios, unfinished shadowing sessions can be resumed.
-5. **AI Assessment Scope:**
-   - Pronunciation assessment (Azure AI Speech) evaluating acoustic accuracy, fluency, completeness, and prosody/pitch accent against native reference audio.
-6. **Media Storage:**
-   - Native audio files (.mp3/.wav) and user recordings are stored via a cloud storage provider offering a free tier (e.g., Cloudinary / Supabase Storage / Azure Blob Storage).
+5. **Evaluation Scope (Shadowing V2 — Open-Source Pipeline, no Azure AI Speech):**
+   - Backend audio validation (`ShadowingAudioValidator`) is authoritative; browser checks never decide final scores.
+   - **Content Dimension:** Self-hosted Faster-Whisper ASR (`tools/shadowing-asr`, `FasterWhisperSpeechRecognitionService`) compared against reference Kana/Mora (`KanaMoraComparer` using OpenJTalk/VOICEVOX G2P readings); optional CPU ONNX Runtime HuBERT phoneme-CTC model (`OnnxPhonemeRecognizer`) is retained only as a configurable transition option (`Shadowing:Content:Provider = "phoneme"`). Never grades from browser Web Speech API transcripts.
+   - **Fluency Dimension:** Reference pacing/rhythm measurement (`FluencyAnalyzer`) compared against precomputed/VOICEVOX reference audio.
+   - **Pronunciation / Pitch Accent:** Currently returns `UNAVAILABLE` (not implemented; never inferred from content score or rendered as `0`) since Azure AI Speech is not used.
+   - **Post-Session AI Review:** Optional LLM summary review generated via `ShadowingSessionReviewService` (`IAiClient`).
+6. **Media Storage & Caching:**
+   - Persistent media files (native/reference audio, forum/feedback attachments) are stored on **Cloudinary** (`CloudinaryStorageService`), combined with local VOICEVOX synthesized audio caching (`wwwroot/audio-cache/voicevox`) and automated 24-hour cleanup of temporary STT recordings (`BackgroundAudioCleanupService`).
