@@ -3,10 +3,13 @@ import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'reac
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
+import { roleplayResultService } from '../services/roleplayResultService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
+import { resolveMediaUrl } from '../utils/apiBase';
 import { useAuth } from '../contexts/AuthContext';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { AlertCircleIcon, RefreshIcon, CompassIcon, VolumeIcon } from '../components/common/Icons';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
@@ -30,7 +33,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     ring: 'ring-emerald-500',
     accent: 'var(--n5)',
     badgeLabel: 'JLPT N5',
-    descLabel: 'Cơ bản (Beginner)',
+    descLabel: 'Cơ bản',
   },
   N4: {
     bg: 'bg-sky-50/80',
@@ -39,7 +42,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     ring: 'ring-sky-500',
     accent: 'var(--n4)',
     badgeLabel: 'JLPT N4',
-    descLabel: 'Sơ trung (Elementary)',
+    descLabel: 'Sơ trung',
   },
   N3: {
     bg: 'bg-purple-50/80',
@@ -48,7 +51,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     ring: 'ring-purple-500',
     accent: 'var(--n3)',
     badgeLabel: 'JLPT N3',
-    descLabel: 'Trung cấp (Intermediate)',
+    descLabel: 'Trung cấp',
   },
 };
 
@@ -80,6 +83,7 @@ export const ScenarioDetailsView: React.FC = () => {
   const params = useParams<{ scenarioId?: string }>();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const mobile = usePhoneViewport() && !isAdmin;
 
   // Ưu tiên param trong URL > state > fallback 1
   const rawId = params.scenarioId || (location.state as { scenarioId?: number } | null)?.scenarioId;
@@ -90,6 +94,8 @@ export const ScenarioDetailsView: React.FC = () => {
   const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
     ? rawReturnUrl
     : ((location.state as any)?.returnUrl ?? null);
+  const scenarioListUrl = (location.state as { scenarioListUrl?: string } | null)?.scenarioListUrl;
+  const backToList = returnUrl || scenarioListUrl || '/scenarios';
 
   const [scenario, setScenario] = useState<ScenarioDetails | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveRoleplaySessionDto | null>(null);
@@ -246,7 +252,7 @@ export const ScenarioDetailsView: React.FC = () => {
             {error || 'Kịch bản yêu cầu không tồn tại hoặc đã được chuyển vào kho lưu trữ.'}
           </p>
           <div className="mt-6 flex justify-center gap-3">
-            <Button type="button" onClick={() => navigate(returnUrl || '/scenarios')} className="shadow-xs">
+            <Button type="button" onClick={() => navigate(backToList)} className="shadow-xs">
               ← {returnUrl ? 'Quay lại Bản đồ Khám phá' : 'Quay lại Thư viện kịch bản'}
             </Button>
           </div>
@@ -256,8 +262,128 @@ export const ScenarioDetailsView: React.FC = () => {
   }
 
   const currentMeta = levelMeta[selectedLevel.jlptLevel] || levelMeta.N5;
-  const minMinutes = Math.max(5, (selectedLevel.missions?.length ?? 3) * 2);
-  const maxMinutes = Math.max(10, (selectedLevel.missions?.length ?? 3) * 3);
+  const missionsCount = Math.max(1, selectedLevel.missions?.length ?? 3);
+  const basePerMission =
+    selectedLevel.jlptLevel === 'N3' ? 2.6 : selectedLevel.jlptLevel === 'N4' ? 2.0 : 1.5;
+  const knowledgeCount =
+    (selectedLevel.targetVocabularies?.length ?? 0) + (selectedLevel.targetGrammars?.length ?? 0);
+  const complexityBonus = Math.min(3, Math.floor(knowledgeCount / 8));
+  const minMinutes = Math.max(3, Math.round(missionsCount * basePerMission));
+  const maxMinutes = Math.max(minMinutes + 2, Math.round(minMinutes * 1.45) + complexityBonus);
+  const isActiveSessionMissionsDone = Boolean(
+    isSelectedLevelActive &&
+      activeSession &&
+      (activeSession.totalMissionsCount ?? 0) > 0 &&
+      (activeSession.completedMissionsCount ?? 0) >= (activeSession.totalMissionsCount ?? 0)
+  );
+
+  const handleFinalizeCompletedActiveSession = async () => {
+    if (!activeSessionId || isStarting) return;
+    setIsStarting(true);
+    setStartError(null);
+    try {
+      const res = await roleplayResultService.completeSession(activeSessionId);
+      if (res.success && res.data) {
+        const rawData = res.data as any;
+        const resolvedResultId =
+          rawData?.resultId ??
+          rawData?.id ??
+          rawData?.data?.resultId ??
+          rawData?.data?.id ??
+          activeSessionId;
+        const targetPath = returnUrl
+          ? `/roleplay/results/${resolvedResultId}?justCompleted=true&return=${encodeURIComponent(returnUrl)}`
+          : `/roleplay/results/${resolvedResultId}?justCompleted=true`;
+        navigate(targetPath);
+      } else {
+        setStartError(res.message || 'Không thể tổng kết phiên hội thoại.');
+      }
+    } catch {
+      setStartError('Không thể kết nối máy chủ để tổng kết phiên.');
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
+  const practiceActions = (
+    <>
+      {startError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1">
+          <p className="font-bold flex items-center gap-1.5">
+            <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
+            <span>Không thể khởi tạo phòng:</span>
+          </p>
+          <p className="leading-relaxed">{startError}</p>
+          {startError.includes('credit') && !isAdmin && (
+            <Link
+              to="/credits"
+              className="inline-block pt-0.5 font-bold text-[var(--ai)] hover:underline"
+            >
+              Nạp thêm Credits tại đây →
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Primary CTA — dùng màu chàm chuẩn JCAP var(--ai) thay xanh chói rời rạc */}
+      <div className="space-y-1.5 pt-0.5">
+        <button
+          type="button"
+          className={`${mobile ? 'min-h-12 ' : ''}w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer`}
+          disabled={isStarting}
+          onClick={() => {
+            ukiyoSound.playTaikoThud();
+            if (isActiveSessionMissionsDone) {
+              void handleFinalizeCompletedActiveSession();
+            } else if (isSelectedLevelActive) {
+              const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : '';
+              navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
+            } else if (hasActiveSession) {
+              handleStartPractice(true, selectedLevel.jlptLevel);
+            } else {
+              handleStartPractice(false, selectedLevel.jlptLevel);
+            }
+          }}
+        >
+          {isStarting ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span>Đang thiết lập phòng thoại...</span>
+            </>
+          ) : isActiveSessionMissionsDone ? (
+            <span>Chốt & Xem kết quả (JLPT {selectedLevel.jlptLevel}) →</span>
+          ) : isSelectedLevelActive ? (
+            <span>Tiếp tục phiên này (JLPT {selectedLevel.jlptLevel}) →</span>
+          ) : hasActiveSession ? (
+            <span>Bắt đầu phiên mới (JLPT {selectedLevel.jlptLevel}) →</span>
+          ) : (
+            <span>Bắt đầu hội thoại (JLPT {selectedLevel.jlptLevel}) →</span>
+          )}
+        </button>
+
+        {isSelectedLevelActive && (
+          <button
+            type="button"
+            disabled={isStarting}
+            onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
+            className={`${mobile ? 'min-h-11 ' : ''}w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer`}
+          >
+            {isActiveSessionMissionsDone
+              ? `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
+              : `Làm lại từ đầu (JLPT ${selectedLevel.jlptLevel})`}
+          </button>
+        )}
+
+        <p className="text-center text-[11px] text-[var(--sumi-faint)] pt-0.5">
+          {isAdmin
+            ? 'Chế độ Quản trị · Không trừ credit'
+            : isSelectedLevelActive
+              ? 'Tiếp tục phiên không trừ thêm phí mở phòng'
+              : 'Tính credit tự động theo lượt thoại thực tế'}
+        </p>
+      </div>
+    </>
+  );
 
   return (
     <div className="relative mx-auto flex w-full max-w-[1160px] flex-col gap-4 bg-transparent pb-10 select-none text-[var(--sumi)]">
@@ -266,7 +392,7 @@ export const ScenarioDetailsView: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
-            onClick={() => navigate(returnUrl || '/scenarios')}
+            onClick={() => navigate(backToList)}
             className="group inline-flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--sumi-muted)] transition-all hover:border-[var(--ai)] hover:text-[var(--ai)] shadow-2xs active:scale-95 cursor-pointer"
           >
             <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">←</span>
@@ -311,7 +437,7 @@ export const ScenarioDetailsView: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5">
               <div className="relative group overflow-hidden rounded-xl border border-[var(--line)]/80 bg-[var(--paper-100)] w-full sm:w-32 md:w-36 aspect-[16/9] sm:aspect-square shrink-0">
                 <img
-                  src={scenario.thumbnail || '/images/scenario-placeholder.svg'}
+                  src={resolveMediaUrl(scenario.thumbnail) || '/images/scenario-placeholder.svg'}
                   alt={scenario.title}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/images/scenario-placeholder.svg';
@@ -360,7 +486,6 @@ export const ScenarioDetailsView: React.FC = () => {
                       role="tab"
                       aria-selected={isSelected}
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
                         setActiveLevel(level.jlptLevel);
                         setStartError(null);
                       }}
@@ -383,6 +508,8 @@ export const ScenarioDetailsView: React.FC = () => {
               </div>
             </div>
 
+            {mobile && <div className="space-y-2 border-t border-[var(--line)]/70 p-4">{practiceActions}</div>}
+
             {/* Phần 1C: Nhân vật & Bối cảnh chia ngăn mảnh trên cùng bề mặt (bỏ box lồng box) */}
             <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--line)]/70 border-t border-[var(--line)]/70">
               {/* Người đối thoại AI */}
@@ -401,9 +528,6 @@ export const ScenarioDetailsView: React.FC = () => {
                   <h3 className="text-[13px] font-bold font-sans text-[var(--sumi)] leading-snug mt-0.5">
                     {selectedLevel.aiPersona}
                   </h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[var(--sumi-muted)]">
-                    Phản hồi tự nhiên theo ngữ cảnh văn hóa Nhật, điều chỉnh nhịp thoại theo câu trả lời của bạn.
-                  </p>
                 </div>
               </div>
 
@@ -501,11 +625,17 @@ export const ScenarioDetailsView: React.FC = () => {
                     JLPT {selectedLevel.jlptLevel}
                   </h3>
                   <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold ${
-                    isSelectedLevelActive
+                    isActiveSessionMissionsDone
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : isSelectedLevelActive
+                      ? 'bg-amber-50 text-amber-800 border-amber-200'
                       : `${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`
                   }`}>
-                    {isSelectedLevelActive ? 'Đang dở dang' : currentMeta.descLabel.split(' (')[0]}
+                    {isActiveSessionMissionsDone
+                      ? 'Đã hoàn thành mục tiêu'
+                      : isSelectedLevelActive
+                      ? 'Đang dở dang'
+                      : currentMeta.descLabel.split(' (')[0]}
                   </span>
                 </div>
               </div>
@@ -548,75 +678,7 @@ export const ScenarioDetailsView: React.FC = () => {
               </span>
             </div>
 
-            {startError && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
-                  <span>Không thể khởi tạo phòng:</span>
-                </p>
-                <p className="leading-relaxed">{startError}</p>
-                {startError.includes('credit') && !isAdmin && (
-                  <Link
-                    to="/credits"
-                    className="inline-block pt-0.5 font-bold text-[var(--ai)] hover:underline"
-                  >
-                    Nạp thêm Credits tại đây →
-                  </Link>
-                )}
-              </div>
-            )}
-
-            {/* Primary CTA — dùng màu chàm chuẩn JCAP var(--ai) thay xanh chói rời rạc */}
-            <div className="space-y-1.5 pt-0.5">
-              <button
-                type="button"
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                disabled={isStarting}
-                onClick={() => {
-                  ukiyoSound.playTaikoThud();
-                  if (isSelectedLevelActive) {
-                    const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : '';
-                    navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
-                  } else if (hasActiveSession) {
-                    handleStartPractice(true, selectedLevel.jlptLevel);
-                  } else {
-                    handleStartPractice(false, selectedLevel.jlptLevel);
-                  }
-                }}
-              >
-                {isStarting ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    <span>Đang thiết lập phòng thoại...</span>
-                  </>
-                ) : isSelectedLevelActive ? (
-                  <span>Tiếp tục phiên này (JLPT {selectedLevel.jlptLevel}) →</span>
-                ) : hasActiveSession ? (
-                  <span>Bắt đầu phiên mới (JLPT {selectedLevel.jlptLevel}) →</span>
-                ) : (
-                  <span>Bắt đầu hội thoại (JLPT {selectedLevel.jlptLevel}) →</span>
-                )}
-              </button>
-
-              {isSelectedLevelActive && (
-                <button
-                  type="button"
-                  disabled={isStarting}
-                  onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
-                  className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer"
-                >
-                  Làm lại từ đầu (JLPT {selectedLevel.jlptLevel})
-                </button>
-              )}
-
-              <p className="text-center text-[11px] text-[var(--sumi-faint)] pt-0.5">
-                {isAdmin
-                  ? 'Chế độ Quản trị · Không trừ credit'
-                  : isSelectedLevelActive
-                    ? 'Tiếp tục phiên không trừ thêm phí mở phòng'
-                    : 'Tính credit tự động theo lượt thoại thực tế'}
-              </p>
-            </div>
+            {!mobile && practiceActions}
           </section>
 
           {/* Kiến thức trọng tâm — Gọn theo danh sách mảnh (list-divided), bỏ card lồng card */}
@@ -634,10 +696,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-100)] p-1 border border-[var(--line)]/80 text-xs font-bold">
                 <button
                   type="button"
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    setCheatsheetTab('vocab');
-                  }}
+                  onClick={() => setCheatsheetTab('vocab')}
                   className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
                     cheatsheetTab === 'vocab'
                       ? 'bg-white text-[var(--ai)] shadow-2xs'
@@ -648,10 +707,7 @@ export const ScenarioDetailsView: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    setCheatsheetTab('grammar');
-                  }}
+                  onClick={() => setCheatsheetTab('grammar')}
                   className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
                     cheatsheetTab === 'grammar'
                       ? 'bg-white text-[var(--ai)] shadow-2xs'
@@ -732,20 +788,38 @@ export const ScenarioDetailsView: React.FC = () => {
                     const cleanMeaning = cleanPedagogicMeaning(grammar.meaning);
 
                     return (
-                      <div key={grammar.id} className="py-3 first:pt-3.5 last:pb-3.5 space-y-1">
+                      <div key={grammar.id} className="py-3 first:pt-3.5 last:pb-3.5 space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap justify-between">
                           <p className="font-bold font-mono text-xs text-[var(--ai)]">
                             {grammar.pattern}
                           </p>
-                          {formulaMatch && (
-                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
-                              {formulaMatch[1]}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {formulaMatch && (
+                              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
+                                {formulaMatch[1]}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => void scenarioVoiceService.playAiSpeech(
+                                grammar.exampleSentence || grammar.pattern, 2
+                              )}
+                              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[var(--line)] bg-[var(--paper-50)] text-[var(--ai)] transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                              title={`Nghe câu mẫu: ${grammar.exampleSentence || grammar.pattern}`}
+                              aria-label={`Nghe phát âm mẫu ${grammar.pattern}`}
+                            >
+                              <VolumeIcon className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-xs text-[var(--sumi-muted)] font-medium leading-snug">
                           {cleanMeaning}
                         </p>
+                        {grammar.exampleSentence && (
+                          <p className="text-[11px] text-[var(--sumi)] font-jp leading-snug bg-[var(--paper-100)] rounded-lg px-2.5 py-1.5 border border-[var(--line)]/60">
+                            {grammar.exampleSentence}
+                          </p>
+                        )}
                       </div>
                     );
                   })

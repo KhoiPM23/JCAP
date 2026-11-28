@@ -17,6 +17,13 @@ namespace JCAP.Models
         public const string Mixed = "Mixed";
     }
 
+    public static class FlashcardStudyMode
+    {
+        public const string All = "All";
+        public const string DueOnly = "DueOnly";
+        public const string NewOnly = "NewOnly";
+    }
+
     public class FlashcardStudySession
     {
         public int Id { get; set; }

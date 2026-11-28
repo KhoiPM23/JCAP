@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { useAuth } from '../contexts/AuthContext';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioService } from '../services/scenarioService';
@@ -50,16 +52,18 @@ const DEFAULT_TOPICS: ScenarioTopic[] = [
  */
 export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScenario }) => {
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
   const { user } = useAuth();
   const { credit } = useLearnerAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('query') || searchParams.get('search') || '';
   const initialTopic = searchParams.get('topic') || 'ALL';
+  const initialLevel = searchParams.get('level');
 
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [topics, setTopics] = useState<ScenarioTopic[]>(DEFAULT_TOPICS);
   const [searchTerm, setSearchTerm] = useState<string>(searchQuery);
-  const [filterLevel, setFilterLevel] = useState<string>('ALL');
+  const [filterLevel, setFilterLevel] = useState<string>(() => mobile && initialLevel && LEVEL_RANK[initialLevel] ? initialLevel : 'ALL');
   const [filterTopic, setFilterTopic] = useState<string>(initialTopic);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -215,26 +219,6 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               場面対話 · 実践演習
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/placement-test')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs cursor-pointer"
-              title="Xem thử giao diện phòng hội thoại Placement Test (Mock Room)"
-            >
-              <span>🏨</span>
-              <span>Xem thử Placement Test Room</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/placement-test/history')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
-              title="Xem lịch sử các phiên kiểm tra xếp lớp (Placement Test History)"
-            >
-              <span>📜</span>
-              <span>Lịch sử xếp lớp</span>
-            </button>
-          </div>
         </div>
         <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi font-serif">Hội thoại AI</h1>
         <p className="m-0 text-[14px] leading-6 text-sumi-muted">
@@ -282,8 +266,13 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               size="sm"
               value={filterLevel}
               onChange={(lvl) => {
-                ukiyoSound.playSubtleTap();
                 setFilterLevel(lvl);
+                if (mobile) {
+                  const params = new URLSearchParams(searchParams);
+                  if (lvl === 'ALL') params.delete('level');
+                  else params.set('level', lvl);
+                  setSearchParams(params, { replace: true });
+                }
               }}
               options={[
                 { value: 'ALL', label: 'Tất cả' },
@@ -302,7 +291,6 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
             role="tab"
             aria-selected={filterTopic === 'ALL'}
             onClick={() => {
-              ukiyoSound.playSubtleTap();
               handleTopicChange('ALL');
             }}
             className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press shrink-0 ${
@@ -332,8 +320,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                 role="tab"
                 aria-selected={active}
                 onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  handleTopicChange(t.code);
+                    handleTopicChange(t.code);
                 }}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press shrink-0 ${
                   active
@@ -380,17 +367,20 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                 <span className="text-xs font-serif text-sumi-muted">任務一覧</span>
               </h2>
               {filteredScenarios.map((s) => {
-                const selected = s.id === selectedId;
+                const selected = !mobile && s.id === selectedId;
                 const levels = [...(s.supportedJLPTLevels || [])].sort((a, b) => (LEVEL_RANK[a] ?? 9) - (LEVEL_RANK[b] ?? 9));
                 return (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => {
-                      ukiyoSound.playWoodblockSnap();
+                      if (mobile) {
+                        onSelectScenario(toScenario(s));
+                        return;
+                      }
                       setSelectedId(s.id);
                     }}
-                    aria-pressed={selected}
+                    aria-pressed={mobile ? undefined : selected}
                     className={`quest-card tactile-press flex w-full items-center gap-4 rounded-jc-xl p-4 text-left transition-all ${
                       selected
                         ? 'border-2 border-[var(--ai)] bg-[var(--ai-soft)] shadow-md ring-1 ring-[var(--ai)]/30'
@@ -434,7 +424,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
           )}
         </div>
 
-        {selectedId != null && (
+        {!mobile && selectedId != null && (
           <ScenarioPreview
             key={selectedId}
             scenarioId={selectedId}
@@ -459,39 +449,29 @@ const InventoryPropBadge: React.FC<{
   example?: string;
 }> = ({ type, wordOrPattern, reading, meaning, example }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [popoverPos, setPopoverPos] = useState<'top' | 'bottom'>('top');
-  const [popoverAlign, setPopoverAlign] = useState<'center' | 'left' | 'right'>('center');
+  const [popoverCoords, setPopoverCoords] = useState<{
+    top: number;
+    left: number;
+    placeAbove: boolean;
+  }>({ top: 0, left: 0, placeAbove: true });
   const badgeRef = useRef<HTMLDivElement>(null);
 
   const cleanMeaning = cleanPedagogicMeaning(meaning);
 
   const updatePopoverPos = () => {
-    if (badgeRef.current) {
-      const rect = badgeRef.current.getBoundingClientRect();
-      if (rect.top < 200) setPopoverPos('bottom');
-      else setPopoverPos('top');
-
-      // Kiểm tra tràn mép ngang trong aside preview và cửa sổ
-      const asideEl = badgeRef.current.closest('aside');
-      if (asideEl) {
-        const asideRect = asideEl.getBoundingClientRect();
-        if (rect.right + 120 > asideRect.right) {
-          setPopoverAlign('right');
-        } else if (rect.left - 120 < asideRect.left) {
-          setPopoverAlign('left');
-        } else {
-          setPopoverAlign('center');
-        }
-      } else {
-        if (rect.right > window.innerWidth - 140) {
-          setPopoverAlign('right');
-        } else if (rect.left < 140) {
-          setPopoverAlign('left');
-        } else {
-          setPopoverAlign('center');
-        }
-      }
-    }
+    if (!badgeRef.current || typeof window === 'undefined') return;
+    const rect = badgeRef.current.getBoundingClientRect();
+    const popoverWidth = 256;
+    const placeAbove = rect.top > 220;
+    const clampedLeft = Math.max(
+      12,
+      Math.min(rect.left + rect.width / 2 - popoverWidth / 2, window.innerWidth - popoverWidth - 12)
+    );
+    setPopoverCoords({
+      top: placeAbove ? rect.top - 8 : rect.bottom + 8,
+      left: clampedLeft,
+      placeAbove,
+    });
   };
 
   return (
@@ -509,7 +489,6 @@ const InventoryPropBadge: React.FC<{
       }}
       onBlur={() => setIsHovered(false)}
       onClick={() => {
-        ukiyoSound.playSubtleTap();
         updatePopoverPos();
         setIsHovered((prev) => !prev);
       }}
@@ -543,45 +522,45 @@ const InventoryPropBadge: React.FC<{
         </span>
       </div>
 
-      {/* Hover Peek Popover */}
-      {isHovered && (
-        <div
-          className={`absolute z-50 w-64 rounded-xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-xs p-3 text-left shadow-lg pointer-events-none transition-all duration-150 ease-out animate-modal-pop ${
-            popoverPos === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-          } ${
-            popoverAlign === 'right'
-              ? 'right-0 translate-x-0'
-              : popoverAlign === 'left'
-              ? 'left-0 translate-x-0'
-              : 'left-1/2 -translate-x-1/2'
-          }`}
-          style={{ boxShadow: '0 8px 24px rgba(35, 33, 30, 0.16)' }}
-        >
-          <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
-              {type === 'vocab' ? 'Từ vựng (単語)' : 'Ngữ pháp (文法)'}
-            </span>
-            <span
-              className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                type === 'vocab' ? 'bg-nami-soft text-nami' : 'bg-ai-soft text-ai'
-              }`}
-            >
-              {type === 'vocab' ? 'VOCAB' : 'GRAMMAR'}
-            </span>
-          </div>
-          <div className="text-sm font-bold font-japanese text-slate-900 mb-1">
-            {reading && reading !== wordOrPattern ? `${wordOrPattern}（${reading}）` : wordOrPattern}
-          </div>
-          <div className="text-xs text-slate-700 leading-snug font-sans">
-            {cleanMeaning}
-          </div>
-          {example && (
-            <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)]">
-              {example}
+      {/* Hover Peek Popover via Portal (không bao giờ bị border overflow-hidden của thẻ cắt mất) */}
+      {isHovered &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed z-[9999] w-64 max-h-[240px] overflow-y-auto rounded-xl border border-[var(--line-strong)] bg-white p-3 text-left shadow-xl pointer-events-none transition-opacity duration-150 ease-out"
+            style={{
+              top: popoverCoords.top,
+              left: popoverCoords.left,
+              transform: popoverCoords.placeAbove ? 'translateY(-100%)' : 'none',
+              boxShadow: '0 10px 28px rgba(35, 33, 30, 0.18)',
+            }}
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
+                {type === 'vocab' ? 'Từ vựng (単語)' : 'Ngữ pháp (文法)'}
+              </span>
+              <span
+                className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                  type === 'vocab' ? 'bg-nami-soft text-nami' : 'bg-ai-soft text-ai'
+                }`}
+              >
+                {type === 'vocab' ? 'Từ vựng' : 'Ngữ pháp'}
+              </span>
             </div>
-          )}
-        </div>
-      )}
+            <div className="text-sm font-bold font-japanese text-slate-900 mb-1">
+              {reading && reading !== wordOrPattern ? `${wordOrPattern}（${reading}）` : wordOrPattern}
+            </div>
+            <div className="text-xs text-slate-700 leading-snug font-sans">
+              {cleanMeaning}
+            </div>
+            {example && (
+              <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)]">
+                {example}
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
@@ -722,8 +701,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                   size="sm"
                   value={cfg.jlptLevel}
                   onChange={(v) => {
-                    ukiyoSound.playSubtleTap();
-                    setLevel(v as Level);
+                        setLevel(v as Level);
                     setConfirmRestart(false);
                   }}
                   options={levels.map((l) => ({ value: l.jlptLevel, label: l.jlptLevel }))}
@@ -745,12 +723,12 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                   {[...cfg.missions]
                     .sort((a, b) => a.order - b.order)
                     .map((m, idx, arr) => {
-                      const isCompleted = Boolean(active && (active.completedMissionsCount ?? 0) > idx);
+                      const isActiveSameLevel = Boolean(active && activeLevel === cfg.jlptLevel);
+                      const isCompleted = Boolean(isActiveSameLevel && (active?.completedMissionsCount ?? 0) > idx);
                       const hasNext = idx < arr.length - 1;
                       return (
                         <div
                           key={m.id}
-                          onClick={() => ukiyoSound.playWoodblockSnap()}
                           className={`group relative flex items-start gap-2 rounded-md px-2 py-1 transition-all cursor-pointer tactile-press ${
                             isCompleted
                               ? 'bg-emerald-50/80 border border-emerald-200'
@@ -797,8 +775,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                     <button
                       type="button"
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setIsVocabOpen((prev) => !prev);
+                                setIsVocabOpen((prev) => !prev);
                         if (!isVocabOpen) setIsGrammarOpen(false);
                       }}
                       className={`flex-1 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] transition-colors tactile-press cursor-pointer ${
@@ -822,8 +799,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                     <button
                       type="button"
                       onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setIsGrammarOpen((prev) => !prev);
+                                setIsGrammarOpen((prev) => !prev);
                         if (!isGrammarOpen) setIsVocabOpen(false);
                       }}
                       className={`flex-1 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] transition-colors tactile-press cursor-pointer ${
@@ -882,8 +858,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                 <button
                   type="button"
                   onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    navigate(`/learning/topics?topic=${details.topicCode}`);
+                        navigate(`/learning/topics?topic=${details.topicCode}`);
                   }}
                   className="inline-flex items-center gap-1 text-[10px] font-semibold text-ai hover:underline transition-colors cursor-pointer"
                 >
@@ -909,14 +884,23 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               <Badge tone="success">Tiếp tục</Badge>
             </div>
           ) : (
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-sumi-muted">{`Chi phí cấp ${cfg.jlptLevel}:`}</span>
-              <div className="flex items-center gap-2">
-                <CreditBadge amount={cost} variant="cost" low={credit < cost} />
-                <span className="text-[11px] text-sumi-faint font-mono">
-                  (còn {Math.max(0, credit - cost).toLocaleString('vi-VN')})
+            <div className="flex flex-col gap-0.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-sumi-muted">
+                  {cost === 0 ? `Khởi tạo cấp ${cfg.jlptLevel}:` : `Chi phí cấp ${cfg.jlptLevel}:`}
                 </span>
+                <div className="flex items-center gap-2">
+                  <CreditBadge amount={cost} variant="cost" low={credit < cost} />
+                  <span className="text-[11px] text-sumi-faint font-mono">
+                    (còn {Math.max(0, credit - cost).toLocaleString('vi-VN')})
+                  </span>
+                </div>
               </div>
+              {cost === 0 && (
+                <span className="text-[10px] text-sumi-muted text-right">
+                  Phiên mở miễn phí · 1–4 credit mỗi lượt hội thoại AI
+                </span>
+              )}
             </div>
           )}
 

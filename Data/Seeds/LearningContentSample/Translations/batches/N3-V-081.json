@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: 379b767ed6."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f514b9fe7",
+      "Fields": {
+        "Meaning": "Xã hội, thế gian",
+        "PartOfSpeech": "Cụm từ, Danh từ",
+        "Explanation": "世の中（よのなか）có nghĩa là xã hội, thế gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143467": "Cả xã hội đang trở nên kỳ quặc đấy.",
+        "143481": "Trên đời có nhiều điều tốt đẹp."
+      },
+      "SourceHash": "fd195c8fc4d6e3f8a239cd0f73803bf6794fb2df0d4bd9c333e094fa34790dae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "718ef13639",
+      "Fields": {
+        "Meaning": "Thêm, dư ra",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "余分（よぶん）có nghĩa là thêm, dư ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78942": "Còn rất nhiều thời gian dư.",
+        "165044": "Chúng tôi cần thêm mười đô la."
+      },
+      "SourceHash": "4a8d6b7cd32dd9391c722f3743a3ac5d994d1ca5914236e9f6b3625966e4357e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6315da87bc",
+      "Fields": {
+        "Meaning": "Dự báo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予報（よほう）có nghĩa là dự báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78997": "Bản dự báo cho biết sẽ còn có tuyết.",
+        "171150": "Dự báo tối nay có mưa."
+      },
+      "SourceHash": "3897ada9108f5dad742e10b63e23932f38f40b42572df281c446b7b924f9b187"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7e01f30eaa",
+      "Fields": {
+        "Meaning": "Phòng ngừa, phòng bệnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予防（よぼう）có nghĩa là phòng ngừa, phòng bệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85246": "Có thể phòng ngừa bệnh tật không?",
+        "150176": "Phòng bệnh hơn chữa bệnh."
+      },
+      "SourceHash": "a235a6d4d52c30295d11ce6e8b8fd51b378004b31a5223b4925fdc89290b3328"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa98da380d",
+      "Fields": {
+        "Meaning": "Cách đọc, việc đọc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "読み（よみ）có nghĩa là cách đọc, việc đọc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85751": "Đừng đọc nhảy cóc.",
+        "194533": "Chỉ cần đọc thêm hai, ba trang nữa là được."
+      },
+      "SourceHash": "3b1ffa6b4bc4b963f5b1dadfad6a8bff9044cb73d6ffb1621819f1c9dd5583be"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "905e143f7a",
+      "Fields": {
+        "Meaning": "Vợ, con dâu, cô dâu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "嫁（よめ）có nghĩa là vợ, con dâu, cô dâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187150": "Tôi có ba cô con gái cần gả chồng.",
+        "199386": "Người đàn ông nào rồi cũng có người phù hợp để lấy làm vợ."
+      },
+      "SourceHash": "573049b0da6260600ad4913ae7da9efe7bc717f0e761707c18526a145e0bd1b6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8bdbbb4bf4",
+      "Fields": {
+        "Meaning": "Sự dư dả, khả năng xoay xở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "余裕（よゆう）có nghĩa là sự dư dả, khả năng xoay xở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162243": "Tôi không đủ tiền nuôi xe.",
+        "164751": "Tôi không có khả năng trả nợ."
+      },
+      "SourceHash": "d231a0634d6f5123bec91c6d1b18d0235ced848f2e61961d530243c5c4534825"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a3e1ac6ec4",
+      "Fields": {
+        "Meaning": "Theo, căn cứ theo",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "よると（よると）có nghĩa là theo, căn cứ theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145171": "Theo báo thì bão đang đến.",
+        "145172": "Theo báo, tối qua có một vụ cháy lớn."
+      },
+      "SourceHash": "309cb32465fa540ea9d333933442bbd449a08e2a0f31a45be73bd802c3406632"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "63d195fd9d",
+      "Fields": {
+        "Meaning": "Niềm vui",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "喜び（よろこび）có nghĩa là niềm vui.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123387": "Không niềm vui nào lớn hơn niềm vui đọc sách.",
+        "169386": "Ngắm bình minh từ đỉnh núi là một niềm vui."
+      },
+      "SourceHash": "d01ccdae561a4b1a7bbf3f65139b502babcca8a6cd50f45e1ea8845e3137637b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ceb20bf4f8",
+      "Fields": {
+        "Meaning": "Gửi lời hỏi thăm, mong được giúp đỡ",
+        "PartOfSpeech": "Cụm từ, phó từ",
+        "Explanation": "よろしく（よろしく）có nghĩa là gửi lời hỏi thăm, mong được giúp đỡ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217196": "Cho tôi gửi lời hỏi thăm cả nhà.",
+        "233634": "Cho tôi gửi lời hỏi thăm mọi người ở nhà."
+      },
+      "SourceHash": "a6ee5de9b6b026499cc70f8f5ef793a7f9316f1f96687e6c521b1b3f6a9d9958"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "379b767ed6",
+      "Fields": {
+        "Meaning": "Tới, sau; suốt từ một thời điểm hoặc khoảng thời gian trước",
+        "PartOfSpeech": "Tiền tố, hậu tố",
+        "Explanation": "Đứng trước từ chỉ thời gian như 来年, 来 chỉ kỳ sắp tới. Đứng sau khoảng thời gian như 数ヶ月来, 来 mang nghĩa suốt mấy tháng nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78569": "Đến cuối năm sau, anh chị sẽ làm ở đây được bao lâu rồi?",
+        "88428": "Lần đầu sau nhiều tháng, cô ấy cảm thấy buồn."
+      },
+      "SourceHash": "e18f22992b7b1f771ad4b0e71a763d1e7c1955eb75f065fc57e9a77a3ba59097"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0294bdc5ab",
+      "Fields": {
+        "Meaning": "Bật lửa, người viết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ライター（ライター）có nghĩa là bật lửa, người viết.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "4a63b73753564863caee6330c336f7371d3ca10d34d73149b7b35b1f088da204"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "733b519a1e",
+      "Fields": {
+        "Meaning": "Nhẹ nhàng, thoải mái, dễ",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "楽（らく）có nghĩa là nhẹ nhàng, thoải mái, dễ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144193": "Có thêm người thì việc sẽ nhẹ hơn.",
+        "157828": "Tôi nghĩ mình sẽ sống một cuộc đời không mấy dễ dàng."
+      },
+      "SourceHash": "85ec8a8879e265fe8a70b7699095fd819b8575b36015604c9d0dc1bdf0fc4be1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f998ef10bc",
+      "Fields": {
+        "Meaning": "Vợt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ラケット（ラケット）có nghĩa là vợt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178335": "Hãy chọn chiếc vợt bạn thích.",
+        "192637": "Hãy nắm chắc vợt."
+      },
+      "SourceHash": "29456c2fa3cd5aac84c67d350918e1e5c740892aa2208ce6fea229f339fcbe13"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d75a953f22",
+      "Fields": {
+        "Meaning": "Lợi ích, lợi nhuận",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "利益（りえき）có nghĩa là lợi ích, lợi nhuận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78401": "Hãy đọc những cuốn sách có ích cho bạn.",
+        "147975": "Công nghiệp nặng luôn thu lợi từ chiến tranh."
+      },
+      "SourceHash": "c28b5fec615d82cc3dbab21cb3416aa883bf82c3712123c58de6b39c88e739d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "400fee0ea3",
+      "Fields": {
+        "Meaning": "Hiểu, sự thấu hiểu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "理解（りかい）có nghĩa là hiểu, sự thấu hiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83144": "Chỉ có mẹ mới thật sự hiểu tôi.",
+        "191878": "Tôi hiểu điều bạn nói."
+      },
+      "SourceHash": "6f1274b4a88b6d70119b6d5fee0c0887f3267d89af2ebc6c51941c3fbbd3ead3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b0fe98d49c",
+      "Fields": {
+        "Meaning": "Đất liền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "陸（りく）có nghĩa là đất liền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141154": "Con tàu dần tiến gần đất liền.",
+        "180456": "Gió mạnh bắt đầu thổi về phía đất liền."
+      },
+      "SourceHash": "8ed9680811da6e0cfc56cca398adbba91180857014d2234f2601b6320886072f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f392d9e1f8",
+      "Fields": {
+        "Meaning": "Thông minh, lanh lợi",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "利口（りこう）có nghĩa là thông minh, lanh lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108282": "Anh ấy chẳng chăm chỉ cũng chẳng thông minh.",
+        "216336": "Nhưng Tony không phải một cậu bé lanh lợi."
+      },
+      "SourceHash": "039d391ba4f9aac7c58f91e5db8d89ec1eb29b35ad5a6ec43c4c22a89cbafbb8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c0444713b",
+      "Fields": {
+        "Meaning": "Ly hôn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "離婚（りこん）có nghĩa là ly hôn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78334": "Tôi rất tiếc khi nghe anh chị đã ly hôn.",
+        "152363": "Tôi định đồng ý ly hôn."
+      },
+      "SourceHash": "72c3b4da46d2713d7cc4f6fcccaf9bfa777beff9dd4a632954b6ac7a00a9d3c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed6d068863",
+      "Fields": {
+        "Meaning": "Lý tưởng",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "理想（りそう）có nghĩa là lý tưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78371": "Lý tưởng được thể hiện bằng lời nói.",
+        "216741": "Đối với John, Sammy là ca sĩ lý tưởng."
+      },
+      "SourceHash": "a068a111193fe05b648ed32b68737b5786546105af7aceed0e691057b4fabe48"
+    }
+  ]
+}

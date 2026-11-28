@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e0d0db3ebf",
+      "Fields": {
+        "Meaning": "Trí thông minh, năng lực nhận thức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "知能（ちのう）có nghĩa là trí thông minh, năng lực nhận thức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144312": "Con người đều có trí thông minh cao hơn động vật.",
+        "228455": "Cá heo là động vật rất thông minh."
+      },
+      "SourceHash": "1826618c40332ffa7369776526489ed91fe257d1a4bb46d99462892986adf8bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4aa59e0065",
+      "Fields": {
+        "Meaning": "Đường chân trời trên đất liền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地平線（ちへいせん）có nghĩa là đường chân trời trên đất liền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193126": "Một lúc sau Mặt Trăng xuất hiện trên đường chân trời.",
+        "202585": "Mặt Trăng ở phía trên đường chân trời."
+      },
+      "SourceHash": "fd81b008d95644b08663ef92a5a75ca1189a59042e1477756279d7d52cc4f9ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fbeac8c220",
+      "Fields": {
+        "Meaning": "Địa phương, vùng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地方（ちほう）có nghĩa là địa phương, vùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107061": "Mùa hè năm nay anh ấy đi du lịch vùng Tōhoku.",
+        "204987": "Tin đó có trên bản tin địa phương."
+      },
+      "SourceHash": "d07f604833b90d0fdd431bad2bf3ebb2b08ce34634655d0ee9168342e335fb83"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1255ad0e6f",
+      "Fields": {
+        "Meaning": "Trà, màu nâu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "茶（ちゃ）có nghĩa là trà, màu nâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191858": "Tôi thích trà hơn cà phê.",
+        "207316": "Một con mèo màu đen, con kia màu nâu."
+      },
+      "SourceHash": "7a7acb21f68b03dfc9a6fb3c88eef45023728b8d1128b05b1d88e7de30c6138e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c28e06990a",
+      "Fields": {
+        "Meaning": "Cơ hội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "チャンス（チャンス）có nghĩa là cơ hội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156867": "Tôi chờ cơ hội cuối cùng.",
+        "227352": "Xin đấy! Cho tôi một cơ hội."
+      },
+      "SourceHash": "5540334cd3feec46e340d2803747cfe069fd4bc7fc6002d7b720a24403cd3664"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c3831a496",
+      "Fields": {
+        "Meaning": "Đúng cách, đàng hoàng, rõ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ちゃんと（ちゃんと）có nghĩa là đúng cách, đàng hoàng, rõ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82165": "Tôi biết rõ tên anh ấy mà.",
+        "220270": "Dụng cụ này rất hữu ích nếu dùng đúng cách."
+      },
+      "SourceHash": "7f03fd5d7b51d88f520e137f99f3f03bfb0ed59c63db5bd64809c625bef2aa29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "06b85de79a",
+      "Fields": {
+        "Meaning": "Trong số, trong lúc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Sau số lượng, đọc ちゅう để chỉ trong số. Sau danh từ như 旅行, đọc ちゅう để chỉ đang trong một hoạt động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98997": "Anh ấy bị ốm trong chuyến đi.",
+        "236029": "Trong mười người có ba người có máy video."
+      },
+      "SourceHash": "07aaf0a711e3cdc5f1e54810e5641e94fd3f804eac57aa5b1c933ed31163589b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ee972bb89d",
+      "Fields": {
+        "Meaning": "Chú thích, ghi chú",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "注（ちゅう）có nghĩa là chú thích, ghi chú.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126363": "Chú thích nằm ở cuối trang.",
+        "212656": "Hãy đọc chú thích ở cuối trang đó."
+      },
+      "SourceHash": "438e81168b8d7fb594663d0c5ba3e2ec44267386f0fad3d7e26eef43fca0c525"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f75eb5711",
+      "Fields": {
+        "Meaning": "Chính giữa, trung tâm",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "中央（ちゅうおう）có nghĩa là chính giữa, trung tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166350": "Chúng tôi ngồi ở giữa phòng.",
+        "166957": "Văn phòng chúng tôi ở trung tâm thị trấn."
+      },
+      "SourceHash": "ea2cb93d048629e86e9eabd0d562ac3e428c30bdc5da916a5941d21acdbcf422"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "510004b9a1",
+      "Fields": {
+        "Meaning": "Trung học cơ sở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "中学（ちゅうがく）có nghĩa là trung học cơ sở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102165": "Hồi học cấp hai, anh ấy toàn đọc tiểu thuyết.",
+        "155101": "Hồi cấp hai tôi là thành viên câu lạc bộ bóng đá."
+      },
+      "SourceHash": "ca344a8ad4afd2f71fe3a9880f32d335bf006a99ec8b487c349e858b1bc64c22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ebe5867327",
+      "Fields": {
+        "Meaning": "Đồ đã qua sử dụng, đồ cũ",
+        "PartOfSpeech": "Bổ nghĩa với の",
+        "Explanation": "中古（ちゅうこ）có nghĩa là đồ đã qua sử dụng, đồ cũ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199120": "Có gì đâu, đồ cũ ấy mà.",
+        "207845": "Chiếc tủ lạnh cũ đó thật tệ."
+      },
+      "SourceHash": "ca98583480e47afa7e10d3170a7782c3e5499f61735b47a322f95e05a18f96a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1c25234049",
+      "Fields": {
+        "Meaning": "Hủy, dừng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "中止（ちゅうし）có nghĩa là hủy, dừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82499": "Công trình đường bộ bị dừng vì bão.",
+        "171414": "Cuộc họp dự kiến hôm nay đã bị hủy."
+      },
+      "SourceHash": "5616a5e455520f9fe5b816f224e8087a7f3ea88b8b776e7b8b90ae2d3bdcadb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "545580a613",
+      "Fields": {
+        "Meaning": "Đỗ xe",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "駐車（ちゅうしゃ）có nghĩa là đỗ xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "119043": "Xin hỏi anh ấy đã đỗ xe ở đâu.",
+        "125638": "Có thể đỗ xe ở cả hai bên đường."
+      },
+      "SourceHash": "b48c782ae3cc5030ee8d13f18d900cefc0a3ba3392d9f6a732d4815f480fbbbf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "80c8c02c83",
+      "Fields": {
+        "Meaning": "Bữa trưa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "昼食（ちゅうしょく）có nghĩa là bữa trưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83146": "Mẹ đã chuẩn bị bữa trưa cho tôi.",
+        "171543": "Hôm nay tôi không có thời gian ăn trưa."
+      },
+      "SourceHash": "1e8931fb88fb52a9c33e8356fc5f9968a4ca73d324063330538041c6731202e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "47dad745df",
+      "Fields": {
+        "Meaning": "Trung tâm, trọng tâm",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "中心（ちゅうしん）có nghĩa là trung tâm, trọng tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167014": "Trường chúng tôi ở trung tâm thị trấn.",
+        "207809": "Ở trung tâm thị trấn có một công viên rất đẹp."
+      },
+      "SourceHash": "64ca71c41fbf19e0c1e225e255ed328e5a0f70da2ef9932e57ec774c7eda8e25"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d7d2562d4",
+      "Fields": {
+        "Meaning": "Chú ý, để mắt",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "注目（ちゅうもく）có nghĩa là chú ý, để mắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114598": "Anh ấy luôn để ý đến mọi động thái của sếp.",
+        "217056": "Xin hãy chú ý."
+      },
+      "SourceHash": "1b078a73aa278dace582e3198727452d2ec960c496e8bfcc9de69210ad3f4668"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "842b23c9fd",
+      "Fields": {
+        "Meaning": "Đặt hàng, gọi món",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "注文（ちゅうもん）có nghĩa là đặt hàng, gọi món.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159867": "Tôi đặt mua cuốn sách đó từ Anh.",
+        "233510": "Tôi đã gọi món tráng miệng cho bạn."
+      },
+      "SourceHash": "47a087eaa86a7232f5f80fe5978bedd50c5ae0e0c9409803dcbff4f36f56529e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcbf5309e2",
+      "Fields": {
+        "Meaning": "Dài hạn, thời gian dài",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "長期（ちょうき）có nghĩa là dài hạn, thời gian dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125882": "Theo dự báo dài hạn, mùa đông sẽ ấm.",
+        "125888": "Sau một thời gian dài bị ốm, Jane trở thành người suốt ngày ngồi xem ti vi."
+      },
+      "SourceHash": "8c909826852c88e14ee6a654afb31ede2e077cbcedf520450e49fcadde0d04cd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4dc252fa39",
+      "Fields": {
+        "Meaning": "Điều tra, khảo sát",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "調査（ちょうさ）có nghĩa là điều tra, khảo sát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97845": "Họ bắt đầu điều tra vấn đề đó.",
+        "207774": "Cuộc điều tra đang diễn ra."
+      },
+      "SourceHash": "ec997a33b75f4238b12e6bfacae8f6476ab631894bfda6f90bdd65e28eaef3f3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94696ff83d",
+      "Fields": {
+        "Meaning": "Tình trạng, phong độ, nhịp điệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "調子（ちょうし）có nghĩa là tình trạng, phong độ, nhịp điệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142640": "Giọng nói đôi khi truyền tải cảm xúc.",
+        "233175": "Chiếc xe mới của bạn chạy tốt chứ?"
+      },
+      "SourceHash": "de80d5695dd0517d318df7e95adeead59f96ceb547914295194c5c53d054dd64"
+    }
+  ]
+}

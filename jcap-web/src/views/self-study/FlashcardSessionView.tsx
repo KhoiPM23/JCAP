@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { PracticeConfirmation } from '../../components/jcap/PracticeConfirmation';
+import { usePhoneViewport } from '../../hooks/usePhoneViewport';
 import { flashcardService } from '../../services/flashcardService';
 import { DEMO_VOCAB_SET, DEMO_GRAMMAR_SET } from './demoFlashcardData';
 import type {
   FlashcardSession,
   FlashcardCardItem,
   FlashcardRating,
+  FlashcardStudyMode,
   FlashcardSessionSummary,
 } from '../../types/flashcard';
 
@@ -38,8 +41,15 @@ export const FlashcardSessionView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { themeFor, isDark } = useTheme();
+  const mobile = usePhoneViewport();
+  const [confirmExit, setConfirmExit] = useState(false);
+  const [ratingPending, setRatingPending] = useState(false);
+  const ratingPendingRef = useRef(false);
 
   const isExtraPractice = searchParams.get('extraPractice') === 'true' || searchParams.get('mode') === 'extra';
+  const rawStudyMode = searchParams.get('studyMode')?.toLowerCase();
+  const studyMode: FlashcardStudyMode =
+    rawStudyMode === 'due' ? 'DueOnly' : rawStudyMode === 'new' ? 'NewOnly' : 'All';
   const isDemo = topicId === 'demo' || topicId === '0';
   const isDueReview = topicId === 'due';
   const currentTopicId = topicId && !isDemo && !isDueReview ? parseInt(topicId, 10) : 101;
@@ -69,6 +79,9 @@ export const FlashcardSessionView: React.FC = () => {
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [isEarlyExit, setIsEarlyExit] = useState<boolean>(false);
   const [summary, setSummary] = useState<FlashcardSessionSummary | null>(null);
+  const [sessionReloadKey, setSessionReloadKey] = useState<number>(0);
+  const [unlockingQuota, setUnlockingQuota] = useState<boolean>(false);
+  const [emptyUnlockError, setEmptyUnlockError] = useState<string | null>(null);
 
   // Ratings tracking
   const [ratingCounts, setRatingCounts] = useState<{ again: number; good: number; easy: number }>({
@@ -127,22 +140,27 @@ export const FlashcardSessionView: React.FC = () => {
         topicId: isDueReview ? null : isBookmarkSource ? undefined : currentTopicId,
         contentType: currentContentType,
         isExtraPractice,
+        studyMode,
       });
 
       if (res.success && res.data) {
         const initialCards = Array.isArray(res.data.cards) ? res.data.cards : [];
+        const prevReviewed = res.data.previouslyReviewedCount || 0;
         setSession(res.data);
         setQueue(initialCards);
-        setTotalOriginalCards(res.data.totalCardsInSession || initialCards.length);
-        if (res.data.previouslyReviewedCount) {
-          setResolvedCardsCount(res.data.previouslyReviewedCount);
-        }
+        setTotalOriginalCards(res.data.totalCardsInSession || (prevReviewed + initialCards.length));
+        setResolvedCardsCount(prevReviewed);
+        setCurrentIndex(0);
+        setIsFlipped(false);
+        setIsCompleted(false);
+        setIsEarlyExit(false);
+        setEmptyUnlockError(null);
       }
       setLoading(false);
     };
 
     initSession();
-  }, [currentTopicId, currentContentType, isExtraPractice, isDemo, isDueReview]);
+  }, [currentTopicId, currentContentType, isExtraPractice, studyMode, isDemo, isDueReview, sessionReloadKey]);
 
   // Current Card
   const currentCard: FlashcardCardItem | undefined = queue[currentIndex];
@@ -262,12 +280,16 @@ export const FlashcardSessionView: React.FC = () => {
       });
 
       // Chỉ gọi API đánh giá khi KHÔNG phải chế độ Sandbox Demo và KHÔNG phải Mini-round (ôn nhanh thẻ Leech miễn phí)
+      let nextIntervalPreviewFromApi = currentCard.intervalPreview;
       if (!isDemo && !isMiniRound) {
-        await flashcardService.rateCard(session.sessionId, {
+        const rateRes = await flashcardService.rateCard(session.sessionId, {
           itemType: currentCard.itemType,
           itemId: currentCard.itemId,
           rating,
         });
+        if (rateRes.success && rateRes.data?.nextIntervalPreview) {
+          nextIntervalPreviewFromApi = rateRes.data.nextIntervalPreview;
+        }
       }
 
       let shouldRequeue = false;
@@ -278,9 +300,9 @@ export const FlashcardSessionView: React.FC = () => {
         setCardAgainMap((prev) => ({ ...prev, [cardKey]: nextAgainCount }));
 
         if (nextAgainCount <= MAX_RETRIES_PER_CARD) {
-          // Lần 1 hoặc Lần 2 chọn Again -> Đưa thẻ về cuối hàng đợi để ôn lại
+          // Lần 1 hoặc Lần 2 chọn Again -> Đưa thẻ về cuối hàng đợi để ôn lại với preview interval mới nhất từ SM-2
           shouldRequeue = true;
-          setQueue((prev) => [...prev, currentCard]);
+          setQueue((prev) => [...prev, { ...currentCard, intervalPreview: nextIntervalPreviewFromApi }]);
           setLeechNotice(null);
         } else {
           // Lần thứ 3 chọn Again -> Chạm trần giới hạn, KHÔNG đưa vào hàng đợi nữa mà đánh dấu Leech
@@ -472,10 +494,24 @@ export const FlashcardSessionView: React.FC = () => {
     setIsCompleted(true);
   }, [isCompleted, isDemo, ratingCounts, session, navigate]);
 
+  const rateFromControls = async (rating: FlashcardRating) => {
+    if (!mobile) return handleRate(rating);
+    if (!isFlipped || ratingPendingRef.current) return;
+
+    ratingPendingRef.current = true;
+    setRatingPending(true);
+    try {
+      await handleRate(rating);
+    } finally {
+      ratingPendingRef.current = false;
+      setRatingPending(false);
+    }
+  };
+
   // Bắt phím tắt bàn phím: Space (Lật), 1/2/3 (Đánh giá), A (Nghe), B (Bookmark), Esc (Thoát)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isCompleted) return;
+      if (isCompleted || mobile) return;
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -515,6 +551,7 @@ export const FlashcardSessionView: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     isCompleted,
+    mobile,
     handleRate,
     handlePrevCard,
     handleNextCard,
@@ -539,26 +576,158 @@ export const FlashcardSessionView: React.FC = () => {
     );
   }
 
-  // Trường hợp không có thẻ nào trong phiên học
+  // Trường hợp không có thẻ nào trong phiên học (hiển thị rõ lý do khi vào trực tiếp qua URL)
   if (!session || queue.length === 0) {
+    const emptyReason = session?.emptyReason;
+    const isQuotaExhausted = emptyReason === 'QuotaExhausted';
+    const isNoDueCards = emptyReason === 'NoDueCards';
+    const isAllCompleted = emptyReason === 'AllCompleted';
+    const sessionQuota = session?.quota;
+    const nextDueFormatted = session?.nextDueAtWhenEmpty
+      ? new Date(
+          session.nextDueAtWhenEmpty.endsWith('Z') || session.nextDueAtWhenEmpty.includes('+')
+            ? session.nextDueAtWhenEmpty
+            : `${session.nextDueAtWhenEmpty}Z`
+        ).toLocaleString('vi-VN', {
+          timeZone: 'Asia/Ho_Chi_Minh',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : null;
+
+    const canStartExtraPractice =
+      !isDueReview &&
+      !isExtraPractice &&
+      (session?.totalEligibleInSource ?? 0) > 0 &&
+      (!isQuotaExhausted || (session?.learnedCardsInSource ?? 0) > 0);
+
+    const handleUnlockFromEmptyScreen = async () => {
+      setUnlockingQuota(true);
+      setEmptyUnlockError(null);
+      const res = await flashcardService.unlockExtraNewCards();
+      setUnlockingQuota(false);
+      if (res.success) {
+        setSessionReloadKey((k) => k + 1);
+      } else {
+        setEmptyUnlockError(res.message || 'Không thể mở thêm thẻ mới.');
+      }
+    };
+
+    const handleGoExtraPractice = () => {
+      if (searchParams.get('source') === 'bookmark') {
+        navigate('/flashcards/study/0/Mixed?source=bookmark&extraPractice=true');
+        return;
+      }
+      navigate(`/flashcards/study/${currentTopicId}/${currentContentType.toLowerCase()}?extraPractice=true`);
+    };
+
     return (
       <div data-theme={themeFor('learn')} className="min-h-screen bg-paper-100 flex items-center justify-center p-4 font-sans text-sumi">
-        <div className="max-w-md w-full bg-paper-50 rounded-3xl border border-line p-8 shadow-lg text-center space-y-6">
-          <div className="w-20 h-20 bg-ai-soft border border-ai/30 text-ai rounded-full flex items-center justify-center text-4xl mx-auto">
-            🗂️
+        <div className="max-w-md w-full bg-paper-50 rounded-3xl border border-line p-8 shadow-lg text-center space-y-5">
+          <div
+            className={`w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto border ${
+              isQuotaExhausted
+                ? 'bg-danger-soft border-danger/30 text-danger'
+                : isAllCompleted || isNoDueCards
+                ? 'bg-success-soft border-success/30 text-success'
+                : 'bg-ai-soft border-ai/30 text-ai'
+            }`}
+          >
+            {isQuotaExhausted ? '🔒' : isAllCompleted || isNoDueCards ? '✅' : '🗂️'}
           </div>
-          <div>
-            <h2 className="text-xl font-black text-sumi">Không có thẻ nào trong phiên học</h2>
-            <p className="text-xs text-sumi-muted mt-2">
-              Chưa có thẻ nào đến hạn ôn tập hoặc bộ thẻ này hiện chưa có thẻ nào trong cơ sở dữ liệu.
+
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-sumi">
+              {isQuotaExhausted
+                ? 'Đã hết hạn mức thẻ mới hôm nay'
+                : isNoDueCards
+                ? 'Hiện chưa có thẻ nào đến hạn ôn tập'
+                : isAllCompleted
+                ? 'Bạn đã học hết toàn bộ thẻ trong bộ này'
+                : 'Không có thẻ nào trong phiên học'}
+            </h2>
+
+            {session?.setTitle && (
+              <div className="text-xs font-bold text-ai">{session.setTitle}</div>
+            )}
+
+            <p className="text-xs text-sumi-muted leading-relaxed">
+              {isQuotaExhausted && sessionQuota ? (
+                <>
+                  Bạn đã sử dụng hết{' '}
+                  <strong className="text-danger">
+                    {sessionQuota.studiedNewCardsToday}/{sessionQuota.totalAllowedNewCardsToday} thẻ mới
+                  </strong>{' '}
+                  trong ngày hôm nay. Bộ này vẫn còn{' '}
+                  <strong className="text-sumi">{session?.remainingNewCardsInSource ?? 0} thẻ mới</strong> chưa học.
+                  Hạn mức miễn phí sẽ tự làm mới vào 00:00 ngày mai.
+                </>
+              ) : isNoDueCards || isAllCompleted ? (
+                nextDueFormatted ? (
+                  <>
+                    Tất cả các thẻ đã học đều đang trong chu kỳ ghi nhớ. Lượt ôn tập đến hạn tiếp theo vào{' '}
+                    <strong className="text-sumi">{nextDueFormatted}</strong>.
+                  </>
+                ) : (
+                  'Hiện chưa có thẻ nào đến hạn ôn tập lại trong bộ này.'
+                )
+              ) : (
+                'Bộ thẻ này hiện chưa có thẻ khả dụng để bắt đầu phiên ôn tập.'
+              )}
             </p>
           </div>
-          <button
-            onClick={() => navigate('/flashcards')}
-            className="w-full py-3 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-sm transition-all shadow-xs cursor-pointer"
-          >
-            Quay lại danh sách bộ thẻ
-          </button>
+
+          {isQuotaExhausted && sessionQuota && (
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-paper-100 border border-line text-xs">
+              <span className="text-sumi-muted">Số dư Credit hiện có</span>
+              <strong className="text-warning">{sessionQuota.userCreditBalance} 🪙</strong>
+            </div>
+          )}
+
+          {emptyUnlockError && (
+            <div className="px-3.5 py-2.5 rounded-xl bg-danger-soft border border-danger/30 text-danger text-xs font-semibold text-left">
+              ⚠️ {emptyUnlockError}
+            </div>
+          )}
+
+          <div className="space-y-2.5 pt-1">
+            {isQuotaExhausted && sessionQuota && (
+              <button
+                type="button"
+                onClick={handleUnlockFromEmptyScreen}
+                disabled={unlockingQuota}
+                className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span>🔓</span>
+                <span>
+                  {unlockingQuota
+                    ? 'Đang mở khóa...'
+                    : `Mở thêm +${sessionQuota.unlockBatchSize} thẻ mới (-${sessionQuota.unlockCreditCost} 🪙)`}
+                </span>
+              </button>
+            )}
+
+            {canStartExtraPractice && (
+              <button
+                type="button"
+                onClick={handleGoExtraPractice}
+                className="w-full py-3 px-4 bg-ai-soft hover:bg-ai-soft/80 text-ai border border-ai/30 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>↻</span>
+                <span>Ôn thêm tự do (không đổi SRS, không tốn hạn mức)</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => navigate('/flashcards')}
+              className="w-full py-3 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-sm transition-all shadow-xs cursor-pointer"
+            >
+              Quay lại danh sách bộ thẻ
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -751,14 +920,15 @@ export const FlashcardSessionView: React.FC = () => {
   const isGrammarFront = isCurrentCardGrammar && !isFlipped;
 
   return (
-    <div data-theme={themeFor('learn')} className="min-h-screen bg-paper-100 flex flex-col justify-between font-sans selection:bg-ai-soft text-sumi">
+    <div data-theme={themeFor('learn')} className="jx-flash-study min-h-screen bg-paper-100 flex flex-col justify-between font-sans selection:bg-ai-soft text-sumi">
 
       {/* ==================== 1. TOP FOCUS HEADER (3 VÙNG + PROGRESS BAR SÁT ĐÁY) ==================== */}
-      <header className="relative bg-paper-50 border-b border-line px-4 sm:px-6 py-3 min-h-[60px] flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+      <header className="jx-flash-study-header relative bg-paper-50 border-b border-line px-4 sm:px-6 py-3 min-h-[60px] flex items-center justify-between sticky top-0 z-30 shadow-2xs">
         {/* VÙNG 1 (TRÁI): Nút thoát phiên */}
         <div className="flex items-center shrink-0 min-w-[120px] sm:w-64">
           <button
-            onClick={handleExitSession}
+            onClick={mobile ? () => setConfirmExit(true) : handleExitSession}
+            disabled={mobile && ratingPending}
             className="px-3.5 py-1.5 bg-paper-100 hover:bg-paper-200 text-sumi border border-line rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             title="Tạm dừng/thoát phiên học và lưu tiến độ [Esc]"
           >
@@ -869,9 +1039,9 @@ export const FlashcardSessionView: React.FC = () => {
 
         {/* ==================== THẺ FLASHCARD TỐI GIẢN (PA3 - ULTRA-MINIMALIST QUIZLET STYLE) ==================== */}
         <div
-          className="w-full max-w-[760px] h-[440px] cursor-pointer select-none"
+          className="jx-flash-study-card w-full max-w-[760px] h-[440px] cursor-pointer select-none"
           style={{ perspective: '1200px' }}
-          onClick={handleToggleFlip}
+          onClick={mobile ? undefined : handleToggleFlip}
         >
           <div
             className="relative w-full h-full rounded-3xl"
@@ -884,6 +1054,7 @@ export const FlashcardSessionView: React.FC = () => {
           >
             {/* ==================== MẶT TRƯỚC (CHỈ HIỂN THỊ TỪ VỰNG / NGỮ PHÁP) ==================== */}
             <div
+              inert={mobile && isFlipped}
               className="absolute inset-0 w-full h-full bg-paper-50 rounded-3xl border border-line p-8 shadow-lg flex flex-col justify-between text-sumi"
               style={{
                 backfaceVisibility: 'hidden',
@@ -924,6 +1095,7 @@ export const FlashcardSessionView: React.FC = () => {
 
             {/* ==================== MẶT SAU (CẤU TRÚC / CÁCH ĐỌC + NGHĨA + CÂU MẪU + GIẢI THÍCH) ==================== */}
             <div
+              inert={mobile && !isFlipped}
               className={`absolute inset-0 w-full h-full bg-paper-50 rounded-3xl border-2 p-6 sm:p-8 shadow-lg flex flex-col justify-between text-sumi ${
                 isCurrentCardGrammar ? 'border-purple-500/30' : 'border-ai/30'
               }`}
@@ -1034,7 +1206,7 @@ export const FlashcardSessionView: React.FC = () => {
 
         {/* ==================== THANH CÔNG CỤ BÊN DƯỚI THẺ (ACTION TOOLBAR) ==================== */}
         <div className="w-full max-w-[760px] mt-3.5 flex flex-col items-center space-y-2">
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-paper-50 px-3 py-2 rounded-2xl border border-line shadow-2xs">
+          <div className="jx-flash-study-tools inline-flex flex-wrap items-center justify-center gap-2 bg-paper-50 px-3 py-2 rounded-2xl border border-line shadow-2xs">
             {/* 1. Nút Nghe mẫu [A] */}
             <button
               onClick={playTargetAudio}
@@ -1061,14 +1233,15 @@ export const FlashcardSessionView: React.FC = () => {
                 {isPlayingAudio
                   ? 'Đang phát...'
                   : isGrammar
-                  ? 'Nghe câu mẫu [A]'
-                  : 'Nghe mẫu [A]'}
+                  ? (mobile ? 'Nghe câu mẫu' : 'Nghe câu mẫu [A]')
+                  : (mobile ? 'Nghe mẫu' : 'Nghe mẫu [A]')}
               </span>
             </button>
 
             {/* 2. Nút Đánh dấu [B] */}
             <button
               onClick={handleToggleBookmark}
+              aria-pressed={currentCard.isBookmarked}
               title="Đánh dấu thẻ này [B]"
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 border cursor-pointer ${
                 currentCard.isBookmarked
@@ -1077,14 +1250,14 @@ export const FlashcardSessionView: React.FC = () => {
               }`}
             >
               <span>{currentCard.isBookmarked ? '🔖' : '🏷️'}</span>
-              <span>{currentCard.isBookmarked ? 'Đã đánh dấu [B]' : 'Đánh dấu [B]'}</span>
+              <span>{currentCard.isBookmarked ? 'Đã đánh dấu' : 'Đánh dấu'}{!mobile && ' [B]'}</span>
             </button>
 
             {/* 3. Nút Lật thẻ nhanh */}
             <button
               onClick={handleToggleFlip}
               title="Lật mặt thẻ [Space]"
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-paper-100 hover:bg-paper-200 text-sumi border border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="jx-flash-study-flip px-3.5 py-2 rounded-xl text-xs font-bold bg-paper-100 hover:bg-paper-200 text-sumi border border-line transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <span>🔄</span>
               <span>{isFlipped ? 'Lật về Mặt trước' : 'Lật sang Mặt sau'}</span>
@@ -1100,7 +1273,7 @@ export const FlashcardSessionView: React.FC = () => {
               <span className="text-ai font-bold">Thẻ {currentIndex + 1} / {queue.length}</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="jx-flash-study-extra grid grid-cols-3 gap-3">
               {/* Nút 1: Thẻ trước ◀ */}
               <button
                 onClick={handlePrevCard}
@@ -1113,7 +1286,7 @@ export const FlashcardSessionView: React.FC = () => {
               </button>
 
               {/* Nút 2: Lật thẻ 🔄 */}
-              <button
+              {!mobile && <button
                 onClick={handleToggleFlip}
                 className="py-3 px-4 rounded-2xl bg-paper-100 hover:bg-paper-200 border border-line text-sumi transition-all flex items-center justify-center gap-2 shadow-xs group cursor-pointer"
                 title="Lật thẻ [Space]"
@@ -1122,7 +1295,7 @@ export const FlashcardSessionView: React.FC = () => {
                 <span className="text-xs sm:text-sm font-bold">
                   {isFlipped ? 'Mặt trước' : 'Lật xem nghĩa'}
                 </span>
-              </button>
+              </button>}
 
               {/* Nút 3: Thẻ tiếp theo ▶ hoặc Hoàn thành */}
               {currentIndex < queue.length - 1 ? (
@@ -1149,13 +1322,14 @@ export const FlashcardSessionView: React.FC = () => {
         ) : (
           <div className="w-full max-w-[760px] mt-6 space-y-3">
             <div className="text-center text-xs font-semibold text-sumi-muted">
-              Đánh giá mức độ nhớ của bạn:
+              {mobile && !isFlipped ? 'Lật thẻ để xem nghĩa trước khi đánh giá.' : 'Đánh giá mức độ nhớ của bạn:'}
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="jx-flash-study-ratings grid grid-cols-3 gap-3">
               {/* 1. AGAIN */}
               <button
-                onClick={() => handleRate('Again')}
+                onClick={() => void rateFromControls('Again')}
+                disabled={mobile && (!isFlipped || ratingPending)}
                 className="py-3 px-4 rounded-2xl bg-danger-soft/40 hover:bg-danger-soft border border-danger/30 text-danger transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
               >
                 <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
@@ -1171,7 +1345,8 @@ export const FlashcardSessionView: React.FC = () => {
 
               {/* 2. GOOD */}
               <button
-                onClick={() => handleRate('Good')}
+                onClick={() => void rateFromControls('Good')}
+                disabled={mobile && (!isFlipped || ratingPending)}
                 className="py-3 px-4 rounded-2xl bg-ai-soft/40 hover:bg-ai-soft border border-ai/30 text-ai transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
               >
                 <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
@@ -1179,13 +1354,14 @@ export const FlashcardSessionView: React.FC = () => {
                   <span>Tốt</span>
                 </div>
                 <div className="text-[11px] text-ai/80 font-medium">
-                  Ôn lại sau {currentCard.intervalPreview.goodDays || 1} ngày
+                  Ôn lại sau {currentCard.intervalPreview?.goodIntervalDays ?? currentCard.intervalPreview?.goodDays ?? 1} ngày
                 </div>
               </button>
 
               {/* 3. EASY */}
               <button
-                onClick={() => handleRate('Easy')}
+                onClick={() => void rateFromControls('Easy')}
+                disabled={mobile && (!isFlipped || ratingPending)}
                 className="py-3 px-4 rounded-2xl bg-success-soft/40 hover:bg-success-soft border border-success/30 text-success transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
               >
                 <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
@@ -1193,7 +1369,7 @@ export const FlashcardSessionView: React.FC = () => {
                   <span>Dễ</span>
                 </div>
                 <div className="text-[11px] text-success/80 font-medium">
-                  Ôn lại sau {currentCard.intervalPreview.easyDays || 3} ngày
+                  Ôn lại sau {currentCard.intervalPreview?.easyIntervalDays ?? currentCard.intervalPreview?.easyDays ?? 3} ngày
                 </div>
               </button>
             </div>
@@ -1202,7 +1378,7 @@ export const FlashcardSessionView: React.FC = () => {
       </main>
 
       {/* ==================== 4. KEYBOARD SHORTCUTS DOCK ==================== */}
-      <footer className="py-4 px-6 bg-paper-50 border-t border-line flex justify-center">
+      {!mobile && <footer className="py-4 px-6 bg-paper-50 border-t border-line flex justify-center">
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-sumi-muted">
           <div className="flex items-center gap-1.5">
             <kbd className="px-2 py-0.5 bg-paper-100 border border-line rounded-md text-[10px] font-bold text-sumi">Space</kbd>
@@ -1238,7 +1414,19 @@ export const FlashcardSessionView: React.FC = () => {
             <span>Thoát</span>
           </div>
         </div>
-      </footer>
+      </footer>}
+      {mobile && confirmExit && (
+        <PracticeConfirmation
+          title="Thoát phiên ôn tập?"
+          description="Phiên ôn tập hiện tại sẽ dừng."
+          confirmLabel="Thoát phiên"
+          onCancel={() => setConfirmExit(false)}
+          onConfirm={() => {
+            setConfirmExit(false);
+            void handleExitSession();
+          }}
+        />
+      )}
     </div>
   );
 };

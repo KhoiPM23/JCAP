@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <!-- Tự động cài đặt thư viện frontend (npm install) nếu node_modules chưa tồn tại -->
-  <Target Name="EnsureNpmInstall" BeforeTargets="Build" Condition="!Exists('$(SpaRoot)node_modules')">
+  <Target Name="EnsureNpmInstall" BeforeTargets="Build" Condition="!Exists('$(SpaRoot)node_modules') AND '$(SkipEnsureNpmInstall)' != 'true' AND '$(DesignTimeBuild)' != 'true'">
     <Message Importance="high" Text="Tự động cài đặt thư viện frontend (npm install) cho jcap-web..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" ContinueOnError="false" />
   </Target>
@@ -36,6 +36,11 @@
   <ItemGroup>
     <InternalsVisibleTo Include="JCAP.Tests" />
     <EmbeddedResource Include="Data\Seeds\LearningContentSample\sample.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\learning-n5-n3.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\tango-n5-topics.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\learning-topic-catalog-n5-n3.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\localize-n5-food-permission.sql" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\Translations\reviewed.sql" />
     <EmbeddedResource Include="Data\Seeds\ExploreContent\explore-content.json" />
     <EmbeddedResource Include="Data\Seeds\ExploreContent\explore-content.history.json" />
   </ItemGroup>

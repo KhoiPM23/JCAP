@@ -1,0 +1,305 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: ae29f467bd, 526233614e."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3d0c7fa43",
+      "Fields": {
+        "Meaning": "Bí mật",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "秘密（ひみつ）có nghĩa là bí mật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85852": "Sớm muộn gì bí mật cũng lộ.",
+        "153352": "Tôi lấy lòng cô ấy và khéo léo hỏi ra bí mật."
+      },
+      "SourceHash": "3e72247720e6324daa4006fe60307a1e238efd41b31a1bd255591aa432060e26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "233a387b5d",
+      "Fields": {
+        "Meaning": "Tinh tế, khó nói, chưa chắc",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "微妙（びみょう）có nghĩa là tinh tế, khó nói, chưa chắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213456": "Hai bức tranh có khác biệt rất nhỏ.",
+        "7169806": "Chưa chắc Tom có thể dự kỳ Olympic tới."
+      },
+      "SourceHash": "9b3758644979261cc8b32f0f4823b866a78ef83c5669fd11e8041b2b9d7025a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dee0d769c7",
+      "Fields": {
+        "Meaning": "Dây, dây buộc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "紐（ひも）có nghĩa là dây, dây buộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157512": "Tôi tháo dây giày.",
+        "195964": "Kìa, dây giày bạn tuột rồi."
+      },
+      "SourceHash": "0a59b7b3681707ce8bb03eec425093a7205410c393aa0e18601d4b0ba826befe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae29f467bd",
+      "Fields": {
+        "Meaning": "Bảng, biểu đồ hoặc danh sách",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "表 đọc là ひょう khi chỉ bảng hoặc biểu trình bày thông tin.",
+        "UsageNotes": "Nghĩa mặt trước thường đọc là おもて."
+      },
+      "Examples": {
+        "220116": "Bạn có thể chọn món muốn ăn từ bảng này.",
+        "220393": "Hãy xem bảng bên dưới để biết điểm này."
+      },
+      "SourceHash": "3b66faec4755e9e6ba6ec687a72f43562c6f549a0df23db7615672ffabd92169"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d684a35bd1",
+      "Fields": {
+        "Meaning": "Chi phí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "費用（ひよう）có nghĩa là chi phí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85792": "Ai chịu chi phí thì người đó có quyền quyết định.",
+        "85797": "Tổng chi phí là 5.000 yên."
+      },
+      "SourceHash": "5b8dec5337579f0abc0df8a7df9555f1a8186a94b11039be626bd161dc22fa09"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38664919d1",
+      "Fields": {
+        "Meaning": "Giây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "秒（びょう）có nghĩa là giây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161969": "Tôi lỡ tàu chỉ vì chậm 30 giây.",
+        "163496": "Đồng hồ của tôi chạy nhanh năm giây mỗi ngày."
+      },
+      "SourceHash": "a0024402c62fae47304d8c958dc12c862b44b572809d0a1dac17772ded35cfa0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e53de06680",
+      "Fields": {
+        "Meaning": "Đánh giá, ghi nhận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "評価（ひょうか）có nghĩa là đánh giá, ghi nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82774": "Các bà mẹ thường không được ghi nhận đúng mức.",
+        "232458": "Bạn đánh giá sinh viên bằng cách nào?"
+      },
+      "SourceHash": "1b968b3a24413c32f088d859916a7aa48807ac09b11f4626ce74efa7f91b6d62"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4ad9f1ce23",
+      "Fields": {
+        "Meaning": "Biểu đạt, cách diễn đạt",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "表現（ひょうげん）có nghĩa là biểu đạt, cách diễn đạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144500": "Con người dùng ngôn ngữ để diễn đạt suy nghĩ.",
+        "144950": "Chân lý thường được diễn đạt bằng thì hiện tại."
+      },
+      "SourceHash": "c26e616a24b4426ccf65f6717cffbb33dfbbbc4d9e98518376bf4bf1f2cb70cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "58e01c0b72",
+      "Fields": {
+        "Meaning": "Vẻ mặt, nét mặt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "表情（ひょうじょう）có nghĩa là vẻ mặt, nét mặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87166": "Cô ấy trông buồn.",
+        "116408": "Tôi thấy vẻ mặt anh ấy chợt chuyển sang giận dữ."
+      },
+      "SourceHash": "eafb1d10e7d41ea8035d29b94f610b7c9527544d1e5c9eab4c54ee3a3b719151"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "614bded84d",
+      "Fields": {
+        "Meaning": "Bình đẳng",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "平等（びょうどう）có nghĩa là bình đẳng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82698": "Mọi người đều bình đẳng trước pháp luật.",
+        "237406": "Trong mắt Chúa, mọi người đều bình đẳng."
+      },
+      "SourceHash": "d940f225b0c6443cd7a4fd468833dc37334aab91fe6f6770a92c8939090806a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "32b3f86071",
+      "Fields": {
+        "Meaning": "Danh tiếng, tiếng tăm",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "評判（ひょうばん）có nghĩa là danh tiếng, tiếng tăm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215000": "Vụ bê bối làm tổn hại danh tiếng của công ty.",
+        "219785": "Cuốn sách này sẽ giúp bạn khá nổi tiếng."
+      },
+      "SourceHash": "6062175993581b79405729ef1a4b9e5035e3b96d3127a0b9157f0781feeeab3b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "82a95bb809",
+      "Fields": {
+        "Meaning": "Bề mặt",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "表面（ひょうめん）có nghĩa là bề mặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100615": "Anh ấy dùng giũa làm nhẵn bề mặt.",
+        "107778": "Anh ấy đứng trên bề mặt Mặt Trăng."
+      },
+      "SourceHash": "f128844c9636f0cbc9c81915167c95c6d8f373cc8e6951facbee6a6d65c6358c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05550395ae",
+      "Fields": {
+        "Meaning": "Lan rộng, mở rộng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "広がる（ひろがる）có nghĩa là lan rộng, mở rộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189649": "Nhờ mưa, đám cháy không lan rộng.",
+        "228076": "Tin đồn lan ra khắp nơi."
+      },
+      "SourceHash": "13faf512b366614d2a4140020809f9b3852f5dc42a6b1d0c2bf6b098aa305d58"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ea7451e69",
+      "Fields": {
+        "Meaning": "Chai, lọ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "瓶（びん）có nghĩa là chai, lọ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168994": "Hãy lắc chai trước khi dùng.",
+        "207041": "Hãy đổ đầy nước vào chai."
+      },
+      "SourceHash": "5260b11ea6d40d573d31d8e203d99e1c3360940e8d46cbd9ccf44ab58cb9ee2e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "526233614e",
+      "Fields": {
+        "Meaning": "Chuyến xe, chuyến bay hoặc chuyến tàu; dịch vụ vận tải",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "便 đọc là びん khi chỉ chuyến hoặc dịch vụ vận tải. Trong バスの便, từ này nói về dịch vụ xe buýt và mức thuận tiện của việc đi lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198146": "Dịch vụ xe buýt đáng lẽ phải thuận tiện hơn.",
+        "206821": "Tôi đặt hai chỗ trên chuyến đó được không?"
+      },
+      "SourceHash": "af44c4aa3dafc42f3c9339fdc3a0260850bab0c6f249c4461946dc90393e1852"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "18ce3e646d",
+      "Fields": {
+        "Meaning": "Ghim, chốt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ピン（ピン）có nghĩa là ghim, chốt.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "2fe78be146b6db7f22f0eda320ee048489d5bce2de476b81eb72a6cd275d6ab5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "41e221bc4d",
+      "Fields": {
+        "Meaning": "Bất, không (tiền tố phủ định)",
+        "PartOfSpeech": "Tiền tố",
+        "Explanation": "不（ふ）có nghĩa là bất, không (tiền tố phủ định).",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "57880b6f861936062f2c7eb8370bea6f63b204e29a71b397a8c3d99990851d6a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b806544195",
+      "Fields": {
+        "Meaning": "Lo lắng, bất an",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "不安（ふあん）có nghĩa là lo lắng, bất an.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175238": "Con chó nhìn chủ với vẻ bất an.",
+        "207979": "Tin đó khiến anh ấy càng lo."
+      },
+      "SourceHash": "e8d52296414a489ea233b9c28f493d84dbd9ea6dc82315d117cce7283b5af88f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "360b70b61d",
+      "Fields": {
+        "Meaning": "Phong cảnh",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "風景（ふうけい）có nghĩa là phong cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200556": "Có một vài cảnh rất đẹp.",
+        "213607": "Nơi đó nổi tiếng vì phong cảnh đẹp."
+      },
+      "SourceHash": "42cb540643dd542b35e7a76feab7e8ffa1261b8964bc4d4044d3b5abe8391304"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3146d2f2ac",
+      "Fields": {
+        "Meaning": "Vợ chồng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "夫婦（ふうふ）có nghĩa là vợ chồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "180462": "Tên cướp nhốt hai vợ chồng trong tầng hầm.",
+        "217025": "Mời anh chị cùng đến."
+      },
+      "SourceHash": "65c7cf403f3ccc5851d7fd610ae0a7db7c5c8129979aa4f25fe27d30b43007cd"
+    }
+  ]
+}

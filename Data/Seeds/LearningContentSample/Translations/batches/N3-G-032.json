@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-tomo-ni",
+      "Fields": {
+        "Meaning": "Cùng với, song song với",
+        "Formation": "Danh từ hoặc động từ thể từ điển ＋ と共に",
+        "Explanation": "Nêu người cùng tham gia hoặc hai sự thay đổi diễn ra song song.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-tomo-ni:example:1": "Các sinh viên tốt nghiệp chia sẻ niềm vui cùng gia đình.",
+        "to-tomo-ni:example:2": "Cùng với tiến bộ công nghệ, cuộc sống của chúng ta cũng dần thay đổi."
+      },
+      "SourceHash": "69bac87cf6abc6b9fef3e528a4dff9ebe09937e25716627ffe50369c239953ae"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-narande",
+      "Fields": {
+        "Meaning": "Sánh ngang, cùng hàng với",
+        "Formation": "Danh từ ＋ と並んで",
+        "Explanation": "Đặt một đối tượng ngang hàng với đối tượng khác về mức độ nổi tiếng, đánh giá hoặc vị trí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-narande:example:1": "Suối nước nóng này nổi tiếng không kém các điểm du lịch nổi tiếng.",
+        "to-narande:example:2": "Ông ấy được đánh giá cao ngang với các họa sĩ tiêu biểu của thời đó."
+      },
+      "SourceHash": "c705dfdf4275a3e30f375fe447842d033791903426affacb1834542f9f673a6b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "towa-kagiranai",
+      "Fields": {
+        "Meaning": "Chưa chắc, không phải lúc nào cũng",
+        "Formation": "Mệnh đề thể thường ＋ とは限らない",
+        "Explanation": "Nêu rằng kết quả hoặc nhận định không đúng trong mọi trường hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "towa-kagiranai:example:1": "Đồ đắt tiền chưa chắc đã tốt.",
+        "towa-kagiranai:example:2": "Luyện tập nhiều cũng chưa chắc thắng trận."
+      },
+      "SourceHash": "6aa45480641675eb9de2ab0245cda05eaf006ea04d09e8d13259d4ade8e676aa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "donna-ni-temo",
+      "Fields": {
+        "Meaning": "Dù… đến đâu",
+        "Formation": "どんなに ＋ dạng ても／でも",
+        "Explanation": "Kết quả ở vế sau vẫn giữ nguyên dù mức độ ở vế trước cao đến đâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "donna-ni-temo:example:1": "Dù luyện tập đến mấy, tôi vẫn khó tiến bộ.",
+        "donna-ni-temo:example:2": "Dù bận đến đâu, tôi cũng nhất định ăn sáng."
+      },
+      "SourceHash": "163241689dccce96ac46725ad292135821b342a4ba8ee3078f9d381467bc8b84"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nai-uchi-ni",
+      "Fields": {
+        "Meaning": "Trước khi, trong lúc chưa",
+        "Formation": "Động từ thể ない ＋ うちに",
+        "Explanation": "Khuyên làm một việc khi điều kiện còn thuận lợi, trước khi trạng thái thay đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nai-uchi-ni:example:1": "Về nhà trước khi trời tối nhé.",
+        "nai-uchi-ni:example:2": "Hãy ghi lại những thứ cần thiết trước khi quên."
+      },
+      "SourceHash": "4ad79d79e8764301a67b71e5adbdd6dc9a88fa4625c1ab90f40e4b2cc7fccde5"
+    }
+  ]
+}

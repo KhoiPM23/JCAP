@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5dfe972116",
+      "Fields": {
+        "Meaning": "Tuổi già, sự già đi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "老い chỉ tuổi già hoặc sự già đi. Câu nguồn dùng động từ 老いる (già đi).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146487": "Tuổi trẻ qua mau, học vấn khó thành."
+      },
+      "SourceHash": "d5b49d15bb8b7ad829e0ae2ce267b97a9452caa8318e6bd55be7a2605d28f29f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d74c09476",
+      "Fields": {
+        "Meaning": "Đuổi kịp, bắt kịp",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "追い付く（おいつく）có nghĩa là đuổi kịp, bắt kịp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104638": "Anh ấy tăng tốc xe và đuổi kịp tôi.",
+        "200162": "Tôi phải chạy mới đuổi kịp Tom."
+      },
+      "SourceHash": "31e3c3d3f85bb2e59f1d9fae2d6f49563fcc02ab57763d7fe77bea5950fa3d2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e0e4e819c0",
+      "Fields": {
+        "Meaning": "Vua, quân vương",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "王（おう）có nghĩa là vua, quân vương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97499": "Họ âm mưu giết nhà vua.",
+        "188501": "Nhà vua rất thích bản nhạc đó."
+      },
+      "SourceHash": "1aa1c0024e84440407b4f3b24158bc38becbd2a4a2a888cdae4139335fc97316"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a2eee93db1",
+      "Fields": {
+        "Meaning": "Đuổi theo, theo đuổi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "追う（おう）có nghĩa là đuổi theo, theo đuổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171606": "Hôm nay tôi đang chạy đua với thời gian.",
+        "211194": "Viên cảnh sát đang đuổi theo tên trộm."
+      },
+      "SourceHash": "e7c0a084630727497092892be34dd0d96d0302544272dbd82efa193ff40723e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2b990c61a0",
+      "Fields": {
+        "Meaning": "Nhà vua, vua",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "王様（おうさま）có nghĩa là nhà vua, vua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192682": "Sư tử là vua của rừng xanh.",
+        "212177": "Nhà vua đó luôn đội vương miện."
+      },
+      "SourceHash": "882a78605867e553a6c70f3034a54c5b2ee62c18a0b995f820edb321e2d11870"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "800c70f3e1",
+      "Fields": {
+        "Meaning": "Hoàng tử",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "王子（おうじ）có nghĩa là hoàng tử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158219": "Tôi đã gặp chính vị hoàng tử ấy.",
+        "188478": "Hoàng tử bị lạc trong rừng."
+      },
+      "SourceHash": "934ea67099203d04f18271ea667da15d3d478444ffc001c272fc81c5a855466c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b5703de3f",
+      "Fields": {
+        "Meaning": "Đáp ứng, hưởng ứng, tùy theo",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "応じる（おうじる）có nghĩa là đáp ứng, hưởng ứng, tùy theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104403": "Anh ấy sống phù hợp với thu nhập của mình.",
+        "161637": "Tôi không thể đáp ứng yêu cầu của bạn."
+      },
+      "SourceHash": "144412f35d8be8ca8cd41a3a10efa838c9ec3c90a9ad2fb269f7139cc0dd2899"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d41f9ccc20",
+      "Fields": {
+        "Meaning": "Băng qua, vượt ngang",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "横断（おうだん）có nghĩa là băng qua, vượt ngang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110365": "Anh ấy vượt Thái Bình Dương bằng du thuyền.",
+        "123501": "Hãy cẩn thận khi băng qua đường."
+      },
+      "SourceHash": "ee645cf5ef6201706e5a78efbc5f4c844f0318ad68c2218f6476df8d61cfb1b7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f56ad3962",
+      "Fields": {
+        "Meaning": "Hoàn thành, kết thúc",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "終える（おえる）có nghĩa là hoàn thành, kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96069": "Họ hoàn tất kế hoạch đúng như dự kiến.",
+        "210334": "Bạn đã hoàn thành công việc đó chưa?"
+      },
+      "SourceHash": "50e768facf66d64a11104253ad932f7ddc886a15b04571155d6c371476e7c21e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f4f5fb76e",
+      "Fields": {
+        "Meaning": "Rất, hết sức, đáng kể",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "大いに（おおいに）có nghĩa là rất, hết sức, đáng kể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153581": "Tôi rất kính trọng ông ấy.",
+        "183797": "Số du khách đã tăng đáng kể trong những năm gần đây."
+      },
+      "SourceHash": "6ccfdf6a7aa939e709f4ff201959e24ff40a3988755c234b3c35fba2e2303b8c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc4511a68f",
+      "Fields": {
+        "Meaning": "Che, phủ, bao phủ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "覆う（おおう）có nghĩa là che, phủ, bao phủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183410": "Bàn phủ đầy bụi.",
+        "210453": "Đỉnh núi đó phủ tuyết."
+      },
+      "SourceHash": "2c06f16a41f68b040e2de96d88a68259328835850da6c41350fe0fccc5a32875"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b4340dadc2",
+      "Fields": {
+        "Meaning": "Áo khoác ngoài, vượt mức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "オーバー（オーバー）có nghĩa là áo khoác ngoài, vượt mức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223329": "Chiếc túi này vượt quá giới hạn cân nặng 4 kg.",
+        "232792": "Bạn định không mặc áo khoác ngoài à?"
+      },
+      "SourceHash": "bc871a18944c122445716a1f050e6440f5232976d009d7cb8e4f7eae4fe63bf6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8cb1bad29a",
+      "Fields": {
+        "Meaning": "Chủ nhà cho thuê",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大家（おおや）có nghĩa là chủ nhà cho thuê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208254": "Nghe nói trước đây chủ nhà đó sống khá sung túc."
+      },
+      "SourceHash": "0a16850bab30ed5ff49e183cb4d32eb56b10763c251bc018caf33d4d87ba0e04"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e2608de7eb",
+      "Fields": {
+        "Meaning": "Đồi, gò",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "丘（おか）có nghĩa là đồi, gò.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112999": "Anh ấy sống trên đỉnh ngọn đồi ấy.",
+        "211452": "Từ ngọn đồi đó có tầm nhìn đẹp."
+      },
+      "SourceHash": "7b151c5d147373cd940ef3ea91aafc54aee609a0826edb3391d2894efd18637f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e32ed7196b",
+      "Fields": {
+        "Meaning": "Ngoài khơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "沖（おき）có nghĩa là ngoài khơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127289": "Một dòng biển ấm chảy ngoài khơi Shikoku.",
+        "207488": "Hòn đảo đó cách bờ một dặm."
+      },
+      "SourceHash": "1c876aa5b70f6b1a310a71fbf733ca6f37f3bff4fd41731186f0bc4735c5f695"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d1c14bede",
+      "Fields": {
+        "Meaning": "Phía trong, sâu bên trong",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "奥（おく）có nghĩa là phía trong, sâu bên trong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97583": "Họ ngồi ở phía trong nhà hàng.",
+        "145596": "Cảm xúc trào lên từ sâu trong lòng."
+      },
+      "SourceHash": "f16439f30dd92bc46766bed46f4c2a6b9b69b1a0bf75795870a394b933d9bbb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69db85c3a9",
+      "Fields": {
+        "Meaning": "Tặng, trao tặng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "贈る（おくる）có nghĩa là tặng, trao tặng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168322": "Thị trưởng trao cho anh ấy chìa khóa thành phố.",
+        "199624": "Dorothy tặng anh ấy một món quà tuyệt vời."
+      },
+      "SourceHash": "9de8cab08c97378ade187b71161c202fe1b09522785ccdd94a81c7ed722aeb92"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "45aa3b4b69",
+      "Fields": {
+        "Meaning": "Xảy ra, phát sinh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "起こる（おこる）có nghĩa là xảy ra, phát sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109455": "Anh ấy lo không biết chuyện gì sẽ xảy ra.",
+        "234309": "Chuyện xảy ra sau đó còn tệ hơn."
+      },
+      "SourceHash": "086418744636f274d2a66dadbdd2e4dff24afffcd2cc89fda74556fb34d1d7e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "125a8eb816",
+      "Fields": {
+        "Meaning": "Còn nhỏ, non nớt",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "幼い（おさない）có nghĩa là còn nhỏ, non nớt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117447": "Cách nghĩ của anh ấy rất non nớt.",
+        "162333": "Tôi nắm tay cô bé ấy."
+      },
+      "SourceHash": "9309e0dfc61cbd280e259d2829a3b9feefa1cdcb535ad3d3d60690c0d979df0a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e5d795cde2",
+      "Fields": {
+        "Meaning": "Thu được, đạt được, thu vào",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "収める（おさめる）có nghĩa là thu được, đạt được, thu vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112431": "Anh ấy ghi lại phong cảnh đẹp ấy bằng máy ảnh.",
+        "213404": "Bộ phim Mỹ đó đạt thành công lớn."
+      },
+      "SourceHash": "e0d6776d6c02bf8b9981e9c5fd60c88c35c15cce4efcc74c4bdf9a2aca87b18c"
+    }
+  ]
+}

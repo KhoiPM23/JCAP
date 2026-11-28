@@ -1,0 +1,305 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a38cde5655",
+      "Fields": {
+        "Meaning": "Lược bỏ, tiết kiệm công",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "省く（はぶく）có nghĩa là lược bỏ, tiết kiệm công.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170284": "Có thể bỏ qua các chi tiết nhỏ.",
+        "218760": "Cách này chắc sẽ đỡ tốn nhiều công."
+      },
+      "SourceHash": "430ccfabd0922978af4f638b91d92893dcc55dac0453e7035dd0ed10f9e3b4a5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7a2ae495f",
+      "Fields": {
+        "Meaning": "Cảnh, tình huống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "場面（ばめん）có nghĩa là cảnh, tình huống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154810": "Tôi đặc biệt thích cảnh này.",
+        "214090": "Họ chiếu cảnh đó ở chế độ quay chậm."
+      },
+      "SourceHash": "74a923a756d23050e68c3396ca945c26266d8a662019dbaa1e3a507249239a3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3d1e878581",
+      "Fields": {
+        "Meaning": "Cánh đồng, bãi đất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "原（はら）có nghĩa là cánh đồng, bãi đất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152060": "Bãi đất nơi chúng tôi thường chơi bóng chày giờ đã chật kín nhà."
+      },
+      "SourceHash": "202ee06197161821f73248ada6d013869a310604a408ea587929ecce55b67966"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "676b358d1e",
+      "Fields": {
+        "Meaning": "Bụng, ý nghĩ trong lòng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "腹（はら）có nghĩa là bụng, ý nghĩ trong lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83869": "Tôi ăn vì đói bụng.",
+        "230723": "Miệng người đó nói một đằng, bụng nghĩ một nẻo."
+      },
+      "SourceHash": "9fbccc230c036531c297db6ad03bc4b1f21f856198294c5c81fb05b0877040de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3e3a15d22b",
+      "Fields": {
+        "Meaning": "Kim, lưỡi câu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "針（はり）có nghĩa là kim, lưỡi câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83383": "Có con cá lạ mắc câu.",
+        "144706": "Tôi lỡ chọc kim vào ngón cái."
+      },
+      "SourceHash": "12368593fdc47c38f1defdc866e77ca47da4536e6570ac54e756fbe3c66212e9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c5af695d0b",
+      "Fields": {
+        "Meaning": "Căng, giăng, dựng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "張る（はる）có nghĩa là căng, giăng, dựng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79840": "Vấn đề là dựng lều ở đâu.",
+        "80709": "Hãy dựng lều khi trời còn sáng."
+      },
+      "SourceHash": "834d79b3f3c5e0fafe6d7203b838985984326734abbab11328898484c55a4be7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb012edb7f",
+      "Fields": {
+        "Meaning": "Xe van, tiếng đùng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "バン（バン）có nghĩa là xe van, tiếng đùng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "74114cacd92363fe63b5393ca588fdffec2d328cea4c38962da3c4991722e2e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7018224dfa",
+      "Fields": {
+        "Meaning": "Lượt, số thứ tự",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "番（ばん）có nghĩa là lượt, số thứ tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77529": "Tàu sẽ đến sân ga số 10.",
+        "172114": "Lần này đến lượt bạn lái."
+      },
+      "SourceHash": "f3b48213d4f764fc33994467591d83b13203bf032a7a048418072462b654b33f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01dda94e77",
+      "Fields": {
+        "Meaning": "Phạm vi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "範囲（はんい）có nghĩa là phạm vi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149809": "Hãy sống trong phạm vi thu nhập của mình.",
+        "204735": "Phạm vi và hình dạng của chúng chưa rõ."
+      },
+      "SourceHash": "5193c01f35759b2fd263602f0862b52454d9f2709a7c6d8ab58151333c9d1bd9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8bc52096d2",
+      "Fields": {
+        "Meaning": "Chống đối, phản kháng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "反抗（はんこう）có nghĩa là chống đối, phản kháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97496": "Họ chống lại luật do nhà vua đặt ra.",
+        "121246": "Thời nào sự nổi loạn cũng có thể kiếm ra tiền."
+      },
+      "SourceHash": "3b20936f20a3ccbf4e1996fbb092dcb9adcbad7922366a5b081d6a6dde491f18"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c93fedd45",
+      "Fields": {
+        "Meaning": "Tội phạm, hành vi phạm tội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "犯罪（はんざい）có nghĩa là tội phạm, hành vi phạm tội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85173": "Nghèo đói thường là nguyên nhân dẫn đến tội phạm.",
+        "141259": "Chiến tranh là tội ác chống lại loài người."
+      },
+      "SourceHash": "8db12b740b42c814245635082f2f5890997c1ddb46944d83ec242159ba84315c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba9c96795d",
+      "Fields": {
+        "Meaning": "Đẹp trai",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "ハンサム（ハンサム）có nghĩa là đẹp trai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87220": "Cô ấy nói anh ấy đẹp trai.",
+        "231277": "Nhìn cậu con trai đẹp trai kia kìa."
+      },
+      "SourceHash": "ceb358e3a8e566840212f06682757829f7d420a2c20baeeed904c32d4e2a4ddd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3b88931b34",
+      "Fields": {
+        "Meaning": "Phán đoán, đánh giá",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "判断（はんだん）có nghĩa là phán đoán, đánh giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144412": "Đừng đánh giá người khác qua vẻ bề ngoài.",
+        "184847": "Nhìn bề ngoài thì có vẻ anh ấy đang ốm."
+      },
+      "SourceHash": "bc653ce7efe591f370a73c881cc3a50c61b245c2abdabfd83730ce35fe8f54be"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd0d639908",
+      "Fields": {
+        "Meaning": "Thủ phạm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "犯人（はんにん）có nghĩa là thủ phạm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121198": "Thủ phạm giơ hai tay bước ra khỏi nhà.",
+        "207165": "Thủ phạm vẫn chưa bị bắt."
+      },
+      "SourceHash": "179f2a54fb36031f0bce4909673843ddb6973d55f02bbcb130b658c7775aec82"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f568334fa2",
+      "Fields": {
+        "Meaning": "Bán hàng, kinh doanh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "販売（はんばい）có nghĩa là bán hàng, kinh doanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113666": "Anh ấy được giao phụ trách bán máy tính.",
+        "206792": "Báo cáo đó cho thấy tình hình bán hàng không khả quan."
+      },
+      "SourceHash": "5a76154d25a107656c0b4a04c54756883a8e9d42ef88d8e0e6dfdf15f85bdc7d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de6ed799d8",
+      "Fields": {
+        "Meaning": "Đèn, ánh đèn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "灯（ひ）có nghĩa là đèn, ánh đèn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140398": "Có ánh đèn bên cửa sổ.",
+        "226242": "Bướm đêm tụ quanh đèn."
+      },
+      "SourceHash": "827de84ec42437e1984ead60bfdad79b7dbf76f26c8ead74bb155787cfb25ba9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "240d8ef155",
+      "Fields": {
+        "Meaning": "Bia",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ビール（ビール）có nghĩa là bia.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223288": "Bia này có nồng độ cồn 5%."
+      },
+      "SourceHash": "c911e23d7247f1ce8ea61b7d7baac28182184b0efcbb088fa309f610b52d3f94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b2dc319b19",
+      "Fields": {
+        "Meaning": "Thiệt hại, tổn thất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "被害（ひがい）có nghĩa là thiệt hại, tổn thất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137777": "Bão gây thiệt hại lớn.",
+        "137781": "Bão gây thiệt hại lớn cho mùa màng."
+      },
+      "SourceHash": "727de9de98967bfefd53ec11efdc46d0b6019d3287fbc9ffd4ae5a448c3091e4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34372f5e76",
+      "Fields": {
+        "Meaning": "So sánh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "比較（ひかく）có nghĩa là so sánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147429": "Hãy đối chiếu bản chép với bản gốc.",
+        "233071": "Hãy so sánh câu trả lời của bạn với câu trả lời của Tom."
+      },
+      "SourceHash": "07c532617dd1910fc63f848273231f7c486901348c40faeb374582709fe3742a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c33ec335f7",
+      "Fields": {
+        "Meaning": "Cán, đâm phải bằng xe",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "轢く（ひく）có nghĩa là cán, đâm phải bằng xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90623": "Anh ấy suýt bị ô tô đâm.",
+        "210972": "Con chó bị ô tô cán."
+      },
+      "SourceHash": "2efdb68106469b515cbee0e8625ca34b46a80e3b7b5300924e0546265f60c13f"
+    }
+  ]
+}

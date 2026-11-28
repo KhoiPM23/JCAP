@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "doushite",
+      "Fields": {
+        "Meaning": "Tại sao, vì sao",
+        "Formation": "どうして ＋ câu hỏi",
+        "Explanation": "どうして hỏi lý do của một việc. Có thể dùng với 〜か, 〜のですか hoặc 〜の？ tùy mức độ lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "doushite:example:1": "Tại sao anh/chị đến muộn?",
+        "doushite:example:2": "Tại sao bạn học tiếng Nhật?"
+      },
+      "SourceHash": "a46c6db424a224930d39fadbe4fb5d558759bd3f48fe7756a33885e53d1831e9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "verb-non-past",
+      "Fields": {
+        "Meaning": "Dạng phi quá khứ của động từ",
+        "Formation": "Thể thông thường khẳng định: động từ dạng từ điển\nThể lịch sự khẳng định: động từ bỏ ます ＋ ます",
+        "Explanation": "Dạng phi quá khứ có thể nói về thói quen, sự việc hiện tại hoặc việc sẽ xảy ra. Các từ chỉ thời gian như 毎朝 và 明日 giúp xác định cách hiểu.",
+        "UsageNotes": "Hai câu nguồn dùng dạng lịch sự 〜ます."
+      },
+      "Examples": {
+        "verb-non-past:example:1": "Sáng nào tôi cũng uống cà phê.",
+        "verb-non-past:example:2": "Ngày mai tôi sẽ gặp bạn."
+      },
+      "SourceHash": "a7d198028659ba1f04daa5f453b6a78f2ca0c108976fe139af7d5665bc4c1b3d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "verb-noun",
+      "Fields": {
+        "Meaning": "Dùng mệnh đề động từ bổ nghĩa cho danh từ",
+        "Formation": "Mệnh đề có động từ thể thông thường ＋ danh từ",
+        "Explanation": "Đặt mệnh đề ngay trước danh từ cần bổ nghĩa. 母が作った料理 nghĩa là món ăn mẹ nấu. Động từ trong mệnh đề có thể ở hiện tại, quá khứ hoặc phủ định tùy ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "verb-noun:example:1": "Đây là món mẹ tôi nấu.",
+        "verb-noun:example:2": "Người tôi gặp hôm qua là giáo viên."
+      },
+      "SourceHash": "11bbebfdba519244a757d1dc636d210724a66079311e90909837f85a3f521912"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "douyatte",
+      "Fields": {
+        "Meaning": "Bằng cách nào, làm thế nào",
+        "Formation": "どうやって ＋ câu hỏi về hành động",
+        "Explanation": "どうやって hỏi về phương pháp hoặc phương tiện. Có thể dùng để hỏi đi bằng gì hoặc làm một món, một vật như thế nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "douyatte:example:1": "Đi đến ga bằng cách nào ạ?",
+        "douyatte:example:2": "Cái này làm thế nào ạ?"
+      },
+      "SourceHash": "750d442b0572245215ec0b52a6df312192242746630689073029d89e6fb5c9d0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "toki",
+      "Fields": {
+        "Meaning": "Khi, lúc",
+        "Formation": "Động từ hoặc tính từ đuôi い thể thông thường ＋ とき\nTính từ đuôi な ＋ な ＋ とき\nDanh từ ＋ の ＋ とき",
+        "Explanation": "とき nêu thời điểm hoặc hoàn cảnh của sự việc chính. 子供のとき là khi còn nhỏ, còn 暇なとき là khi rảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "toki:example:1": "Hồi nhỏ tôi sống ở vùng quê.",
+        "toki:example:2": "Khi rảnh, tôi đọc sách."
+      },
+      "SourceHash": "b93ec67993c2034634a82dc9677e09c80e85aad62930cf580cf66fef32e40b8d"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật. Dùng lại ba câu đã dịch."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a39701228",
+      "Fields": {
+        "Meaning": "Đợi, chờ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "待つ（まつ）diễn tả việc đợi người, vật hoặc sự kiện. Thể て là 待って.",
+        "UsageNotes": "待っていてもらえますか là cách nhờ ai đợi."
+      },
+      "Examples": {
+        "202739": "Bạn đợi một lát được không?",
+        "214707": "Anh/chị có phiền đợi một chút không ạ?"
+      },
+      "SourceHash": "90bc6519a5f1447082efd6578be0106deb4b5b2487b416b72f95c2f7e09e3e53"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ede9ab2f7f",
+      "Fields": {
+        "Meaning": "Thẳng, thẳng về phía trước",
+        "PartOfSpeech": "Phó từ, tính từ đuôi な",
+        "Explanation": "まっすぐ có thể chỉ hướng thẳng hoặc trạng thái ngay ngắn. まっすぐ前を見る là nhìn thẳng về phía trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195363": "Xin hãy nhìn thẳng về phía trước.",
+        "216856": "Gương chiếu hậu bên hông bị lệch."
+      },
+      "SourceHash": "aad7adff0086aa2588a1e4056392c1177c3761369b035bbc7b4f1291b641c797"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27f9d40392",
+      "Fields": {
+        "Meaning": "Diêm, que diêm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "マッチ trong hai câu chỉ que diêm. マッチを持っている nghĩa là có mang diêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195348": "Bạn có mang diêm không?",
+        "195351": "Bạn có diêm không?"
+      },
+      "SourceHash": "2f0ddee42b4fab12c6a20ee6bfa3b7449b3f05aafb0dcfb29cdbb5a7d91f2890"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7734194821",
+      "Fields": {
+        "Meaning": "Cửa sổ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "窓（まど）chỉ cửa sổ. 窓を開ける là mở cửa sổ, còn 窓をふく là lau cửa sổ.",
+        "UsageNotes": "開けっぱなしにする nghĩa là cứ để mở mà không đóng lại."
+      },
+      "Examples": {
+        "198657": "Hãy lau cửa sổ bằng khăn ẩm.",
+        "231771": "Bạn cứ để cửa sổ mở vậy à?"
+      },
+      "SourceHash": "f4f69fe9f7747f73ced4b1fb4a55b97b06f32edfcfdbd586f59e24309e6ccf82"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab36109960",
+      "Fields": {
+        "Meaning": "Tròn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "丸い（まるい）tả vật tròn, chẳng hạn quả bóng hoặc mặt bàn tròn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165954": "Chúng tôi đã mua một chiếc bàn tròn.",
+        "196476": "Quả bóng có hình tròn."
+      },
+      "SourceHash": "67f8e8e35f870f32684480e8ebb9763ee9ef521c444594e6a3cd49f79c7df534"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a0ff0f67c8",
+      "Fields": {
+        "Meaning": "Mười nghìn, vạn",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "万（まん）là đơn vị đếm bằng mười nghìn. 四万円 là 40.000 yên, còn 一千万円 là 10.000.000 yên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190376": "Khoảng mười triệu yên nhỉ?",
+        "223521": "Chiếc máy ghi âm dùng băng này có giá 40.000 yên."
+      },
+      "SourceHash": "27c70c6455086708b90636d506dfff5c3f395375cbee1c438348cd83508eedf5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6318b0423a",
+      "Fields": {
+        "Meaning": "Bút máy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "万年筆（まんねんひつ）là bút máy dùng mực. 万年筆で書く nghĩa là viết bằng bút máy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155723": "Tôi lỡ làm mất chiếc bút máy mới.",
+        "167932": "Chiếc tôi mua ở Paris chính là cây bút máy này."
+      },
+      "SourceHash": "0f902c628b54fdfa2f75fee22f582673fde3340375b6a79495891b7609ac87c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7309a238e8",
+      "Fields": {
+        "Meaning": "Chải, đánh bóng, trau dồi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "磨く（みがく）có thể chỉ chải răng, cọ hoặc đánh bóng đồ vật. 技能を磨く dùng theo nghĩa bóng là trau dồi kỹ năng.",
+        "UsageNotes": "Thể て là 磨いて."
+      },
+      "Examples": {
+        "184229": "Học sinh nên trau dồi kỹ năng đọc.",
+        "212854": "Anh/chị cọ chiếc nồi đó giúp tôi được không ạ?"
+      },
+      "SourceHash": "b0d974e3aa32c90f8fdd94a97d1499d955764676b51246f4fb758c634a4febe6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1046f3190",
+      "Fields": {
+        "Meaning": "Phải, bên phải",
+        "PartOfSpeech": "Danh từ chỉ phương hướng",
+        "Explanation": "右（みぎ）chỉ bên phải. 右から左へ nghĩa là từ phải sang trái.",
+        "UsageNotes": "Khi nói về tiền, 右から左へと出る có thể hàm ý tiền vừa vào đã ra."
+      },
+      "Examples": {
+        "122093": "Tiền vừa vào tay tôi đã tiêu hết ngay.",
+        "230059": "Tiếng Ả Rập được viết từ phải sang trái."
+      },
+      "SourceHash": "2b3a0d3cd905a15a793d45d95475ae85a95c2daa0d8aed7c24f70f2d633eb9a0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8568eded6e",
+      "Fields": {
+        "Meaning": "Ngắn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "短い（みじかい）tả chiều dài hoặc thời lượng ngắn. 短くなる nghĩa là ngắn dần hoặc trở nên ngắn hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122959": "Ban ngày đang dần ngắn lại.",
+        "231055": "Con chó kia có đuôi ngắn."
+      },
+      "SourceHash": "93b7aa60ad48cf4d6ed2404e7ad74338fd2f48c2e66da3453584849f41e00f29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69a792520f",
+      "Fields": {
+        "Meaning": "Nước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "水（みず）thường chỉ nước. Trong ひざに水がたまる, 水 nói đến dịch tích tụ ở đầu gối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197613": "Hình như đầu gối tôi bị tụ dịch.",
+        "198284": "Trong xô có đầy nước."
+      },
+      "SourceHash": "0109c9bd6070963b590627af19901ffcbff45f571e73785a80883dd6d7359445"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c8a588e53",
+      "Fields": {
+        "Meaning": "Cửa hàng, tiệm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "店（みせ）chỉ nơi bán hàng hoặc cung cấp dịch vụ. 店をたたむ là đóng cửa, ngừng kinh doanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124989": "Cửa hàng đóng cửa hẳn từ đó.",
+        "124997": "Trong cửa hàng chỉ còn đúng một cái này."
+      },
+      "SourceHash": "cc15bec7502706b3b9a2e9a13702543bedaa2900466eaf5219a415153dbd34f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db35a99e28",
+      "Fields": {
+        "Meaning": "Cho xem, đưa cho xem",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "見せる（みせる）chỉ việc cho người khác nhìn thấy thứ gì. Thứ được cho xem đi với を, người xem có thể đi với に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198083": "Anh/chị cho tôi xem hộ chiếu được không ạ?",
+        "226458": "Carl đã cho tôi xem huy chương vàng."
+      },
+      "SourceHash": "d1f8160c17673cc1cc86ec2e090684469c3c247aec129efcc90b9363f45b19bb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc29195f18",
+      "Fields": {
+        "Meaning": "Đường, lối đi, nghề hoặc lĩnh vực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "道（みち）có thể chỉ đường đi hoặc lĩnh vực hoạt động. この道２０年 chỉ hai mươi năm trong nghề này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75827": "Hai con đường giao nhau ở đó.",
+        "84728": "Bố tôi là người có hai mươi năm kinh nghiệm trong nghề này."
+      },
+      "SourceHash": "1d48c4626ecfe4be587ff9fb73b0f214067220926271a1852330c95bbfb06da3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1713d0bbe8",
+      "Fields": {
+        "Meaning": "Ba ngày, ngày mùng ba",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "三日（みっか）chỉ khoảng ba ngày hoặc ngày mùng ba trong tháng. Tháng đi trước ngày khi viết ngày tháng trong tiếng Nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168024": "Tôi mất ba ngày để đọc cuốn sách này.",
+        "236068": "Hôm nay là ngày 3 tháng 10."
+      },
+      "SourceHash": "5fc80ebf73d88b803acf4bb2981f57d52657dcce0cff06e18bdd18d867bbec3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b36b221d33",
+      "Fields": {
+        "Meaning": "Ba cái, ba thứ, ba phần",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "三つ（みっつ）là cách đếm chung cho ba vật hoặc ba phần. Khi gọi đồ uống, コーヒー三つ có thể hiểu là ba ly cà phê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196583": "Anh phục vụ ơi, cho tôi ba ly cà phê.",
+        "224844": "Cho tôi ba ly cà phê nhé."
+      },
+      "SourceHash": "64274d45873e17d681dea91e3e73150b31c66f8019d385984f5f94cbd5e17ef7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "85e4ba2f28",
+      "Fields": {
+        "Meaning": "Màu xanh lá, cây xanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "緑（みどり）chỉ màu xanh lá hoặc cây cối xanh tươi. 緑のシャツ là áo màu xanh lá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74154": "Tokyo Midtown có rất nhiều cây xanh!",
+        "206210": "Xin cho tôi xem chiếc áo sơ mi màu xanh lá đó."
+      },
+      "SourceHash": "c8d246d1ed14f050664b24c58857c0bd1c9b785083714334cdf86464096dd524"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2b9c47656",
+      "Fields": {
+        "Meaning": "Mọi người, quý vị",
+        "PartOfSpeech": "Danh từ, cách gọi một nhóm",
+        "Explanation": "皆さん（みなさん）là cách gọi hoặc nói về mọi người trong một nhóm. Thường đặt đầu câu khi muốn nói trực tiếp với cả nhóm.",
+        "UsageNotes": "ネチケット chỉ phép lịch sự khi giao tiếp trên mạng."
+      },
+      "Examples": {
+        "75145": "Mọi người nhớ giữ phép lịch sự trên mạng nhé.",
+        "195074": "Mọi người giữ yên giúp tôi nhé."
+      },
+      "SourceHash": "4d39dd33a9b211c67ccddc771556401bf62925880a2c1846bc3ba4dc868f9f4c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "84e465b526",
+      "Fields": {
+        "Meaning": "Nam, phía nam",
+        "PartOfSpeech": "Danh từ chỉ phương hướng",
+        "Explanation": "南（みなみ）chỉ hướng nam. 〜の南に nói vị trí phía nam của một địa điểm, còn 南から nghĩa là từ phía nam.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195304": "Chim én sẽ sớm bay đến từ phía nam.",
+        "196997": "Pháp nằm về phía nam của Anh."
+      },
+      "SourceHash": "633ba8781e8307da22a187afb55fc4fefd5a0d2fec8f4ac9adb230852cceedf5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8cdf8b85a",
+      "Fields": {
+        "Meaning": "Tai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "耳（みみ）chỉ tai. Trong câu thứ hai, しもやけ là tình trạng sưng đỏ hoặc đau ngứa do lạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150168": "Tai tôi bị cước vì lạnh rồi.",
+        "199295": "Sao tai bạn to thế?"
+      },
+      "SourceHash": "1fc919caf79565c807a5668f547ad88112540084430e290d154f28506a374b49"
+    }
+  ]
+}

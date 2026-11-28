@@ -1,3 +1,4 @@
+import hmac
 import os
 import re
 import math
@@ -6,7 +7,7 @@ import shutil
 import tempfile
 import uvicorn
 import av
-from fastapi import FastAPI, File, UploadFile, Query
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -21,24 +22,37 @@ from faster_whisper import WhisperModel
 
 app = FastAPI(title="JCAP Whisper STT Engine", version="1.0.0")
 
+CORS_ORIGINS = [o.strip() for o in os.getenv("WHISPER_CORS_ORIGINS", "*").split(",") if o.strip()] or ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials="*" not in CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-AUDIO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "wwwroot", "audio", "roleplay"))
-os.makedirs(AUDIO_DIR, exist_ok=True)
-app.mount("/audio/roleplay", StaticFiles(directory=AUDIO_DIR), name="audio")
+AUDIO_DIR = os.getenv("WHISPER_AUDIO_DIR") or os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "wwwroot", "audio", "roleplay")
+)
+PERSIST_AUDIO = os.getenv("WHISPER_PERSIST_AUDIO", "false").strip().lower() in ("1", "true", "yes")
+if PERSIST_AUDIO:
+    os.makedirs(AUDIO_DIR, exist_ok=True)
+    app.mount("/audio/roleplay", StaticFiles(directory=AUDIO_DIR), name="audio")
 
 MODEL_SIZE = os.getenv("WHISPER_MODEL", "small")
 DEVICE = os.getenv("WHISPER_DEVICE", "cpu")
 COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
+MODEL_DIR = os.getenv("WHISPER_MODEL_DIR") or None
+WHISPER_TOKEN = os.getenv("WHISPER_TOKEN", "")
+
+
+def check_token(x_internal_token: str | None) -> None:
+    if WHISPER_TOKEN and not hmac.compare_digest(x_internal_token or "", WHISPER_TOKEN):
+        raise HTTPException(status_code=401, detail="invalid internal token")
+
 
 print(f"[Whisper Engine] Loading model '{MODEL_SIZE}' on {DEVICE} ({COMPUTE_TYPE})...")
-model = WhisperModel(MODEL_SIZE, device=DEVICE, compute_type=COMPUTE_TYPE)
+model = WhisperModel(MODEL_SIZE, device=DEVICE, compute_type=COMPUTE_TYPE, download_root=MODEL_DIR)
 print("[Whisper Engine] Model loaded successfully!")
 
 @app.get("/health")
@@ -52,7 +66,12 @@ def health():
     }
 
 @app.post("/save-audio")
-async def save_audio(file: UploadFile = File(...)):
+async def save_audio(
+    file: UploadFile = File(...),
+    x_internal_token: str | None = Header(default=None),
+):
+    check_token(x_internal_token)
+    os.makedirs(AUDIO_DIR, exist_ok=True)
     suffix = os.path.splitext(file.filename or "")[1] or ".wav"
     file_id = f"user_{uuid.uuid4().hex[:12]}{suffix}"
     dest_path = os.path.join(AUDIO_DIR, file_id)
@@ -67,22 +86,26 @@ async def save_audio(file: UploadFile = File(...)):
 @app.post("/transcribe")
 async def transcribe(
     file: UploadFile = File(...),
-    language: str = Query("ja", description="Target language code (ja for Japanese)")
+    language: str = Query("ja", description="Target language code (ja for Japanese)"),
+    x_internal_token: str | None = Header(default=None),
 ):
+    check_token(x_internal_token)
     suffix = os.path.splitext(file.filename or "")[1] or ".wav"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp_path = tmp.name
         content = await file.read()
         tmp.write(content)
 
-    # Lưu bản ghi âm bền vững vào thư mục wwwroot/audio/roleplay
-    file_id = f"stt_{uuid.uuid4().hex[:12]}{suffix}"
-    dest_path = os.path.join(AUDIO_DIR, file_id)
-    try:
-        shutil.copyfile(tmp_path, dest_path)
-        persisted_url = f"/audio/roleplay/{file_id}"
-    except Exception:
-        persisted_url = None
+    persisted_url = None
+    if PERSIST_AUDIO:
+        os.makedirs(AUDIO_DIR, exist_ok=True)
+        file_id = f"stt_{uuid.uuid4().hex[:12]}{suffix}"
+        dest_path = os.path.join(AUDIO_DIR, file_id)
+        try:
+            shutil.copyfile(tmp_path, dest_path)
+            persisted_url = f"/audio/roleplay/{file_id}"
+        except Exception:
+            persisted_url = None
 
     try:
         # Grounding initial_prompt prevents YouTube outro hallucinations on short utterances
@@ -130,7 +153,7 @@ async def transcribe(
                 continue
 
             # Drop repeating katakana loop hallucination e.g. "アアアアア", "ニャニャニャニャ", "トットットッ"
-            if re.match(r"^([ァ-ヴー]{1,4})\1{2,}$", text) or re.search(r"(?:[ァ-ヴー]{1,3})\1{3,}", text):
+            if re.match(r"^([ァ-ヴー]{1,4})\1{2,}$", text) or re.search(r"([ァ-ヴー]{1,3})\1{3,}", text):
                 continue
 
             # Drop prompt echoes or YouTube outro hallucinations
@@ -171,6 +194,7 @@ async def transcribe(
                 pass
 
 if __name__ == "__main__":
-    port = int(os.getenv("WHISPER_PORT", 50022))
-    print(f"[Whisper Engine] Starting server on http://127.0.0.1:{port}")
-    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")
+    host = os.getenv("WHISPER_HOST", "127.0.0.1").strip() or "127.0.0.1"
+    port = int(os.getenv("WHISPER_PORT", "50022"))
+    print(f"[Whisper Engine] Starting server on http://{host}:{port}")
+    uvicorn.run(app, host=host, port=port, log_level="info")

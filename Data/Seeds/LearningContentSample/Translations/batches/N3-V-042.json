@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea15f9f78a",
+      "Fields": {
+        "Meaning": "Trải qua, dành thời gian",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "過ごす（すごす）có nghĩa là trải qua, dành thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227186": "Tôi hy vọng anh chị vẫn khỏe.",
+        "229408": "Bạn có một mùa Giáng sinh vui vẻ không?"
+      },
+      "SourceHash": "5e1f7448b156dcbb38b7558696e4623e45d28ab95b36e4f5ec89e6c86bd666c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef97fe9600",
+      "Fields": {
+        "Meaning": "Cơ bắp, đường gân, cốt truyện, nguồn tin",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "筋（すじ）có nghĩa là cơ bắp, đường gân, cốt truyện, nguồn tin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157659": "Năm ngoái tôi nghe chuyện đó từ một nguồn khác.",
+        "209272": "Tôi không hiểu cốt truyện của cuốn tiểu thuyết đó."
+      },
+      "SourceHash": "b5ec8a38ae1b4d7ee8f48f6a08b03ca4adc4c891d85f73e4ac1568b4d8f129c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5a0ee38ab2",
+      "Fields": {
+        "Meaning": "Khuyên, đề nghị",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "勧める（すすめる）có nghĩa là khuyên, đề nghị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84523": "Bố khuyên tôi học piano.",
+        "102867": "Anh ấy đề nghị khởi hành sớm."
+      },
+      "SourceHash": "6371920ba436f64747dede152747291f2ade4a0dc13dd5313d21cb5844be5434"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0cc06624f2",
+      "Fields": {
+        "Meaning": "Tiến hành, thúc đẩy",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "進める（すすめる）có nghĩa là tiến hành, thúc đẩy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211238": "Kế hoạch đang được tiến hành.",
+        "221779": "Hãy tiếp tục đẩy nhanh công việc này."
+      },
+      "SourceHash": "46b689cb9438cf0e7cf36c15335b813e9746dd8411db52f494b599ebc17a428a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7b89bdd9ec",
+      "Fields": {
+        "Meaning": "Ngôi sao, người nổi tiếng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スター（スター）có nghĩa là ngôi sao, người nổi tiếng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89935": "Cuối cùng cô ấy trở thành ngôi sao điện ảnh.",
+        "214687": "Cầu thủ bóng chày nổi tiếng thường được xin chữ ký."
+      },
+      "SourceHash": "282106cd5197644198c269297b9c096fae9d64e9992359ead478969695942142"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d6b975f68f",
+      "Fields": {
+        "Meaning": "Phong cách, kiểu dáng, vóc dáng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スタイル（スタイル）có nghĩa là phong cách, kiểu dáng, vóc dáng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203075": "Nhảy múa giúp cải thiện vóc dáng.",
+        "214686": "Về kiểu dáng thì chiếc xe này đẹp nhất."
+      },
+      "SourceHash": "d7d59f3e00f7aa1b45c5007887c3f49eebda62cd5b512b312188146b3ce66670"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76b200a366",
+      "Fields": {
+        "Meaning": "Quầy, trạm, chân đỡ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スタンド（スタンド）có nghĩa là quầy, trạm, chân đỡ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150342": "Còn bao xa nữa đến trạm xăng tiếp theo?",
+        "155225": "Tôi không thích đèn bàn cỡ lớn."
+      },
+      "SourceHash": "5ec13d16954368b0bcff01c5aebc1faaee110e9b9d66f500104be6ab2bdc1cbf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e28c9da90d",
+      "Fields": {
+        "Meaning": "Đau đầu, cơn đau đầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "頭痛（ずつう）có nghĩa là đau đầu, cơn đau đầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171576": "Hôm nay tôi hơi đau đầu.",
+        "219308": "Thuốc này có lẽ sẽ làm dịu cơn đau đầu."
+      },
+      "SourceHash": "eec18d25c742c60497fef5e6638d4a14c6cf0a549f2d96b20d3cf3e9deb48f46"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2125719689",
+      "Fields": {
+        "Meaning": "Suốt, liên tục, hơn hẳn",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ずっと（ずっと）có nghĩa là suốt, liên tục, hơn hẳn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92705": "Cô ấy cứ hỏi suốt.",
+        "221614": "Chiếc đồng hồ này đắt hơn hẳn chiếc kia."
+      },
+      "SourceHash": "2af89058f113f5e804859f6b166b9183b4c1c09db8f18342495970d34256d7f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "87de9628a1",
+      "Fields": {
+        "Meaning": "Đẹp, tuyệt, dễ mến",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "すてき（すてき）có nghĩa là đẹp, tuyệt, dễ mến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98019": "Họ có một căn nhà đẹp.",
+        "207809": "Ở trung tâm thị trấn có một công viên rất đẹp."
+      },
+      "SourceHash": "935d4a15eb7ac2fb1cd4cac0f56da95d5ba821eaf0bb7b8d6131c849a944f6c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa2fbac408",
+      "Fields": {
+        "Meaning": "Đã, rồi",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "既に（すでに）có nghĩa là đã, rồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90597": "Cô ấy đã biết chuyện đó.",
+        "158762": "Tôi ăn sáng xong rồi."
+      },
+      "SourceHash": "43cc7c49597d1c2da649bbc576f25bb0d0fd7019ed44e3e6d2f3eb4616e40cfa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4c256eea03",
+      "Fields": {
+        "Meaning": "Tức là, nói cách khác",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "すなわち（すなわち）có nghĩa là tức là, nói cách khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100707": "Ông ấy rất uyên bác, đúng là một cuốn từ điển sống.",
+        "214578": "Tức là anh ấy không muốn làm việc đó."
+      },
+      "SourceHash": "eec88be8931a1d16118ca396427249c727974dfe7ed4f7de33ae76cc04f2a32a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "92387d38a4",
+      "Fields": {
+        "Meaning": "Bài phát biểu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スピーチ（スピーチ）có nghĩa là bài phát biểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113354": "Ông ấy ngất giữa lúc đang phát biểu.",
+        "165320": "Chúng tôi nhờ ông ấy phát biểu."
+      },
+      "SourceHash": "c7c4d695fdc16aaf38c362fb63caccd40877f7ba5b49f4a0017526025d0979a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1dbd5b263b",
+      "Fields": {
+        "Meaning": "Tất cả, toàn bộ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "全て（すべて）có nghĩa là tất cả, toàn bộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78807": "Tôi đã gửi tất cả những gì được yêu cầu.",
+        "144261": "Mọi người đều bình đẳng."
+      },
+      "SourceHash": "1a69a3818706e75ccb26b4d4dd659a2bb445d7ab011dd3220c6dbd067d5fbf3b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e957aa6df9",
+      "Fields": {
+        "Meaning": "Làm xong, hoàn tất",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "済ませる（すませる）có nghĩa là làm xong, hoàn tất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158872": "Tôi vẫn chưa ăn sáng xong.",
+        "194767": "Mary đã làm xong bài tập môn tiếng Nhật."
+      },
+      "SourceHash": "7c5f80cb9542698c195690cf680896895fd5c99c0906f0a7cce04362105568c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ddec3e77f",
+      "Fields": {
+        "Meaning": "Sắc, nhạy bén, dữ dội",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "鋭い（するどい）có nghĩa là sắc, nhạy bén, dữ dội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212860": "Lưỡi dao đó rất sắc.",
+        "224443": "Tôi thấy đau nhói ở chỗ này."
+      },
+      "SourceHash": "8ee5b95ed9c2853be16aa314114c10b63618f193076432d31d2c287d70bc0772"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42d77d4da9",
+      "Fields": {
+        "Meaning": "Do, tại, lỗi của",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "せい（せい）có nghĩa là do, tại, lỗi của.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104749": "Anh ấy đổ lỗi thất bại cho em trai.",
+        "233064": "Bạn đau đầu do làm việc quá sức."
+      },
+      "SourceHash": "a53a20a43cdf9f5f902c48ecb09c4ddd536fb325bec0ad81a2c870643b278a8c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cde24ec2dd",
+      "Fields": {
+        "Meaning": "Bản tính, tính chất, giới tính",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "性（せい）có nghĩa là bản tính, tính chất, giới tính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76911": "Hãy dùng sơn acrylic.",
+        "148162": "Thói quen lâu ngày thành bản tính."
+      },
+      "SourceHash": "60cd5043220c3f52f7117e9ca339799982a55ae492c668a65306e0b057fc0e32"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "735842741b",
+      "Fields": {
+        "Meaning": "Sự đúng đắn, chính, chính thức",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "Hai câu nguồn dùng 正しい (đúng) và 正す (sửa cho đúng), đều là từ cùng gốc với 正.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117575": "Mọi điều anh ấy nói đều đúng.",
+        "193740": "Nếu tôi sai thì xin sửa giúp."
+      },
+      "SourceHash": "16bf32976e7fd8995626b1546938bb37c10416f3a1101be705fde65f2c57f61b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7e5bb3758",
+      "Fields": {
+        "Meaning": "Lưng, chiều cao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "背 có thể chỉ lưng hoặc chiều cao. 背が高い nghĩa là cao, còn 背を向ける là quay lưng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "0f46babe95a25244ff820594537ba509526cce36f6f1fb4badf651a04df00faa"
+    }
+  ]
+}

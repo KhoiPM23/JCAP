@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCAP · Diễn đàn · bản tương tác tổng (học viên)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+
+.msr{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-feature-settings:"liga";font-variation-settings:'FILL' 0,'wght' 450,'GRAD' 0,'opsz' 24;display:inline-block;flex:none}
+:where(.fm) p,:where(.fm) h1,:where(.fm) h3,:where(.fm) h4,:where(.fm) ol,:where(.fm) ul,:where(.fm) fieldset,:where(.fm) figure{margin:0;padding:0}
+:where(.fm) ol,:where(.fm) ul{list-style:none}
+.fm button{font-family:inherit}
+.fm :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.fm .jc-input__el:focus-visible{outline:none}
+/* bảng màu: nền giấy ấm + mực chàm như landing (theme kham-pha); 5 kênh lấy từ bộ màu khắc gỗ WOODBLOCK trong exploreTheme.ts
+   cùng độ đậm nhạt, cách đều trên vòng màu: chàm, thông, gạch, đất vàng, mận. Tỉ lệ 60 giấy / 30 mực / 10 điểm nhấn (chàm cho thao tác, son cho ghim). */
+.fm{--wb-indigo:#294669;--wb-indigo-f:#BCCAD6;--wb-pine:#2F4D43;--wb-pine-f:#BFCAC3;--wb-brick:#843526;--wb-brick-f:#E5C3B3;--wb-ochre:#6E5112;--wb-ochre-f:#E4CC97;--wb-plum:#563B5D;--wb-plum-f:#CDBDCB;
+  --ai-soft:color-mix(in srgb,var(--ai) 12%,var(--paper-50));--focus:var(--ai)}
+.fm[data-theme="hoc-tap-dem"]{--ai:var(--sora);--ai-hover:var(--sora);--on-ai:var(--on-sora);--ai-soft:color-mix(in srgb,var(--sora) 16%,var(--paper-50))}
+.fm{position:relative;display:flex;height:100vh;overflow:hidden;background:var(--paper-100);color:var(--sumi);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+.sp{flex:1}
+/* thanh bên */
+.sb{flex:0 0 240px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:16px 12px 12px;background:var(--paper-50);border-right:1px solid var(--line);overflow:hidden}
+.sb-h{display:flex;align-items:center;gap:10px;height:40px;padding:0 6px 10px}
+.sb-h b{font-size:18px;letter-spacing:.08em}
+.sb-logo{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:var(--shu);color:var(--on-shu)}
+.sb-logo .msr{font-size:20px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.ib:hover{background:var(--paper-200);color:var(--sumi)}
+.sb-l{height:18px;margin:10px 0 2px!important;padding:0 12px!important;font-size:12px;line-height:18px;font-weight:600;color:var(--sumi-muted)}
+.sb-l.red{color:var(--shu)}
+.sb-nav{display:flex;flex-direction:column;gap:2px}
+.sb-i{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border-radius:12px;color:var(--sumi-muted);font-size:14px;font-weight:600;text-decoration:none}
+.sb-i .msr{font-size:22px}
+.sb-i:hover{background:var(--paper-200);color:var(--sumi)}
+.sb-i.on{background:var(--shu-soft);color:var(--sumi);font-weight:700}
+.sb-i.on .msr{color:var(--shu);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.sb-i .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-i .n{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--sumi)}
+.sb-i .n.red{color:var(--shu)}.sb-i .n.credit{color:var(--credit);font-size:13px}
+.sb-ch{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--shu);color:var(--on-shu);font-family:var(--font-mincho);font-size:13px;font-weight:700}
+.sb-f{margin-top:6px;border-top:1px solid var(--line);border-radius:0;height:48px}
+.coin{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--credit-coin);color:var(--on-sora)}
+.coin .msr{font-size:15px}
+.sb-u{display:flex;align-items:center;gap:10px;height:52px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.sb-u:hover{background:var(--paper-200)}
+.sb-u .who{flex:1;min-width:0;display:flex;flex-direction:column}
+.sb-u b{font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-u .who span{font-size:12px;line-height:16px;color:var(--sumi-muted)}
+/* avatar */
+.av{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;font-size:16px;font-weight:700;line-height:1}
+.av.sm{width:32px;height:32px;font-size:13px}
+.av .msr{font-size:22px}.av.sm .msr{font-size:18px}
+.a0{background:var(--ai);color:var(--on-ai)}.a1{background:var(--sora);color:var(--on-sora)}
+.a2{background:var(--wb-pine-f);color:var(--wb-pine)}.a3{background:var(--wb-plum-f);color:var(--wb-plum)}.a4{background:var(--wb-ochre-f);color:var(--wb-ochre)}
+.av.anon{background:var(--paper-200);color:var(--sumi-muted);box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+/* kênh: màu nhận diện lấy từ token */
+.ch-all{--c:var(--sumi);--cs:var(--paper-200)}
+.ch-qa{--k:var(--wb-indigo);--kf:var(--wb-indigo-f)}.ch-sp{--k:var(--wb-pine);--kf:var(--wb-pine-f)}.ch-bd{--k:var(--wb-brick);--kf:var(--wb-brick-f)}
+.ch-rs{--k:var(--wb-ochre);--kf:var(--wb-ochre-f)}.ch-lg{--k:var(--wb-plum);--kf:var(--wb-plum-f)}
+.ch-qa,.ch-sp,.ch-bd,.ch-rs,.ch-lg{--c:var(--k);--cs:color-mix(in srgb,var(--kf) 55%,var(--paper-50))}
+[data-theme="hoc-tap-dem"] .ch-qa,[data-theme="hoc-tap-dem"] .ch-sp,[data-theme="hoc-tap-dem"] .ch-bd,[data-theme="hoc-tap-dem"] .ch-rs,[data-theme="hoc-tap-dem"] .ch-lg{--c:var(--kf);--cs:color-mix(in srgb,var(--k) 55%,var(--paper-50))}
+/* khung chính */
+.fm-main{flex:1;min-width:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.fm-mtop{display:none}
+.fm-wrap{max-width:1100px;margin:0 auto;padding:32px 40px 96px;box-sizing:border-box}
+.fm-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px}
+.fm-ttl h1{display:flex;align-items:baseline;gap:12px;font-size:28px;line-height:38px;font-weight:700}
+.fm-ttl .kj{font-family:var(--font-mincho);font-size:17px;font-weight:600;letter-spacing:.12em;color:var(--sumi-muted)}
+.fm-ttl p{margin-top:4px;font-size:15px;line-height:24px;color:var(--sumi-muted)}
+.fm-hact{display:flex;gap:8px;flex-wrap:wrap}
+.fm-grid{display:grid;grid-template-columns:264px minmax(0,1fr);gap:32px;align-items:start;margin-top:28px}
+/* cột kênh */
+.fm-rail{position:sticky;top:24px}
+.fm-rl{padding:0 12px 8px!important;font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.rc-list{display:flex;flex-direction:column;gap:2px}
+.rc .cn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;min-height:44px;padding:6px 10px 6px 8px;border:0;border-radius:14px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.rc:hover{background:var(--paper-200)}
+.rc.on{background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm)}
+.rc .ct,.cp-c .ct{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;}
+.rc .ct{width:28px;height:28px;border-radius:8px;align-self:flex-start;margin-top:2px}
+.rc .ct .msr{font-size:18px}
+.rc .ct,.cp-c .ct{background:var(--cs);color:var(--c)}
+.rc.on .ct{background:var(--c);color:var(--paper-50)}
+.rc .cx,.cp-c .cx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rc .cn,.cp-c .cn{font-size:14px;line-height:20px;font-weight:600}
+.rc.on .cn{font-weight:700}
+.rc .cd,.cp-c .cd{font-size:12px;line-height:17px;color:var(--sumi-muted)}
+.rc .cd{display:none}
+.rc.on .cd:not(:empty){display:block}
+.rc .cx>.cd:empty{display:none}
+.rc .cc{flex:none;align-self:flex-start;min-width:22px;padding-top:6px;text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sumi-muted)}
+.fm-chline{display:none}
+.fm-help{display:inline-flex;align-items:center;gap:8px;height:36px;margin:12px 0 0 2px;padding:0 12px 0 8px;border-radius:999px;color:var(--sumi-muted);font-size:13px;font-weight:600;text-decoration:none}
+.fm-help .msr{font-size:18px}
+.fm-help:hover{background:var(--paper-200);color:var(--sumi)}
+/* cột bài */
+.fm-feed{display:flex;flex-direction:column;gap:12px;min-width:0}
+.fm-quick{display:flex;align-items:center;gap:10px;height:56px;box-sizing:border-box;padding:0 8px 0 10px;border-radius:999px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm);transition:box-shadow .15s}
+.fm-quick:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow-md)}
+.fm-quick .jc-btn{border-radius:999px;padding:0 16px 0 12px}
+.fm-qbtn{flex:1;min-width:0;height:44px;padding:0 4px;border:0;border-radius:8px;background:transparent;color:var(--sumi-muted);font-size:15px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text}
+.fm-qbtn:hover{color:var(--sumi)}
+.fm-qbtn:focus-visible{outline-offset:-2px}
+.fm-tools{display:flex;align-items:center;gap:8px;min-height:40px;margin-top:6px}
+.fm-lh{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;margin:0;font-size:15px;line-height:22px;font-weight:700}
+.fm-lh .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-lh .n{font-size:13px;font-weight:500;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.fm-sort .jc-seg{background:transparent;padding:0;gap:2px}
+.fm-sort .jc-seg__opt{min-height:32px;padding:0 12px 0 10px;border-radius:999px;font-weight:600}
+.fm-sort .jc-seg__opt.is-on{background:var(--paper-50);color:var(--sumi);box-shadow:0 0 0 1px var(--line)}
+.fm-sort .jc-seg__opt .jc-icon{font-size:17px!important;width:17px!important;height:17px!important}
+.fm-tools .jc-iconbtn{border-radius:999px;width:36px;height:36px}
+.fm-search{height:40px;min-height:40px;border-radius:999px}
+.fm-search{flex:1;min-width:0;animation:fmgrow .18s ease-out}
+@keyframes fmgrow{from{opacity:0;transform:scaleX(.6);transform-origin:right}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fm-search{animation:none}}
+.fm-search .jc-input__el::-webkit-search-cancel-button{display:none}
+.fm-x{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.fm-x:hover{background:var(--paper-200);color:var(--sumi)}
+.fm-x .msr{font-size:18px}
+.fm-sort{display:flex;align-items:center;gap:8px}
+.fm-sl{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-count{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-newwrap{position:sticky;top:12px;z-index:3;display:flex;justify-content:center;height:0;overflow:visible}
+.fm-new{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px 0 12px;border:0;border-radius:999px;background:var(--ai);color:var(--on-ai);font-size:14px;font-weight:600;box-shadow:var(--shadow-md);cursor:pointer;transform:translateY(-6px)}
+.fm-new .msr{font-size:18px}
+.fm-list{display:flex;flex-direction:column;gap:12px}
+/* thẻ bài */
+.fp{position:relative;padding:16px 20px 8px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px solid var(--line);transition:box-shadow .15s,border-color .15s}
+.fp:hover{border-color:var(--line-strong)}
+.fp.open{border-color:var(--line-strong);box-shadow:var(--shadow-md)}
+.fp-h{display:flex;align-items:center;gap:12px}
+.fp-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fp-n{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;line-height:20px}
+.fp-n>.nm{font-weight:700}
+.me-tag{font-size:12px;font-weight:600;color:var(--sumi-muted)}
+.fp-m{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;color:var(--c);font-weight:600}
+.chip .msr{font-size:16px}
+.fp-menu{position:relative;align-self:flex-start}
+.fp-pop{position:absolute;right:0;top:44px;z-index:4;min-width:180px;padding:6px;border-radius:12px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+.fp-pop button{display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--sumi);font-size:14px;font-weight:500;cursor:pointer;text-align:left}
+.fp-pop button:hover{background:var(--paper-200)}
+.fp-pop .dg{color:var(--danger)}
+.fp-pop .dg:hover{background:var(--danger-soft)}
+.fp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fp-t{margin-top:10px!important}
+.fp-tb{display:block;width:100%;padding:0;border:0;background:transparent;color:var(--sumi);font-size:17px;line-height:26px;font-weight:700;text-align:left;cursor:pointer;font-family:var(--font-sans)}
+.fp-tb:hover{color:var(--ai)}
+.fp-c{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.fp-b{font-size:15px;line-height:24px;color:var(--sumi-muted);white-space:pre-line;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fp.open .fp-b{display:block;color:var(--sumi)}
+.fimgs{display:flex;gap:8px;flex-wrap:wrap}
+.fimg{position:relative;display:block;width:132px;height:96px;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper-100);cursor:zoom-in}
+.fp.open .fimg{width:260px;height:190px}
+.fimg .zoom{position:absolute;right:6px;bottom:6px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--paper-50);color:var(--sumi);box-shadow:var(--shadow-sm);opacity:0;transition:opacity .15s}
+.fimg:hover .zoom,.fimg:focus-visible .zoom{opacity:1}
+.fimg .zoom .msr{font-size:18px}
+/* ảnh ghi chú (thay cho ảnh thật trong bản mẫu) */
+.nimg{position:relative;display:flex;flex-direction:column;justify-content:center;gap:.35em;width:100%;height:100%;box-sizing:border-box;padding:.9em 1.1em;font-size:8.5px;line-height:1.3;color:var(--sumi);text-align:left;background-color:var(--paper-50);background-image:repeating-linear-gradient(180deg,transparent 0 calc(1.65em - 1px),var(--line) calc(1.65em - 1px) 1.65em);font-family:var(--font-jp)}
+.fp.open .nimg{font-size:15px}
+.nimg .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nimg .ln:nth-child(odd){color:var(--ai);font-weight:500}
+.nimg .tape{position:absolute;top:-3px;left:50%;width:28%;height:12%;max-height:14px;transform:translateX(-50%) rotate(-3deg);background:var(--sora);opacity:.75;border-radius:2px}
+.ffiles{display:flex;flex-direction:column;gap:8px}
+.ffile{display:flex;align-items:center;gap:12px;max-width:440px;padding:8px 8px 8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--paper-100)}
+.ft{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px}
+.ft-pdf{background:color-mix(in srgb,var(--wb-brick-f) 60%,var(--paper-50));color:var(--wb-brick)}.ft-doc{background:color-mix(in srgb,var(--wb-indigo-f) 60%,var(--paper-50));color:var(--wb-indigo)}.ft-img{background:color-mix(in srgb,var(--wb-pine-f) 60%,var(--paper-50));color:var(--wb-pine)}
+[data-theme="hoc-tap-dem"] .ft-pdf,[data-theme="hoc-tap-dem"] .ft-doc,[data-theme="hoc-tap-dem"] .ft-img{background:var(--paper-200);color:var(--sumi)}.ft-txt{background:var(--paper-200);color:var(--sumi-muted)}
+.fx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fn{font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs{display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:var(--sumi-muted)}
+.fs .msr{font-size:14px}
+/* hàng thao tác */
+.fp-a{display:flex;align-items:center;gap:4px;margin:10px -8px 0}
+.fa{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--sumi-muted);font-size:14px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+.fa:hover{background:var(--paper-200);color:var(--sumi)}
+.fa.on{color:var(--ai);background:var(--ai-soft)}
+.fa.solve.on,.fa.solve{--x:0}
+.fa.on .msr{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.fa.solve{color:var(--success)}
+.fa.solve.on{background:var(--success-soft);color:var(--success)}
+.fa-open{color:var(--sumi)}
+/* bình luận */
+.fc{display:flex;flex-direction:column;gap:14px;margin:8px -20px 0;padding:16px 20px 16px;border-top:1px solid var(--line)}
+.fc-h{display:flex;align-items:center;gap:8px;font-size:15px;line-height:22px;font-weight:700}
+.fc-n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:999px;background:var(--paper-200);font-size:12px;font-variant-numeric:tabular-nums}
+.fc-empty{display:flex;align-items:center;gap:10px;padding:14px 16px!important;border-radius:12px;background:var(--paper-100);font-size:14px;color:var(--sumi-muted)}
+.fc-list{display:flex;flex-direction:column;gap:16px}
+.cm{display:flex;gap:12px}
+.cm-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.cm-n{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;line-height:20px}
+.cm-n>.nm{font-weight:700}
+.cm-n>.tm{font-size:12px;color:var(--sumi-muted)}
+.cm-t{font-size:15px;line-height:24px;white-space:pre-line}
+.cm-r{display:inline-flex;align-items:center;gap:4px;height:32px;margin-left:-8px;padding:0 8px;border:0;border-radius:8px;background:transparent;color:var(--sumi-muted);font-size:13px;font-weight:600;cursor:pointer}
+.cm-r:hover{background:var(--paper-200);color:var(--sumi)}
+.cm-r .msr{font-size:17px}
+.fc-rep{display:flex;flex-direction:column;gap:14px;margin:10px 0 0 15px!important;padding-left:29px!important;border-left:2px solid var(--line)}
+/* viết bình luận */
+.fcw{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--paper-100)}
+.fcw-to{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sumi-muted)}
+.fcw-to b{color:var(--ai)}
+.fcw-to .msr{font-size:17px}
+.fcw-box{display:flex;gap:10px;align-items:flex-start}
+.fcw-box .av{margin-top:4px}
+.fcw-box .av .msr{display:none}
+.fcw-box .av.anon .msr{display:inline-block}.fcw-box .av.anon .ini{display:none}
+.fcw-in{flex:1;min-width:0}
+.fcw-in .jc-input__el{min-height:48px}
+.fcw-row{display:flex;align-items:center;gap:12px;padding-left:38px}
+.fcw-row .jc-switch{gap:10px}
+.fcw-row .jc-switch__label{font-size:13px;font-weight:600}
+.fcw-err{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:8px 10px 8px 12px!important;border-radius:10px;background:var(--danger-soft);color:var(--danger);font-size:13px;line-height:18px;font-weight:600}
+.fcw-err .msr{font-size:18px}
+.fcw-err button{margin-left:auto;height:32px;padding:0 12px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font-size:13px;font-weight:700;cursor:pointer}
+/* trạng thái */
+.fm-empty{padding:48px 24px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px dashed var(--line-strong)}
+.fm-empty .ei{font-size:32px}
+.sk{display:flex;flex-direction:column;gap:10px;padding-bottom:18px}
+.skc{width:40px;height:40px;border-radius:50%;flex:none}
+.sk1{width:38%}.sk2{width:22%}.sk3{width:72%;height:18px}.sk4{width:96%}.sk5{width:60%}
+/* nút nổi điện thoại */
+.fm-fab{display:none}
+/* khung soạn bài */
+.fm-ov{z-index:60}
+.cp-b{display:flex;flex-direction:column;gap:20px;padding-top:12px}
+.cp-ch{border:0}
+.cp-ch legend{margin-bottom:8px}
+.cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cp-c{position:relative;display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--paper-50);color:var(--sumi);text-align:left;cursor:pointer}
+.cp-c:hover{border-color:var(--line-strong)}
+.cp-c.on{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c);background:var(--cs)}
+.cp-c.on .ct{background:var(--c);color:var(--paper-50)}
+.cp-c .ck{display:none;color:var(--c)}
+.cp-c.on .ck{display:inline-flex}
+.cp-c.on .ck .msr{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.cp-cnt{margin-top:6px!important;font-size:12px;line-height:16px;color:var(--sumi-muted);text-align:right;font-variant-numeric:tabular-nums}
+.cp-cnt.warn{color:var(--warning);font-weight:600}
+.cp-att{display:flex;flex-direction:column;gap:8px}
+.cp-drop{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:1.5px dashed var(--line-strong);border-radius:14px;background:var(--paper-100);color:var(--sumi);text-align:left;cursor:pointer}
+.cp-drop:hover{border-color:var(--ai);background:var(--ai-soft)}
+.cp-drop>.msr{font-size:26px;color:var(--ai)}
+.dx{display:flex;flex-direction:column;gap:2px}
+.dt{font-size:15px;font-weight:600}
+.dd{font-size:13px;color:var(--sumi-muted)}
+.cp-files{display:flex;flex-direction:column;gap:8px}
+.cpf{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 8px;border:1px solid var(--line);border-radius:12px;background:var(--paper-50)}
+.cpf.err{border-color:var(--danger);background:var(--danger-soft)}
+.cpf.err .fs{color:var(--danger);font-weight:600}
+.cpf.ok .fs .msr{color:var(--success)}
+.cp-th{flex:none;width:48px;height:48px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.cp-th .nimg{font-size:4px;padding:.8em}
+.cpf .ft{width:48px;height:48px;border-radius:8px}
+.bar{display:block;height:4px;margin-top:4px;border-radius:2px;background:var(--paper-200);overflow:hidden}
+.bar i{display:block;width:40%;height:100%;border-radius:2px;background:var(--ai);animation:barmove 1.1s ease-in-out infinite}
+@keyframes barmove{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+.cp-anon{padding:14px 16px;border-radius:14px;background:var(--paper-100)}
+.cp-f{align-items:center}
+.cp-why{flex:1;min-width:0;font-size:13px;color:var(--sumi-muted)}
+/* xem ảnh */
+.fm-lb{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:var(--scrim);backdrop-filter:blur(2px)}
+.fm-lbbar{display:flex;align-items:center;gap:12px;padding:12px 16px 12px 24px;background:var(--paper-50);border-bottom:1px solid var(--line)}
+.fm-lbbar p{flex:1;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.lbh{font-size:13px;color:var(--sumi-muted)}
+.fm-lbfig{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px}
+.nimg.big{width:min(720px,90%);height:auto;aspect-ratio:4/3;font-size:30px;border-radius:12px;box-shadow:var(--shadow-lg)}
+.fm-lbfig figcaption{padding:6px 14px;border-radius:999px;background:var(--paper-50);font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-toast{position:fixed;left:50%;bottom:28px;z-index:80;transform:translateX(-50%);min-width:300px}
+@media (prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}.fp{transition:none}}
+/* ---------- điện thoại ---------- */
+@media (max-width:760px){
+  .sb{display:none}
+  .fm-mtop{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;height:56px;padding:0 12px 0 6px;background:var(--paper-50);border-bottom:1px solid var(--line)}
+  .fm-mtop b{font-size:17px}
+  .fm-mtop .av{width:32px;height:32px;font-size:13px;margin-left:4px}
+  .fm-wrap{padding:16px 16px 112px}
+  .fm-ttl h1{font-size:22px;line-height:30px;gap:8px}
+  .fm-ttl .kj{font-size:14px}
+  .fm-ttl p{font-size:14px;line-height:21px}
+  .fm-hact{display:none}
+  .fm-grid{grid-template-columns:minmax(0,1fr);gap:12px;margin-top:14px}
+  .fm-rail{position:static;margin:0 -16px}
+  .fm-rl{display:none}
+  .rc-list{flex-direction:row;gap:8px;overflow-x:auto;padding:2px 16px 4px;scrollbar-width:none}
+  .rc{flex:none;width:auto;align-items:center;gap:6px;height:40px;padding:0 14px 0 6px;border-radius:999px;background:var(--paper-50);box-shadow:inset 0 0 0 1px var(--line)}
+  .rc.on{background:var(--c);color:var(--paper-50);box-shadow:none}
+  .rc .ct{width:28px;height:28px;border-radius:50%;background:transparent}
+  .rc.on .ct{background:transparent;color:var(--paper-50)}
+  .rc .cd{display:none}
+  .rc .cn{white-space:nowrap}
+  .rc .cc{padding:0;min-width:0;font-size:12px;align-self:center}
+  .rc .ct{align-self:center;margin-top:0}
+  .rc.on .cc{color:var(--paper-50)}
+  .fm-chline.none{display:none!important}
+  .fm-chline{display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+  .fm-chline .ct{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:var(--cs);color:var(--c)}
+  .fm-chline .msr{font-size:16px}
+  .fm-quick{display:none}
+  .fm-tools{gap:6px;margin-top:0}
+  .fm-help{display:none}
+  .fm-lh .t,.fm-lh .n{display:none}
+  .fm-sort .jc-seg__opt{padding:0 10px}
+  .fp{padding:14px 14px 6px;border-radius:14px}
+  .fp-t{margin-top:8px!important}
+  .fp-tb{font-size:16px;line-height:24px}
+  .fa{height:44px;padding:0 10px}
+  .fa-open>span:first-child{display:none}
+  .fp-a{margin:6px -6px 0}
+  .fp.open .fimg{width:100%;height:auto;aspect-ratio:4/3}
+  .fp.open .nimg{font-size:17px}
+  .fc{margin:6px -14px 0;padding:14px}
+  .fc-rep{margin-left:8px!important;padding-left:14px!important}
+  .fcw-row{padding-left:0;flex-wrap:wrap}
+  .ffile{max-width:none}
+  .fm-fab{position:absolute;right:16px;bottom:20px;z-index:6;display:inline-flex;align-items:center;gap:8px;height:56px;padding:0 20px 0 16px;border:0;border-radius:18px;background:var(--ai);color:var(--on-ai);font-size:15px;font-weight:700;box-shadow:var(--shadow-lg);cursor:pointer}
+  .fm-fab .msr{font-size:22px}
+  .has-open .fm-fab{display:none}
+  .fm-mtop .sb-logo{width:28px;height:28px;margin-left:2px}
+  .fm-mtop .sb-logo .msr{font-size:18px}
+  .fm-ov{padding:0!important;align-items:stretch!important}
+  .fm-cmp{max-width:none!important;height:100%;max-height:none!important;border-radius:0!important}
+  .cp-grid{grid-template-columns:1fr}
+  .cp-c{padding:10px 12px}
+  .cp-f{flex-direction:column-reverse;align-items:stretch}
+  .cp-why{text-align:center}
+  .lbh{display:none}
+  .fm-lbfig{padding:16px}
+  .fm-toast{left:16px;right:16px;bottom:92px;transform:none;min-width:0}
+}
+
+</style>
+</helmet>
+<div class="{{fm.rootCls}}" data-theme="{{fm.theme}}">
+  <aside class="sb" aria-label="Thanh điều hướng">
+    <div class="sb-h"><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sp"></span><button type="button" class="ib" aria-label="Thu gọn thanh bên" title="Thu gọn thanh bên"><span class="msr" aria-hidden="true">left_panel_close</span></button></div>
+    <p class="sb-l red">Đang học</p>
+    <a class="sb-i" href="#"><span class="sb-ch" lang="ja" aria-hidden="true">一</span><span class="t">Chương 1</span><span class="n red">3/9</span></a>
+    <a class="sb-i" href="#"><span class="msr" aria-hidden="true">forum</span><span class="t">Gặp người đón ở sân bay Narita</span><span class="n">0/6</span></a>
+    <nav aria-label="Điều hướng chính" class="sb-nav"><p class="sb-l">Học</p><a class="sb-i" href="#"><span class="msr" aria-hidden="true">travel_explore</span><span class="t">Hành trình</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">forum</span><span class="t">Hội thoại AI</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">record_voice_over</span><span class="t">Shadowing</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">menu_book</span><span class="t">Kho học liệu</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">style</span><span class="t">Flashcard</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">insights</span><span class="t">Kết quả</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">approval</span><span class="t">Sổ con dấu</span></a><a class="sb-i on" href="#" aria-current="page"><span class="msr" aria-hidden="true">groups</span><span class="t">Diễn đàn</span></a></nav>
+    <span class="sp"></span>
+    <a class="sb-i sb-f" href="#"><span class="coin" aria-hidden="true"><span class="msr" aria-hidden="true">toll</span></span><span class="t">Số dư</span><span class="n credit">3.712</span></a>
+    <button type="button" class="sb-u" aria-haspopup="menu" aria-label="Tài khoản"><span class="{{fm.meAv}}" aria-hidden="true">{{fm.meIni}}</span><span class="who"><b>{{fm.meName}}</b><span>{{fm.meSub}}</span></span><span class="msr" aria-hidden="true">expand_less</span></button>
+  </aside>
+  <div class="fm-main">
+    <div class="fm-mtop"><x-import component-from-global-scope="JCAP.IconButton" icon="menu" label="Mở thanh điều hướng"></x-import><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sp"></span><sc-if value="{{fm.isLearner}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.IconButton" icon="support_agent" label="Hỗ trợ kỹ thuật"></x-import></sc-if><span class="{{fm.meAv}}" aria-hidden="true">{{fm.meIni}}</span></div>
+    <div class="fm-wrap">
+      <header class="fm-head">
+        <div class="fm-ttl">
+          <h1>Diễn đàn <span class="kj" lang="ja">掲示板</span></h1>
+          <p>Hỏi đáp, mẹo luyện nói và bạn cùng học.</p>
+        </div>
+      </header>
+      <div class="fm-grid">
+        <nav class="fm-rail" aria-label="Kênh thảo luận">
+          <p class="fm-rl">Kênh</p>
+          <ul class="rc-list">
+            <sc-for list="{{fm.chans}}" as="c" hint-placeholder-count="6"><li><button type="button" class="{{c.cls}}" aria-pressed="{{c.on}}" title="{{c.desc}}" onClick="{{c.pick}}">
+              <span class="ct" aria-hidden="true"><span class="msr">{{c.icon}}</span></span>
+              <span class="cx"><span class="cn">{{c.vi}}</span><span class="cd">{{c.desc}}</span></span>
+              <span class="cc" aria-label="{{c.nLabel}}">{{c.n}}</span>
+            </button></li></sc-for>
+          </ul>
+          <sc-if value="{{fm.isLearner}}" hint-placeholder-val="{{true}}"><a class="fm-help" href="#" title="Báo lỗi ứng dụng hoặc thanh toán"><span class="msr" aria-hidden="true">support_agent</span><span class="ht">Hỗ trợ kỹ thuật</span></a></sc-if>
+        </nav>
+        <section class="fm-feed" aria-label="Bài thảo luận">
+          <div class="fm-quick">
+            <span class="{{fm.meAvSm}}" aria-hidden="true">{{fm.meIni}}</span>
+            <button type="button" class="fm-qbtn" onClick="{{fm.openCompose}}" aria-label="Đăng bài thảo luận: đặt câu hỏi, chia sẻ mẹo hoặc tài liệu">Bạn muốn hỏi hay chia sẻ điều gì?</button>
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="edit_square" on-click="{{fm.openCompose}}">Đăng bài</x-import>
+          </div>
+          <div class="fm-tools">
+            <sc-if value="{{fm.searchClosed}}" hint-placeholder-val="{{true}}"><span class="fm-lh"></span></sc-if>
+            <sc-if value="{{fm.searchOpen}}" hint-placeholder-val="{{false}}"><label class="jc-input fm-search"><span class="msr jc-input__icon" aria-hidden="true">search</span><input class="jc-input__el" type="search" autofocus placeholder="Tìm bài hoặc tác giả" aria-label="Tìm theo tiêu đề, nội dung hoặc tên tác giả" value="{{fm.q}}" onInput="{{fm.onQ}}" onKeyDown="{{fm.searchKey}}"><button type="button" class="fm-x" aria-label="Đóng tìm kiếm" onClick="{{fm.closeSearch}}"><span class="msr" aria-hidden="true">close</span></button></label></sc-if>
+            <div class="fm-sort"><x-import component-from-global-scope="JCAP.SegmentedControl" options="{{fm.sortOpts}}" value="{{fm.sort}}" on-change="{{fm.onSort}}" size="sm" aria-label="Sắp xếp bài"></x-import></div>
+            <sc-if value="{{fm.searchClosed}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.IconButton" icon="search" label="Tìm bài hoặc tác giả" size="sm" on-click="{{fm.openSearch}}"></x-import></sc-if>
+          </div>
+          <p class="{{fm.chLineCls2}}"><span class="{{fm.chLineCls}}"><span class="msr" aria-hidden="true">{{fm.chLineIcon}}</span></span><span>{{fm.chLine}}</span></p>
+          <sc-if value="{{fm.incoming}}" hint-placeholder-val="{{false}}"><div class="fm-newwrap"><button type="button" class="fm-new" onClick="{{fm.takeIncoming}}"><span class="msr" aria-hidden="true">arrow_upward</span>Có 1 bài thảo luận mới</button></div></sc-if>
+          <sc-if value="{{fm.showCount}}" hint-placeholder-val="{{false}}"><p class="fm-count" aria-live="polite">{{fm.countText}}</p></sc-if>
+          <sc-if value="{{fm.isLoading}}" hint-placeholder-val="{{false}}"><ol class="fm-list" aria-busy="true" aria-label="Đang tải bài thảo luận"><li><div class="fp sk" aria-hidden="true"><div class="fp-h"><span class="jc-skel skc"></span><div class="fp-who"><span class="jc-skel jc-skel--text sk1"></span><span class="jc-skel jc-skel--text sk2"></span></div></div><span class="jc-skel jc-skel--text sk3"></span><span class="jc-skel jc-skel--text sk4"></span><span class="jc-skel jc-skel--text sk5"></span></div></li><li><div class="fp sk" aria-hidden="true"><div class="fp-h"><span class="jc-skel skc"></span><div class="fp-who"><span class="jc-skel jc-skel--text sk1"></span><span class="jc-skel jc-skel--text sk2"></span></div></div><span class="jc-skel jc-skel--text sk3"></span><span class="jc-skel jc-skel--text sk4"></span><span class="jc-skel jc-skel--text sk5"></span></div></li><li><div class="fp sk" aria-hidden="true"><div class="fp-h"><span class="jc-skel skc"></span><div class="fp-who"><span class="jc-skel jc-skel--text sk1"></span><span class="jc-skel jc-skel--text sk2"></span></div></div><span class="jc-skel jc-skel--text sk3"></span><span class="jc-skel jc-skel--text sk4"></span><span class="jc-skel jc-skel--text sk5"></span></div></li></ol></sc-if>
+          <sc-if value="{{fm.isError}}" hint-placeholder-val="{{false}}"><div class="jc-empty fm-empty"><span class="jc-empty__icon"><span class="msr ei" aria-hidden="true">cloud_off</span></span><h3 class="jc-empty__title">Chưa tải được Diễn đàn</h3><p class="jc-empty__text">Máy chủ chưa phản hồi. Kiểm tra kết nối mạng rồi thử lại.</p><div class="jc-empty__actions"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="refresh" on-click="{{fm.retry}}">Thử lại</x-import></div></div></sc-if>
+          <sc-if value="{{fm.isEmptyCh}}" hint-placeholder-val="{{false}}"><div class="jc-empty fm-empty"><span class="jc-empty__icon"><span class="msr ei" aria-hidden="true">forum</span></span><h3 class="jc-empty__title">Chưa có bài thảo luận nào ở mục này</h3><p class="jc-empty__text">Bạn có thể mở đầu bằng một câu hỏi hoặc một mẹo nhỏ.</p><div class="jc-empty__actions"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="edit_square" on-click="{{fm.openCompose}}">Đăng bài thảo luận</x-import></div></div></sc-if>
+          <sc-if value="{{fm.isNoRes}}" hint-placeholder-val="{{false}}"><div class="jc-empty fm-empty"><span class="jc-empty__icon"><span class="msr ei" aria-hidden="true">search_off</span></span><h3 class="jc-empty__title">Không tìm thấy bài nào khớp với “{{fm.q}}”</h3><p class="jc-empty__text">{{fm.noResHint}}</p><div class="jc-empty__actions"><sc-if value="{{fm.notAll}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.Button" variant="secondary" on-click="{{fm.allCh}}">Tìm ở tất cả kênh</x-import></sc-if><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{fm.clearQ}}">Xoá từ khoá</x-import></div></div></sc-if>
+          <sc-if value="{{fm.showList}}" hint-placeholder-val="{{true}}"><ol class="fm-list">
+            <sc-for list="{{fm.posts}}" as="p" hint-placeholder-count="4"><li><article class="{{p.cls}}" aria-labelledby="{{p.hid}}">
+            <header class="fp-h">
+              <sc-if value="{{p.anon}}" hint-placeholder-val="{{false}}"><span class="av anon" aria-hidden="true"><span class="msr">person</span></span></sc-if><sc-if value="{{p.named}}" hint-placeholder-val="{{true}}"><span class="{{p.avCls}}" aria-hidden="true">{{p.ini}}</span></sc-if>
+              <div class="fp-who">
+                <p class="fp-n"><span class="nm">{{p.name}}</span><sc-if value="{{p.showLv}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.JlptBadge" level="{{p.lv}}" size="sm"></x-import></sc-if><sc-if value="{{p.isAdmin}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Badge" tone="ai" icon="shield_person">Admin</x-import></sc-if><sc-if value="{{p.own}}" hint-placeholder-val="{{false}}"><span class="me-tag">{{p.ownText}}</span></sc-if></p>
+                <p class="fp-m"><span>{{p.t}}</span><span aria-hidden="true">·</span><span class="{{p.chCls}}"><span class="msr" aria-hidden="true">{{p.chIcon}}</span><span>{{p.chName}}</span></span></p>
+              </div>
+              <sc-if value="{{p.hasMenu}}" hint-placeholder-val="{{false}}"><div class="fp-menu">
+                <x-import component-from-global-scope="JCAP.IconButton" icon="more_horiz" label="Tuỳ chọn bài" on-click="{{p.onMenu}}"></x-import>
+                <sc-if value="{{p.menuOpen}}" hint-placeholder-val="{{false}}"><div class="fp-pop" role="menu" aria-label="Tuỳ chọn bài">
+                  <sc-if value="{{p.canPin}}" hint-placeholder-val="{{false}}"><button type="button" role="menuitem" onClick="{{p.onPin}}"><span class="msr" aria-hidden="true">{{p.pinIcon}}</span>{{p.pinLabel}}</button></sc-if>
+                  <sc-if value="{{p.canDel}}" hint-placeholder-val="{{true}}"><button type="button" role="menuitem" class="dg" onClick="{{p.onDel}}"><span class="msr" aria-hidden="true">delete</span>Xoá bài</button></sc-if>
+                </div></sc-if>
+              </div></sc-if>
+            </header>
+            <sc-if value="{{p.hasTags}}" hint-placeholder-val="{{false}}"><div class="fp-tags">
+              <sc-if value="{{p.pinned}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Badge" tone="shu" icon="push_pin">Đã ghim</x-import></sc-if>
+              <sc-if value="{{p.solvedTag}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Badge" tone="success" icon="check_circle">Đã giải đáp</x-import></sc-if>
+            </div></sc-if>
+            <h3 class="fp-t" id="{{p.hid}}"><button type="button" class="fp-tb" aria-expanded="{{p.open}}" aria-controls="{{p.bid}}" onClick="{{p.toggle}}">{{p.title}}</button></h3>
+            <div class="fp-c" id="{{p.bid}}">
+              <p class="fp-b">{{p.body}}</p>
+              <sc-if value="{{p.hasImgs}}" hint-placeholder-val="{{false}}"><div class="fimgs"><sc-for list="{{p.imgs}}" as="im" hint-placeholder-count="1"><button type="button" class="fimg" onClick="{{im.open}}" aria-label="{{im.label}}"><span class="nimg" aria-hidden="true"><span class="tape"></span><sc-for list="{{im.lines}}" as="ln" hint-placeholder-count="4"><span class="ln" lang="ja">{{ln.t}}</span></sc-for></span><span class="zoom" aria-hidden="true"><span class="msr">zoom_in</span></span></button></sc-for></div></sc-if>
+              <sc-if value="{{p.hasFiles}}" hint-placeholder-val="{{false}}"><ul class="ffiles"><sc-for list="{{p.files}}" as="f" hint-placeholder-count="1"><li class="ffile"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span><span class="fx"><span class="fn">{{f.name}}</span><span class="fs">{{f.sub}}</span></span><x-import component-from-global-scope="JCAP.IconButton" icon="download" label="{{f.dl}}" size="sm"></x-import></li></sc-for></ul></sc-if>
+            </div>
+            <footer class="fp-a">
+              <button type="button" class="{{p.likeCls}}" aria-pressed="{{p.liked}}" aria-label="{{p.likeAria}}" title="{{p.likeTip}}" onClick="{{p.onLike}}"><span class="msr" aria-hidden="true">thumb_up</span><span class="v">{{p.likes}}</span></button>
+              <button type="button" class="fa" aria-label="{{p.comAria}}" onClick="{{p.toggle}}"><span class="msr" aria-hidden="true">chat_bubble</span><span class="v">{{p.nCom}}</span></button>
+              <sc-if value="{{p.canSolve}}" hint-placeholder-val="{{false}}"><button type="button" class="{{p.solveCls}}" aria-pressed="{{p.solved}}" onClick="{{p.onSolve}}"><span class="msr" aria-hidden="true">{{p.solveIcon}}</span><span>{{p.solveLabel}}</span></button></sc-if>
+              <span class="sp"></span>
+              <button type="button" class="fa fa-open" aria-expanded="{{p.open}}" aria-controls="{{p.bid}}" onClick="{{p.toggle}}"><span>{{p.openLabel}}</span><span class="msr" aria-hidden="true">{{p.openIcon}}</span></button>
+            </footer>
+            <sc-if value="{{p.open}}" hint-placeholder-val="{{false}}"><section class="fc" aria-label="Bình luận">
+              <h4 class="fc-h">Bình luận <span class="fc-n">{{p.nCom}}</span></h4>
+              <sc-if value="{{p.noCom}}" hint-placeholder-val="{{false}}"><p class="fc-empty"><span class="msr" aria-hidden="true">forum</span>Hãy là người đầu tiên chia sẻ ý kiến.</p></sc-if>
+              <ol class="fc-list"><sc-for list="{{p.coms}}" as="c" hint-placeholder-count="2"><li class="fc-i">
+                <div class="cm"><sc-if value="{{c.anon}}" hint-placeholder-val="{{false}}"><span class="av anon sm" aria-hidden="true"><span class="msr">person</span></span></sc-if><sc-if value="{{c.named}}" hint-placeholder-val="{{true}}"><span class="{{c.avCls}}" aria-hidden="true">{{c.ini}}</span></sc-if>
+                <div class="cm-b">
+                  <p class="cm-n"><span class="nm">{{c.name}}</span><sc-if value="{{c.showLv}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.JlptBadge" level="{{c.lv}}" size="sm"></x-import></sc-if><sc-if value="{{c.isAdmin}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Badge" tone="ai" icon="shield_person">Admin</x-import></sc-if><sc-if value="{{c.own}}" hint-placeholder-val="{{false}}"><span class="me-tag">{{c.ownText}}</span></sc-if><span class="tm">{{c.t}}</span></p>
+                  <p class="cm-t">{{c.text}}</p>
+                  <sc-if value="{{c.hasFiles}}" hint-placeholder-val="{{false}}"><ul class="ffiles"><sc-for list="{{c.files}}" as="f" hint-placeholder-count="1"><li class="ffile"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span><span class="fx"><span class="fn">{{f.name}}</span><span class="fs">{{f.sub}}</span></span><x-import component-from-global-scope="JCAP.IconButton" icon="download" label="{{f.dl}}" size="sm"></x-import></li></sc-for></ul></sc-if>
+                  <button type="button" class="cm-r" onClick="{{c.reply}}" aria-label="{{c.replyAria}}"><span class="msr" aria-hidden="true">reply</span>Trả lời</button>
+                </div>
+              </div>
+                <sc-if value="{{c.hasRep}}" hint-placeholder-val="{{false}}"><ol class="fc-rep"><sc-for list="{{c.reps}}" as="r" hint-placeholder-count="1"><li class="fc-i">
+                  <div class="cm"><sc-if value="{{r.anon}}" hint-placeholder-val="{{false}}"><span class="av anon sm" aria-hidden="true"><span class="msr">person</span></span></sc-if><sc-if value="{{r.named}}" hint-placeholder-val="{{true}}"><span class="{{r.avCls}}" aria-hidden="true">{{r.ini}}</span></sc-if>
+                <div class="cm-b">
+                  <p class="cm-n"><span class="nm">{{r.name}}</span><sc-if value="{{r.showLv}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.JlptBadge" level="{{r.lv}}" size="sm"></x-import></sc-if><sc-if value="{{r.isAdmin}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Badge" tone="ai" icon="shield_person">Admin</x-import></sc-if><sc-if value="{{r.own}}" hint-placeholder-val="{{false}}"><span class="me-tag">{{r.ownText}}</span></sc-if><span class="tm">{{r.t}}</span></p>
+                  <p class="cm-t">{{r.text}}</p>
+                  <sc-if value="{{r.hasFiles}}" hint-placeholder-val="{{false}}"><ul class="ffiles"><sc-for list="{{r.files}}" as="f" hint-placeholder-count="1"><li class="ffile"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span><span class="fx"><span class="fn">{{f.name}}</span><span class="fs">{{f.sub}}</span></span><x-import component-from-global-scope="JCAP.IconButton" icon="download" label="{{f.dl}}" size="sm"></x-import></li></sc-for></ul></sc-if>
+                  <button type="button" class="cm-r" onClick="{{r.reply}}" aria-label="{{r.replyAria}}"><span class="msr" aria-hidden="true">reply</span>Trả lời</button>
+                </div>
+              </div>
+                </li></sc-for></ol></sc-if>
+              </li></sc-for></ol>
+              <div class="fcw">
+                <sc-if value="{{p.replying}}" hint-placeholder-val="{{false}}"><p class="fcw-to"><span class="msr" aria-hidden="true">reply</span><span>Đang trả lời <b>@{{p.replyName}}</b></span><button type="button" class="fm-x" aria-label="Bỏ trả lời" onClick="{{p.cancelReply}}"><span class="msr" aria-hidden="true">close</span></button></p></sc-if>
+                <div class="fcw-box">
+                  <span class="{{p.cAvCls}}" aria-hidden="true"><span class="msr">person</span><span class="ini">{{p.cIni}}</span></span>
+                  <div class="jc-input jc-input--multi fcw-in"><textarea class="jc-input__el" rows="2" aria-label="{{p.cAria}}" placeholder="{{p.cPh}}" value="{{p.draft}}" onInput="{{p.onDraft}}"></textarea></div>
+                </div>
+                <div class="fcw-row">
+                  <x-import component-from-global-scope="JCAP.IconButton" icon="attach_file" label="Đính kèm ảnh hoặc tệp" size="sm"></x-import>
+                  <sc-if value="{{p.showAnon}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.Switch" label="Bình luận ẩn danh" checked="{{p.cAnon}}" on-change="{{p.togAnon}}"></x-import></sc-if>
+                  <span class="sp"></span>
+                  <x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="send" loading="{{p.sending}}" disabled="{{p.cantSend}}" on-click="{{p.onSend}}">Gửi</x-import>
+                </div>
+                <sc-if value="{{p.sendErr}}" hint-placeholder-val="{{false}}"><p class="fcw-err" role="alert"><span class="msr" aria-hidden="true">error</span><span>Chưa gửi được bình luận. Nội dung bạn viết vẫn còn ở đây.</span><button type="button" onClick="{{p.onSend}}">Gửi lại</button></p></sc-if>
+              </div>
+            </section></sc-if>
+          </article></li></sc-for>
+          </ol></sc-if>
+        </section>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="fm-fab" onClick="{{fm.openCompose}}"><span class="msr" aria-hidden="true">edit_square</span>Đăng bài</button>
+  <sc-if value="{{fm.cmpOpen}}" hint-placeholder-val="{{false}}"><div class="jc-overlay fm-ov">
+    <div class="jc-modal jc-modal--lg fm-cmp" role="dialog" aria-modal="true" aria-labelledby="cmpT">
+      <div class="jc-modal__head"><h2 class="jc-modal__title" id="cmpT">Đăng bài thảo luận</h2><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng" on-click="{{fm.closeCompose}}"></x-import></div>
+      <div class="jc-modal__body cp-b">
+        <fieldset class="cp-ch"><legend class="jc-field__label">Chọn kênh</legend>
+          <div class="cp-grid" role="radiogroup" aria-label="Kênh"><sc-for list="{{fm.cmpChans}}" as="c" hint-placeholder-count="5"><button type="button" class="{{c.cls}}" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}">
+            <span class="ct" aria-hidden="true"><span class="msr">{{c.icon}}</span></span><span class="cx"><span class="cn">{{c.vi}}</span><span class="cd">{{c.desc}}</span></span><span class="ck" aria-hidden="true"><span class="msr">check_circle</span></span>
+          </button></sc-for></div>
+        </fieldset>
+        <div class="jc-field"><label class="jc-field__label" for="cpTitle">Tiêu đề<span class="jc-field__req" aria-hidden="true"> *</span></label>
+          <div class="jc-input"><input id="cpTitle" class="jc-input__el" maxlength="290" required placeholder="Ví dụ: は và が khác nhau thế nào?" value="{{fm.cTitle}}" onInput="{{fm.onTitle}}" aria-describedby="cpCnt"></div>
+          <p class="{{fm.cntCls}}" id="cpCnt">{{fm.titleCount}}/290 ký tự</p></div>
+        <div class="jc-field"><label class="jc-field__label" for="cpBody">Nội dung<span class="jc-field__req" aria-hidden="true"> *</span></label>
+          <div class="jc-input jc-input--multi"><textarea id="cpBody" class="jc-input__el" rows="5" required placeholder="Chép nguyên câu tiếng Nhật, ghi tên bài học và chỗ bạn chưa hiểu." value="{{fm.cBody}}" onInput="{{fm.onBody}}"></textarea></div></div>
+        <div class="cp-att">
+          <p class="jc-field__label">Ảnh hoặc tệp đính kèm</p>
+          <button type="button" class="cp-drop" onClick="{{fm.addFile}}"><span class="msr" aria-hidden="true">upload_file</span><span class="dx"><span class="dt">Thêm ảnh hoặc tệp</span><span class="dd">Ảnh, PDF, TXT, DOC, DOCX. Mỗi tệp tối đa 5MB, chọn được nhiều tệp.</span></span></button>
+          <sc-if value="{{fm.hasCFiles}}" hint-placeholder-val="{{false}}"><ul class="cp-files"><sc-for list="{{fm.cFiles}}" as="f" hint-placeholder-count="2"><li class="{{f.cls}}">
+            <sc-if value="{{f.isImg}}" hint-placeholder-val="{{false}}"><span class="cp-th"><span class="nimg" aria-hidden="true"><span class="tape"></span><sc-for list="{{f.lines}}" as="ln" hint-placeholder-count="4"><span class="ln" lang="ja">{{ln.t}}</span></sc-for></span></span></sc-if>
+            <sc-if value="{{f.notImg}}" hint-placeholder-val="{{true}}"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span></sc-if>
+            <span class="fx"><span class="fn">{{f.name}}</span><span class="fs"><span class="msr" aria-hidden="true">{{f.stIcon}}</span><span>{{f.sub}}</span></span><sc-if value="{{f.up}}" hint-placeholder-val="{{false}}"><span class="bar" role="progressbar" aria-label="Đang tải lên"><i></i></span></sc-if></span>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="{{f.rmLabel}}" size="sm" on-click="{{f.remove}}"></x-import>
+          </li></sc-for></ul></sc-if>
+        </div>
+        <sc-if value="{{fm.isLearner}}" hint-placeholder-val="{{true}}"><div class="cp-anon"><x-import component-from-global-scope="JCAP.Switch" label="Đăng ẩn danh" description="Mọi người sẽ thấy “Thành viên ẩn danh #…”, không thấy tên và ảnh đại diện của bạn." checked="{{fm.cAnon}}" on-change="{{fm.togCAnon}}"></x-import></div></sc-if>
+        <sc-if value="{{fm.postErr}}" hint-placeholder-val="{{false}}"><div class="jc-alert jc-alert--danger" role="alert"><span class="msr jc-alert__icon" aria-hidden="true">error</span><div class="jc-alert__body"><p class="jc-alert__title">Chưa đăng được bài</p><div class="jc-alert__text">Nội dung bạn viết vẫn được giữ nguyên. Bấm Đăng bài để thử lại.</div></div></div></sc-if>
+      </div>
+      <div class="jc-modal__foot cp-f"><p class="cp-why" aria-live="polite">{{fm.whyText}}</p><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{fm.closeCompose}}">Huỷ</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="send" loading="{{fm.posting}}" disabled="{{fm.cantPost}}" on-click="{{fm.submit}}">Đăng bài</x-import></div>
+    </div>
+  </div></sc-if>
+  <sc-if value="{{fm.delOpen}}" hint-placeholder-val="{{false}}"><div class="jc-overlay">
+    <div class="jc-modal jc-modal--sm" role="alertdialog" aria-modal="true" aria-labelledby="delT" aria-describedby="delD">
+      <div class="jc-modal__head"><span class="jc-modal__icon jc-tone-bg-danger"><span class="msr" aria-hidden="true">delete</span></span><h2 class="jc-modal__title" id="delT">Xoá bài thảo luận?</h2></div>
+      <div class="jc-modal__body"><p id="delD">{{fm.delText}}</p></div>
+      <div class="jc-modal__foot"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{fm.delCancel}}">Huỷ</x-import><x-import component-from-global-scope="JCAP.Button" variant="danger" icon="delete" on-click="{{fm.delYes}}">Xoá bài</x-import></div>
+    </div>
+  </div></sc-if>
+  <sc-if value="{{fm.lbOpen}}" hint-placeholder-val="{{false}}"><div class="fm-lb" role="dialog" aria-modal="true" aria-label="Xem ảnh đính kèm" onKeyDown="{{fm.lbKey}}">
+    <div class="fm-lbbar"><p><span class="msr" aria-hidden="true">image</span><span>{{fm.lbName}}</span></p><span class="lbh" aria-hidden="true">Esc để đóng</span><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng ảnh" on-click="{{fm.lbClose}}"></x-import></div>
+    <figure class="fm-lbfig"><span class="nimg big" aria-hidden="true"><span class="tape"></span><sc-for list="{{fm.lbLines}}" as="ln" hint-placeholder-count="4"><span class="ln" lang="ja">{{ln.t}}</span></sc-for></span><figcaption>{{fm.lbCap}}</figcaption></figure>
+  </div></sc-if>
+  <sc-if value="{{fm.toastOn}}" hint-placeholder-val="{{false}}"><div class="fm-toast"><x-import component-from-global-scope="JCAP.Toast" tone="success" title="{{fm.toast}}"></x-import></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+
+var FM_CH = [{"id": "QA_JAPANESE", "k": "qa", "vi": "Hỏi đáp Tiếng Nhật", "icon": "quiz", "desc": "Giải đáp từ vựng, ngữ pháp, kính ngữ trong bài học"}, {"id": "SPEAKING_TIPS", "k": "sp", "vi": "Kinh nghiệm Luyện nói", "icon": "record_voice_over", "desc": "Mẹo phản xạ với AI và luyện phát âm Shadowing"}, {"id": "STUDY_BUDDY", "k": "bd", "vi": "Tìm bạn cùng học", "icon": "diversity_3", "desc": "Lập nhóm luyện giao tiếp, giữ chuỗi ngày học"}, {"id": "RESOURCES", "k": "rs", "vi": "Tài liệu & JLPT", "icon": "menu_book", "desc": "Chia sẻ ghi chú, PDF, bảng tóm tắt ôn thi"}, {"id": "LOUNGE", "k": "lg", "vi": "Góc Trò chuyện", "icon": "local_cafe", "desc": "Văn hoá Nhật Bản và động lực học tập"}], FM_U = {"me": {"name": "Học Viên Luyện Nói 1", "lv": "N5", "admin": false, "ini": "H", "tone": "a1"}, "admin": {"name": "JCAP Admin", "lv": null, "admin": true, "ini": "J", "tone": "a0"}, "khoa": {"name": "Trần Khoa", "lv": "N5", "admin": false, "ini": "K", "tone": "a2"}, "ha": {"name": "Thu Hà", "lv": "N3", "admin": false, "ini": "H", "tone": "a3"}, "anh": {"name": "Minh Anh", "lv": "N4", "admin": false, "ini": "M", "tone": "a4"}, "bao": {"name": "Quốc Bảo", "lv": "N4", "admin": false, "ini": "B", "tone": "a2"}, "phuong": {"name": "Lan Phương", "lv": "N5", "admin": false, "ini": "P", "tone": "a3"}, "tuan": {"name": "Đức Tuấn", "lv": "N5", "admin": false, "ini": "T", "tone": "a4"}}, FM_POSTS = [{"id": 1, "ch": "QA_JAPANESE", "who": "admin", "t": "3 ngày trước", "ago": 4320, "pinned": true, "solved": false, "likes": 24, "liked": false, "title": "Cách đặt câu hỏi để được giải đáp nhanh", "body": "Khi hỏi ở kênh Hỏi đáp, bạn ghi rõ ba điều:\n1. Câu tiếng Nhật đang thắc mắc (chép nguyên câu).\n2. Bài học có câu đó, ví dụ \"Thủ tục nhập cảnh\".\n3. Chỗ bạn chưa hiểu: nghĩa, ngữ pháp hay cách đọc.\nKhi đã có câu trả lời đúng, hãy bấm \"Đánh dấu đã giải đáp\" để người sau dễ tìm.", "comments": [{"id": 11, "who": "tuan", "t": "2 ngày trước", "text": "Cảm ơn admin, mình sẽ ghi thêm tên bài học từ giờ.", "anon": null, "imgs": [], "files": [], "replies": []}]}, {"id": 2, "ch": "QA_JAPANESE", "who": "khoa", "t": "1 giờ trước", "ago": 60, "pinned": false, "solved": true, "likes": 12, "liked": true, "title": "は và が khác nhau thế nào trong câu 私は学生です?", "body": "Trong bài \"Thủ tục nhập cảnh\" có câu 私は学生です。Mình thấy có chỗ lại dùng 私が学生です。\nHai câu này khác nhau ở đâu, và khi nào thì dùng が ạ? Mình chụp ghi chú của mình bên dưới.", "imgs": [{"name": "ghi-chu-wa-ga.jpg", "lines": ["私は 学生です。", "→ nói về tôi (chủ đề)", "だれが 学生ですか。", "→ 私が 学生です。"]}], "comments": [{"id": 21, "who": "ha", "t": "40 phút trước", "text": "は đánh dấu chủ đề: \"nói về tôi thì…\". が nhấn vào chủ ngữ, hay dùng khi trả lời câu hỏi だれが…? (ai là…?).", "anon": null, "imgs": [], "files": [], "replies": [{"id": 22, "who": "khoa", "t": "32 phút trước", "text": "Vậy 私が学生です là khi có người hỏi \"ai là học sinh?\" đúng không ạ?", "anon": null, "imgs": [], "files": [], "replies": []}, {"id": 23, "who": "ha", "t": "25 phút trước", "text": "Đúng rồi. Còn câu trong bài là tự giới thiệu, nên dùng は.", "anon": null, "imgs": [], "files": [], "replies": []}]}, {"id": 24, "who": "admin", "t": "20 phút trước", "text": "Bạn xem thêm phần Ngữ pháp của bài, mẫu \"N です: là N\" có ví dụ đầy đủ.", "anon": null, "imgs": [], "files": [], "replies": []}]}, {"id": 3, "ch": "QA_JAPANESE", "who": "me", "anon": 4817, "t": "15 phút trước", "ago": 15, "pinned": false, "solved": false, "likes": 1, "liked": true, "title": "Nhân viên nói いらっしゃいませ thì mình có cần đáp lại không?", "body": "Ở bài mua sắm, nhân viên chào いらっしゃいませ. Mình nên nói gì cho tự nhiên? Mình đang nói こんにちは nhưng thấy hơi lạ.", "imgs": [{"name": "kinh-ngu-cua-hang.jpg", "lines": ["いらっしゃいませ", "→ cúi chào, không cần đáp", "すみません、", "〜を ください。"]}], "comments": []}, {"id": 4, "ch": "SPEAKING_TIPS", "who": "ha", "t": "5 giờ trước", "ago": 300, "pinned": false, "solved": false, "likes": 31, "liked": false, "title": "Mẹo shadowing câu dài ở bài Thủ tục nhập cảnh", "body": "Câu 入国の目的は何ですか hơi dài với người mới. Mình chia thành 2 nhịp, nghe mẫu 3 lần rồi mới nói cùng.\nĐiểm khớp nội dung của mình tăng từ 58 lên 88 sau 4 lần thử.", "imgs": [{"name": "chia-cau-shadowing.jpg", "lines": ["にゅうこくの もくてきは", "／ なんですか。", "ngắt 2 nhịp, nghe 3 lần", "rồi mới nói cùng"]}], "comments": [{"id": 41, "who": "anh", "t": "4 giờ trước", "text": "Cách chia nhịp này hay quá, mình thử ngay.", "anon": null, "imgs": [], "files": [], "replies": [{"id": 42, "who": "ha", "t": "4 giờ trước", "text": "Bạn nhớ bật tốc độ 0.75 ở lần đầu nhé.", "anon": null, "imgs": [], "files": [], "replies": []}]}, {"id": 43, "who": "tuan", "t": "3 giờ trước", "text": "Mình hay bị thiếu âm っ ở câu này, có mẹo gì không?", "anon": 2093, "imgs": [], "files": [], "replies": []}]}, {"id": 5, "ch": "RESOURCES", "who": "anh", "t": "Hôm qua", "ago": 1500, "pinned": false, "solved": false, "likes": 18, "liked": false, "title": "Bảng tóm tắt trợ từ N5, một trang để in", "body": "Mình tổng hợp は, が, を, に, で, へ, と, も kèm một câu ví dụ cho mỗi trợ từ. File PDF in vừa một trang A4.", "files": [{"name": "tro-tu-N5-mot-trang.pdf", "size": "412 KB", "type": "pdf"}], "comments": [{"id": 51, "who": "phuong", "t": "20 giờ trước", "text": "Cảm ơn bạn, mình in dán bàn học rồi.", "anon": null, "imgs": [], "files": [], "replies": []}, {"id": 52, "who": "bao", "t": "18 giờ trước", "text": "Bạn làm thêm bản N4 được không?", "anon": null, "imgs": [], "files": [], "replies": []}]}, {"id": 6, "ch": "STUDY_BUDDY", "who": "bao", "t": "2 giờ trước", "ago": 120, "pinned": false, "solved": false, "likes": 5, "liked": false, "title": "Tìm 2 bạn luyện Hội thoại AI buổi tối, mục tiêu N4", "body": "Mình học khoảng 21:00 đến 22:00 mỗi tối. Mỗi người luyện một bài rồi kể lại lỗi hay gặp. Ai muốn thì bình luận nhé.", "comments": [{"id": 61, "who": "phuong", "t": "1 giờ trước", "text": "Cho mình tham gia với, mình đang N5 lên N4.", "anon": null, "imgs": [], "files": [], "replies": []}, {"id": 62, "who": "tuan", "t": "50 phút trước", "text": "Mình nữa nhé.", "anon": null, "imgs": [], "files": [], "replies": []}]}, {"id": 7, "ch": "LOUNGE", "who": "phuong", "t": "8 giờ trước", "ago": 480, "pinned": false, "solved": false, "likes": 9, "liked": false, "title": "Mọi người giữ chuỗi ngày học bằng cách nào?", "body": "Mình hay bỏ dở sau 5, 6 ngày. Mọi người có mẹo gì để học đều không?", "comments": [{"id": 71, "who": "ha", "t": "7 giờ trước", "text": "Mình đặt mục tiêu nhỏ: một bài Shadowing mỗi sáng trước khi đi làm.", "anon": null, "imgs": [], "files": [], "replies": []}, {"id": 72, "who": "khoa", "t": "6 giờ trước", "text": "Học cùng bạn ở kênh Tìm bạn cùng học giúp mình đều hơn hẳn.", "anon": null, "imgs": [], "files": [], "replies": []}]}], FM_IN = {"id": 8, "ch": "QA_JAPANESE", "who": "tuan", "t": "Vừa xong", "ago": 0, "pinned": false, "solved": false, "likes": 1, "liked": false, "title": "Đếm đồ vật dùng つ hay 個?", "body": "Ở bài mua sắm có ひとつ, ふたつ. Mình thấy người Nhật cũng nói いっこ. Khi nào dùng cách nào ạ?", "comments": []}, FM_SAMPLE = [{"name": "ghi-chu-bai-3.jpg", "size": "1,2 MB", "type": "img", "ok": true}, {"name": "de-on-N4-day-du.pdf", "size": "7,8 MB", "type": "pdf", "ok": false}, {"name": "tu-vung-mua-sam.docx", "size": "86 KB", "type": "doc", "ok": true}];
+var FM_NEWIMG = { name: 'ghi-chu-bai-3.jpg', lines: ['ひとつ、ふたつ、みっつ', '→ đếm chung mọi thứ', 'いっこ、にこ、さんこ', '→ đồ vật nhỏ, tròn'] };
+function fmNorm(s) { return (s || '').toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function fmClone(o) { return JSON.parse(JSON.stringify(o)); }
+function fmVals(self) {
+  var st = self.state.fm;
+  function S() { return self.state.fm; }
+  function set(p) { self.setState({ fm: Object.assign({}, S(), p) }); }
+  function setPost(id, fn) { set({ posts: S().posts.map(function (x) { if (x.id !== id) return x; var y = fmClone(x); fn(y); return y; }) }); }
+  function toast(t) { set({ toast: t, toastAt: Date.now() }); var at = S().toastAt; setTimeout(function () { if (S().toastAt === at) set({ toast: '' }); }, 3200); }
+  var admin = st.role === 'admin', meKey = admin ? 'admin' : 'me', ME = FM_U[meKey];
+  var chMap = {}; FM_CH.forEach(function (c) { chMap[c.id] = c; });
+  function isOwn(x) { return x.who === meKey; }
+  function author(x) {
+    var u = FM_U[x.who];
+    if (x.anon) return { name: 'Thành viên ẩn danh #' + x.anon, anon: true, ini: '', tone: '', lv: null, admin: false };
+    return { name: u.name, anon: false, ini: u.ini, tone: u.tone, lv: u.lv, admin: u.admin };
+  }
+  function nC(p) { return p.comments.reduce(function (a, c) { return a + 1 + c.replies.length; }, 0); }
+  function fileView(f) {
+    var t = f.type || 'pdf';
+    return { name: f.name, sub: (t === 'pdf' ? 'PDF' : t === 'doc' ? 'Word' : t === 'img' ? 'Ảnh' : 'Văn bản') + ' · ' + f.size, icon: t === 'pdf' ? 'picture_as_pdf' : t === 'doc' ? 'description' : t === 'img' ? 'image' : 'article', tileCls: 'ft ft-' + t, dl: 'Tải ' + f.name };
+  }
+  function whoView(x) {
+    var u = author(x), own = isOwn(x);
+    return { name: u.name, anon: u.anon, named: !u.anon, ini: u.ini, avCls: 'av ' + u.tone, showLv: !u.anon && !!u.lv, lv: u.lv || 'N5', isAdmin: !u.anon && u.admin,
+      own: own, ownText: x.anon ? '(bạn, đăng ẩn danh)' : '(bạn)' };
+  }
+  function cView(c, p, root) {
+    var v = whoView(c);
+    v.avCls = 'av sm ' + author(c).tone; v.t = c.t; v.text = c.text;
+    v.hasFiles = !!(c.files && c.files.length); v.files = (c.files || []).map(fileView);
+    v.replyAria = 'Trả lời ' + v.name;
+    v.reply = function () { set({ reply: { post: p.id, root: (root || c).id, name: author(c).name } }); };
+    v.hasRep = !!(c.replies && c.replies.length);
+    v.reps = (c.replies || []).map(function (r) { return cView(r, p, c); });
+    return v;
+  }
+  var q = st.q || '', nq = fmNorm(q).trim(), mode = st.mode || 'ok';
+  var all = st.posts;
+  var list = all.filter(function (p) { return st.ch === 'all' || p.ch === st.ch; }).filter(function (p) {
+    if (!nq) return true; return fmNorm(p.title + ' ' + p.body + ' ' + author(p).name).indexOf(nq) >= 0; });
+  function score(p) { return p.likes * 2 + nC(p) * 3; }
+  list.sort(function (a, b) {
+    return (b.pinned - a.pinned) || ((b.id === st.justPosted) - (a.id === st.justPosted)) || (st.sort === 'new' ? a.ago - b.ago : (score(b) - score(a)) || a.ago - b.ago);
+  });
+  var v = { yes: true, no: false, n32: 32 };
+  v.theme = st.dark ? 'hoc-tap-dem' : 'kham-pha'; v.rootCls = 'fm' + (st.open ? ' has-open' : '');
+  v.isLearner = !admin; v.meAv = 'av ' + ME.tone; v.meAvSm = 'av sm ' + ME.tone; v.meIni = ME.ini; v.meName = ME.name; v.meSub = admin ? 'Quản trị viên' : 'Mục tiêu JLPT N5';
+  // kênh
+  var chs = [{ id: 'all', k: 'all', vi: 'Tất cả', icon: 'forum', desc: '' }].concat(FM_CH);
+  v.chans = chs.map(function (c) {
+    var n = c.id === 'all' ? all.length : all.filter(function (p) { return p.ch === c.id; }).length, on = st.ch === c.id;
+    return { vi: c.vi, desc: c.desc, icon: c.icon, n: n, nLabel: n + ' bài', on: on, cls: 'rc ch-' + c.k + (on ? ' on' : ''), pick: function () { set({ ch: c.id, open: null, menu: null }); } };
+  });
+  var cur = chs.filter(function (c) { return c.id === st.ch; })[0];
+  v.listTitle = cur.id === 'all' ? 'Tất cả bài thảo luận' : cur.vi; v.listCount = list.length + ' bài';
+  v.chLine = cur.desc; v.chLineCls2 = 'fm-chline' + (cur.desc ? '' : ' none'); v.chLineIcon = cur.icon; v.chLineCls = 'ct ch-' + cur.k;
+  // tìm, sắp xếp
+  var so = !!st.searchOpen || !!q;
+  v.searchOpen = so; v.searchClosed = !so;
+  v.openSearch = function () { set({ searchOpen: true }); };
+  v.closeSearch = function () { set({ searchOpen: false, q: '' }); };
+  v.searchKey = function (e) { if (e && e.key === 'Escape') set({ searchOpen: false, q: '' }); };
+  v.q = q; v.hasQ = !!q; v.onQ = function (e) { set({ q: e && e.target ? e.target.value : '' }); }; v.clearQ = function () { set({ q: '', searchOpen: false }); };
+  v.notAll = st.ch !== 'all'; v.allCh = function () { set({ ch: 'all' }); };
+  v.sortOpts = [{ value: 'hot', label: 'Nổi bật', icon: 'local_fire_department' }, { value: 'new', label: 'Mới nhất', icon: 'schedule' }];
+  v.sort = st.sort; v.onSort = function (x) { set({ sort: x && x.target ? x.target.value : x }); };
+  v.showCount = mode === 'ok' && !!nq && list.length > 0;
+  v.countText = list.length + ' bài khớp với “' + q.trim() + '”' + (st.ch !== 'all' ? ' trong kênh ' + cur.vi : '');
+  v.noResHint = st.ch !== 'all' ? 'Thử từ khoá khác, hoặc tìm ở tất cả các kênh thay vì chỉ kênh ' + cur.vi + '.' : 'Thử từ khoá ngắn hơn, tên tác giả, hoặc chữ tiếng Nhật trong câu.';
+  v.isLoading = mode === 'loading'; v.isError = mode === 'error';
+  v.isEmptyCh = mode === 'ok' && !nq && list.length === 0; v.isNoRes = mode === 'ok' && !!nq && list.length === 0;
+  v.showList = mode === 'ok' && list.length > 0;
+  v.retry = function () { set({ mode: 'loading' }); setTimeout(function () { set({ mode: 'ok' }); }, 1200); };
+  v.incoming = mode === 'ok' && !!st.incoming;
+  v.takeIncoming = function () { var ps = S().posts.slice(); ps.unshift(fmClone(FM_IN)); set({ posts: ps, incoming: false, justPosted: FM_IN.id }); };
+  // bài
+  v.posts = list.map(function (p) {
+    var w = whoView(p), ch = chMap[p.ch], open = st.open === p.id, qa = p.ch === 'QA_JAPANESE', n = nC(p);
+    w.t = p.t; w.chCls = 'chip ch-' + ch.k; w.chIcon = ch.icon; w.chName = ch.vi;
+    w.hid = 'pt' + p.id; w.bid = 'pb' + p.id; w.open = open;
+    w.cls = 'fp' + (open ? ' open' : '') + (p.pinned ? ' pin' : '');
+    w.pinned = !!p.pinned; w.solved = !!p.solved; w.solvedTag = qa && !!p.solved; w.hasTags = w.pinned || w.solvedTag;
+    w.title = p.title; w.body = p.body;
+    w.hasImgs = !!(p.imgs && p.imgs.length);
+    w.imgs = (p.imgs || []).map(function (im, i) { return { lines: im.lines.map(function (t) { return { t: t }; }), label: 'Phóng to ảnh ' + im.name, open: function () { set({ lb: { post: p.id, i: i } }); } }; });
+    w.hasFiles = !!(p.files && p.files.length); w.files = (p.files || []).map(fileView);
+    w.likes = p.likes; w.liked = !!p.liked; w.likeCls = 'fa' + (p.liked ? ' on' : '');
+    w.likeAria = (p.liked ? 'Bỏ thích. ' : 'Thích bài này. ') + p.likes + ' lượt thích'; w.likeTip = p.liked ? 'Bạn đã thích' : 'Thích';
+    w.onLike = function () { setPost(p.id, function (y) { y.liked = !y.liked; y.likes += y.liked ? 1 : -1; }); };
+    w.nCom = n; w.comAria = n + ' bình luận. ' + (open ? 'Thu gọn bài' : 'Mở bài để đọc bình luận');
+    w.toggle = function () { set({ open: S().open === p.id ? null : p.id, menu: null }); };
+    w.openLabel = open ? 'Thu gọn' : 'Xem bài'; w.openIcon = open ? 'expand_less' : 'expand_more';
+    w.canSolve = qa && (admin || isOwn(p));
+    w.solveCls = 'fa solve' + (p.solved ? ' on' : ''); w.solveIcon = p.solved ? 'task_alt' : 'check_circle';
+    w.solveLabel = p.solved ? 'Đã giải đáp' : 'Đánh dấu đã giải đáp';
+    w.onSolve = function () { var was = p.solved; setPost(p.id, function (y) { y.solved = !y.solved; }); toast(was ? 'Đã bỏ đánh dấu đã giải đáp' : 'Đã đánh dấu bài là đã giải đáp'); };
+    w.canPin = admin; w.canDel = admin || isOwn(p); w.hasMenu = w.canPin || w.canDel; w.menuOpen = st.menu === p.id;
+    w.onMenu = function () { set({ menu: S().menu === p.id ? null : p.id }); };
+    w.pinIcon = p.pinned ? 'keep_off' : 'keep'; w.pinLabel = p.pinned ? 'Bỏ ghim' : 'Ghim lên đầu';
+    w.onPin = function () { var was = p.pinned; setPost(p.id, function (y) { y.pinned = !y.pinned; }); set({ menu: null }); toast(was ? 'Đã bỏ ghim bài' : 'Đã ghim bài lên đầu danh sách'); };
+    w.onDel = function () { set({ menu: null, del: p.id }); };
+    // bình luận
+    w.noCom = n === 0; w.coms = p.comments.map(function (c) { return cView(c, p, null); });
+    var rp = st.reply && st.reply.post === p.id ? st.reply : null;
+    w.replying = !!rp; w.replyName = rp ? rp.name : ''; w.cancelReply = function () { set({ reply: null }); };
+    var draft = (st.drafts || {})[p.id] || '', canon = !!(st.canon || {})[p.id], sending = st.sending === p.id;
+    w.draft = draft; w.onDraft = function (e) { var d = Object.assign({}, S().drafts || {}); d[p.id] = e && e.target ? e.target.value : ''; set({ drafts: d, sendErr: null }); };
+    w.cAnon = canon; w.showAnon = !admin; w.togAnon = function (x) { var a = Object.assign({}, S().canon || {}); a[p.id] = typeof x === 'boolean' ? x : !a[p.id]; set({ canon: a }); };
+    w.cAvCls = 'av sm ' + (canon ? 'anon' : ME.tone); w.cIni = ME.ini;
+    w.cPh = rp ? 'Viết câu trả lời cho ' + rp.name + '…' : 'Viết bình luận…'; w.cAria = rp ? 'Trả lời ' + rp.name : 'Viết bình luận';
+    w.sending = sending; w.cantSend = !draft.trim() || sending; w.sendErr = st.sendErr === p.id;
+    w.onSend = function () {
+      var s0 = S(), txt = ((s0.drafts || {})[p.id] || '').trim(); if (!txt || s0.sending) return;
+      set({ sending: p.id, sendErr: null });
+      setTimeout(function () {
+        var s = S();
+        if (s.failSend) { set({ sending: null, sendErr: p.id, failSend: false }); return; }
+        var r = s.reply && s.reply.post === p.id ? s.reply : null;
+        var nc = { id: Date.now(), who: meKey, anon: (s.canon || {})[p.id] && !admin ? 4817 : null, t: 'Vừa xong', text: txt, imgs: [], files: [], replies: [] };
+        var d = Object.assign({}, s.drafts || {}); d[p.id] = '';
+        set({ sending: null, drafts: d, reply: null, posts: s.posts.map(function (x) {
+          if (x.id !== p.id) return x; var y = fmClone(x);
+          if (r) y.comments.forEach(function (c) { if (c.id === r.root) c.replies.push(nc); }); else y.comments.push(nc);
+          return y; }) });
+      }, 900);
+    };
+    return w;
+  });
+  // khung soạn bài
+  var cp = st.cmp || {};
+  v.cmpOpen = !!cp.open;
+  v.openCompose = function () { set({ cmp: { open: true, ch: S().ch !== 'all' ? S().ch : 'QA_JAPANESE', title: '', body: '', anon: false, files: [] }, menu: null }); };
+  v.closeCompose = function () { set({ cmp: Object.assign({}, S().cmp, { open: false }) }); };
+  function setC(p) { set({ cmp: Object.assign({}, S().cmp, p) }); }
+  v.cmpChans = FM_CH.map(function (c) { var on = cp.ch === c.id; return { vi: c.vi, desc: c.desc, icon: c.icon, on: on, cls: 'cp-c ch-' + c.k + (on ? ' on' : ''), pick: function () { setC({ ch: c.id }); } }; });
+  v.cTitle = cp.title || ''; v.cBody = cp.body || '';
+  v.titleCount = (cp.title || '').length; v.cntCls = 'cp-cnt' + ((cp.title || '').length > 260 ? ' warn' : '');
+  v.onTitle = function (e) { setC({ title: (e && e.target ? e.target.value : '').slice(0, 290), err: false }); };
+  v.onBody = function (e) { setC({ body: e && e.target ? e.target.value : '', err: false }); };
+  v.cAnon = !!cp.anon; v.togCAnon = function (x) { setC({ anon: typeof x === 'boolean' ? x : !S().cmp.anon }); };
+  var cf = cp.files || [];
+  v.hasCFiles = cf.length > 0;
+  v.cFiles = cf.map(function (f, i) {
+    var fv = fileView(f), stt = f.st;
+    return { name: f.name, isImg: f.type === 'img', notImg: f.type !== 'img', icon: fv.icon, tileCls: fv.tileCls, lines: FM_NEWIMG.lines.map(function (t) { return { t: t }; }),
+      up: stt === 'up', cls: 'cpf ' + stt, stIcon: stt === 'err' ? 'error' : stt === 'up' ? 'progress_activity' : 'check_circle',
+      sub: stt === 'err' ? 'Tệp ' + f.size + ', lớn hơn 5MB. Hãy chọn tệp nhỏ hơn.' : stt === 'up' ? 'Đang tải lên · ' + f.size : fv.sub.replace(' · ', ' · Đã tải lên · '),
+      rmLabel: 'Bỏ tệp ' + f.name, remove: function () { setC({ files: S().cmp.files.filter(function (_, j) { return j !== i; }) }); } };
+  });
+  v.addFile = function () {
+    var c0 = S().cmp, n = (c0.seq || 0), f = fmClone(FM_SAMPLE[n % FM_SAMPLE.length]); f.st = f.ok ? 'up' : 'err'; f.key = n;
+    setC({ files: c0.files.concat([f]), seq: n + 1 });
+    if (f.ok) setTimeout(function () { var c = S().cmp; if (!c) return; setC({ files: c.files.map(function (x) { return x.key === n ? Object.assign({}, x, { st: 'ok' }) : x; }) }); }, 1500);
+  };
+  var uploading = cf.some(function (f) { return f.st === 'up'; }), missing = !(cp.title || '').trim() || !(cp.body || '').trim();
+  v.posting = !!cp.posting; v.cantPost = missing || uploading || !!cp.posting; v.postErr = !!cp.err;
+  v.whyText = uploading ? 'Đợi tệp tải lên xong rồi đăng.' : missing ? 'Cần có tiêu đề và nội dung để đăng.' : cf.some(function (f) { return f.st === 'err'; }) ? 'Tệp lỗi sẽ không được đính kèm.' : '';
+  v.submit = function () {
+    var c0 = S().cmp; if (!c0 || c0.posting) return;
+    setC({ posting: true, err: false });
+    setTimeout(function () {
+      var s = S(), c = s.cmp;
+      if (s.failPost) { set({ failPost: false, cmp: Object.assign({}, c, { posting: false, err: true }) }); return; }
+      var ok = c.files.filter(function (f) { return f.st === 'ok'; });
+      var np = { id: 100 + (s.seqPost || 0), ch: c.ch, who: meKey, anon: c.anon && !admin ? 4817 : null, t: 'Vừa xong', ago: 0, pinned: false, solved: false, likes: 1, liked: true,
+        title: c.title.trim(), body: c.body.trim(), imgs: ok.filter(function (f) { return f.type === 'img'; }).map(function () { return fmClone(FM_NEWIMG); }),
+        files: ok.filter(function (f) { return f.type !== 'img'; }).map(function (f) { return { name: f.name, size: f.size, type: f.type }; }), comments: [] };
+      var ps = s.posts.slice(); ps.unshift(np);
+      set({ posts: ps, seqPost: (s.seqPost || 0) + 1, justPosted: np.id, q: '', ch: s.ch === 'all' || s.ch === c.ch ? s.ch : 'all', cmp: { open: false } });
+      toast('Đã đăng bài thảo luận');
+    }, 1000);
+  };
+  // xoá
+  var dp = st.del ? all.filter(function (p) { return p.id === st.del; })[0] : null;
+  v.delOpen = !!dp; v.delText = dp ? 'Bài “' + dp.title + '”' + (nC(dp) ? ' cùng ' + nC(dp) + ' bình luận' : '') + ' sẽ bị xoá. Bạn không khôi phục lại được.' : '';
+  v.delCancel = function () { set({ del: null }); };
+  v.delYes = function () { var id = S().del; set({ del: null, open: null, posts: S().posts.filter(function (p) { return p.id !== id; }) }); toast('Đã xoá bài thảo luận'); };
+  // xem ảnh
+  var lbp = st.lb ? all.filter(function (p) { return p.id === st.lb.post; })[0] : null, lbi = lbp ? lbp.imgs[st.lb.i] : null;
+  v.lbOpen = !!lbi; v.lbName = lbi ? lbi.name : ''; v.lbLines = lbi ? lbi.lines.map(function (t) { return { t: t }; }) : [];
+  v.lbCap = lbp ? 'Ảnh ' + (st.lb.i + 1) + '/' + lbp.imgs.length + ' trong bài “' + lbp.title + '”' : '';
+  v.lbClose = function () { set({ lb: null }); };
+  v.lbKey = function (e) { if (e && e.key === 'Escape') set({ lb: null }); };
+  v.toast = st.toast || ''; v.toastOn = !!st.toast;
+  return v;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var s = {"role": "learner", "ch": "all", "q": "", "sort": "hot", "open": null, "menu": null, "mode": "ok", "dark": false, "incoming": true};
+    if (!s.posts) s.posts = fmClone(FM_POSTS);
+    this.state = { fm: s };
+  }
+  renderVals() {
+    return { fm: fmVals(this) };
+  }
+}
+</script>
+</body>
+</html>

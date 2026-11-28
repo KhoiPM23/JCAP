@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "datta-deshita",
+      "Fields": {
+        "Meaning": "Là, đã ở trạng thái được nêu trong quá khứ",
+        "Formation": "Danh từ hoặc gốc tính từ đuôi な ＋ だった／でした",
+        "Explanation": "Dùng だった hoặc でした để nói về trạng thái trong quá khứ với danh từ hoặc tính từ đuôi な. でした là dạng lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "datta-deshita:example:1": "Hôm qua là ngày nghỉ.",
+        "datta-deshita:example:2": "Bài kiểm tra tuần trước dễ."
+      },
+      "SourceHash": "4c6c8ef3be724884b39776b2057083c8cd182a2469f504718b2e6499fde55d8b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tari-tari",
+      "Fields": {
+        "Meaning": "Làm những việc như A và B",
+        "Formation": "Động từ A thể た ＋ り ＋ động từ B thể た ＋ り ＋ する",
+        "Explanation": "Liệt kê một số hoạt động tiêu biểu bằng 〜たり. Danh sách có thể chưa đầy đủ và không nhất thiết theo trình tự thời gian.",
+        "UsageNotes": "Thời và mức độ lịch sự thể hiện ở する cuối cụm."
+      },
+      "Examples": {
+        "tari-tari:example:1": "Cuối tuần tôi làm những việc như đọc sách và nghe nhạc.",
+        "tari-tari:example:2": "Tôi lúc khóc lúc cười trong phòng."
+      },
+      "SourceHash": "f79e59637c088f7f5d2b9f195184d93d2db5f155f36eef686fd6983e237abacf"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dareka-dokoka",
+      "Fields": {
+        "Meaning": "Ai đó, đâu đó. Không ai, không nơi nào",
+        "Formation": "誰／どこ／何 ＋ か\n誰も／どこも／何も ＋ vị ngữ phủ định",
+        "Explanation": "Thêm か để chỉ người, nơi hoặc vật chưa xác định. Với vị ngữ phủ định, 誰も nghĩa là không ai, どこも là không nơi nào và 何も là không có gì hoặc không làm gì.",
+        "UsageNotes": "Trợ từ chỉ địa điểm có thể đứng trước も, như どこにも行かない (không đi đâu cả)."
+      },
+      "Examples": {
+        "dareka-dokoka:example:1": "Có ai đó ngoài cửa.",
+        "dareka-dokoka:example:2": "Trong lớp không có ai."
+      },
+      "SourceHash": "0148c603ad3644dd30322953253517d38a3082198a6d6dfc0fce09e4c69d3a08"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "darou",
+      "Fields": {
+        "Meaning": "Có lẽ, chắc là, phải không",
+        "Formation": "Danh từ, gốc tính từ đuôi な hoặc mệnh đề thể thông thường ＋ だろう",
+        "Explanation": "だろう diễn tả phỏng đoán. Với ngữ điệu lên, nó cũng có thể dùng để tìm sự xác nhận.",
+        "UsageNotes": "Động từ có thể ở thể quá khứ trước だろう, như 帰っただろう. Dạng lịch sự tương ứng là でしょう."
+      },
+      "Examples": {
+        "darou:example:1": "Ngày mai có lẽ trời sẽ quang.",
+        "darou:example:2": "Chắc anh ấy đã về rồi."
+      },
+      "SourceHash": "1882fe0e2edb3ca55ea6612ccda2d1cfb415c52d37d8764787079b2761118477"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tte",
+      "Fields": {
+        "Meaning": "Rằng, nghe nói (cách dẫn lời thân mật)",
+        "Formation": "Nội dung được dẫn ＋ って\nNội dung được dẫn ＋ って ＋ động từ nói hoặc nghe",
+        "Explanation": "って có thể đánh dấu lời nói hoặc thông tin được dẫn, như trong 〜って聞いた. Ở cuối câu, って có thể cho biết người nói đang thuật lại điều nghe được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tte:example:1": "Nghe nói ngày mai trời mưa.",
+        "tte:example:2": "Tôi nghe nói cửa hàng kia bán rẻ."
+      },
+      "SourceHash": "8a2211ee5c0509f09b272c7b4af3deb0ee678e96ff47411bf9b28d72cd96233b"
+    }
+  ]
+}

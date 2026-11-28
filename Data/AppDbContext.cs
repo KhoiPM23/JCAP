@@ -34,6 +34,7 @@ namespace JCAP.Data
         public DbSet<LearningContentSource> LearningContentSources { get; set; } = null!;
         public DbSet<VocabularySource> VocabularySources { get; set; } = null!;
         public DbSet<GrammarSource> GrammarSources { get; set; } = null!;
+        public DbSet<LearningContentSeedState> LearningContentSeedStates { get; set; } = null!;
 
         // Shadowing related DbSets
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
@@ -76,6 +77,10 @@ namespace JCAP.Data
         public DbSet<FlashcardReviewLog> FlashcardReviewLogs { get; set; } = null!;
         public DbSet<LearnerDailyFlashcardQuota> LearnerDailyFlashcardQuotas { get; set; } = null!;
 
+        // Quizlet Self-Assessment Test (độc lập với SRS Flashcard)
+        public DbSet<FlashcardQuizAttempt> FlashcardQuizAttempts { get; set; } = null!;
+        public DbSet<FlashcardQuizAttemptItem> FlashcardQuizAttemptItems { get; set; } = null!;
+
         // Anonymous Feedback & Support Box (UC-09 & UC-59) DbSets
         public DbSet<FeedbackTicket> FeedbackTickets { get; set; } = null!;
         public DbSet<FeedbackMessage> FeedbackMessages { get; set; } = null!;
@@ -96,6 +101,9 @@ namespace JCAP.Data
 
             // Flashcard & Bookmark (FE-05)
             FlashcardModelConfiguration.Configure(modelBuilder);
+
+            // Quizlet Self-Assessment Test
+            FlashcardQuizModelConfiguration.Configure(modelBuilder);
 
             // Anonymous Feedback & Support Box (UC-09 & UC-59)
             FeedbackModelConfiguration.Configure(modelBuilder);

@@ -2,15 +2,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import { getDemoSetDetail } from './demoFlashcardData';
-import type { FlashcardSetDetail, FlashcardCardItem } from '../../types/flashcard';
+import { FlashcardStudyQuotaModal } from './FlashcardStudyQuotaModal';
+import type { FlashcardSetDetail, FlashcardCardItem, FlashcardQuota } from '../../types/flashcard';
 
 export const FlashcardSetDetailView: React.FC = () => {
   const { topicId, contentType } = useParams<{ topicId: string; contentType: string }>();
   const navigate = useNavigate();
 
   const [detail, setDetail] = useState<FlashcardSetDetail | null>(null);
+  const [quota, setQuota] = useState<FlashcardQuota | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [quotaModalOpen, setQuotaModalOpen] = useState<boolean>(false);
+  const [unlocking, setUnlocking] = useState<boolean>(false);
+  const [modalUnlockError, setModalUnlockError] = useState<string | null>(null);
+  const [modalUnlockSuccess, setModalUnlockSuccess] = useState<string | null>(null);
 
   // Filters & Search
   const [statusFilter, setStatusFilter] = useState<'All' | 'Due' | 'Learning' | 'New' | 'Bookmarked'>('All');
@@ -23,8 +29,16 @@ export const FlashcardSetDetailView: React.FC = () => {
   const currentContentType = contentType?.toLowerCase() === 'grammar' ? 'Grammar' : 'Vocabulary';
   const isGrammar = currentContentType === 'Grammar';
   const hasDue = (detail?.summary?.dueCards ?? 0) > 0;
-  const isCompletedToday = !hasDue && (detail?.summary?.learnedCards ?? 0) === (detail?.summary?.totalCards ?? 0) && (detail?.summary?.totalCards ?? 0) > 0;
-  const isPartiallyLearned = !hasDue && !isCompletedToday && (detail?.summary?.learnedCards ?? 0) > 0;
+  const hasNew = (detail?.summary?.newCards ?? 0) > 0;
+  const isCompletedToday = !hasDue && !hasNew && (detail?.summary?.totalCards ?? 0) > 0;
+  const isPartiallyLearned = hasNew && (detail?.summary?.learnedCards ?? 0) > 0;
+  const learningCardsCount = useMemo(() => {
+    if (detail && Array.isArray(detail.cards)) {
+      return detail.cards.filter((c) => c.srsState === 'Learning').length;
+    }
+    return Math.max(0, (detail?.summary?.learnedCards ?? 0) - (detail?.summary?.dueCards ?? 0));
+  }, [detail]);
+  const studyBaseUrl = `/flashcards/study/${isDemo ? 'demo' : currentTopicId}/${currentContentType.toLowerCase()}`;
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -38,17 +52,65 @@ export const FlashcardSetDetailView: React.FC = () => {
         return;
       }
 
-      const res = await flashcardService.getSetDetail(currentTopicId, currentContentType);
+      const [res, quotaRes] = await Promise.all([
+        flashcardService.getSetDetail(currentTopicId, currentContentType),
+        flashcardService.getDailyQuota(),
+      ]);
       if (res.success && res.data) {
         setDetail(res.data);
       } else {
         setErrorMessage(res.message || 'Không thể tải thông tin chi tiết bộ thẻ.');
       }
+      if (quotaRes.success && quotaRes.data) {
+        setQuota(quotaRes.data);
+      }
       setLoading(false);
     };
 
     loadDetail();
+
+    const handleProfileUpdated = (e: any) => {
+      if (typeof e.detail?.creditBalance === 'number') {
+        setQuota((prev) => (prev ? { ...prev, userCreditBalance: e.detail.creditBalance } : null));
+      }
+    };
+    window.addEventListener('jcap_profile_updated', handleProfileUpdated);
+    return () => {
+      window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
+    };
   }, [currentTopicId, currentContentType, isDemo]);
+
+  const handleUnlockExtraInModal = async () => {
+    setUnlocking(true);
+    setModalUnlockError(null);
+    setModalUnlockSuccess(null);
+
+    const res = await flashcardService.unlockExtraNewCards();
+    if (res.success && res.data) {
+      setQuota(res.data);
+      setModalUnlockSuccess(
+        res.message || `Đã mở thêm ${res.data.unlockBatchSize} thẻ mới (-${res.data.unlockCreditCost} Credits)!`
+      );
+    } else {
+      setModalUnlockError(res.message || 'Không thể mở thêm thẻ mới.');
+    }
+    setUnlocking(false);
+  };
+
+  const handleRequestNewCardsStudy = () => {
+    if (isDemo) {
+      navigate(studyBaseUrl);
+      return;
+    }
+    const totalNew = detail?.summary?.newCards ?? 0;
+    if (quota && (quota.remainingNewCardsToday <= 0 || totalNew > quota.remainingNewCardsToday)) {
+      setModalUnlockError(null);
+      setModalUnlockSuccess(null);
+      setQuotaModalOpen(true);
+      return;
+    }
+    navigate(`${studyBaseUrl}?studyMode=new`);
+  };
 
   // Audio Playback simulation or speech synthesis
   const handlePlayAudio = (text: string) => {
@@ -148,13 +210,13 @@ export const FlashcardSetDetailView: React.FC = () => {
   }, [filteredCards, currentPage, pageSize]);
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
+    <div className="jx-flash-library mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== BREADCRUMB ==================== */}
         <div>
           <Link
             to="/flashcards"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-ai hover:text-ai-hover transition-colors"
+            className="jx-flash-back inline-flex items-center gap-1.5 text-xs font-bold text-ai hover:text-ai-hover transition-colors"
           >
             <span>←</span>
             <span>Quay lại danh sách bộ thẻ</span>
@@ -225,7 +287,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                   </div>
                   <div className="bg-success-soft border border-success/30 rounded-xl p-2">
                     <div className="text-[10px] font-bold text-success uppercase">Đã nhớ</div>
-                    <div className="text-base font-black text-success">{detail.summary.learnedCards}</div>
+                    <div className="text-base font-black text-success">{learningCardsCount}</div>
                   </div>
                   <div className="bg-paper-200 border border-line rounded-xl p-2">
                     <div className="text-[10px] font-bold text-sumi-muted uppercase">Chưa học</div>
@@ -233,19 +295,44 @@ export const FlashcardSetDetailView: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={() =>
-                    navigate(`/flashcards/study/${isDemo ? 'demo' : currentTopicId}/${currentContentType.toLowerCase()}${isCompletedToday ? '?extraPractice=true' : ''}`)
-                  }
-                  className={`w-full py-3 px-4 rounded-xl text-on-ai font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer ${
-                    isGrammar
-                      ? 'bg-purple-600 hover:bg-purple-700'
-                      : 'bg-ai hover:bg-ai-hover'
-                  }`}
-                >
-                  <span>{isCompletedToday ? '↻' : '▶'}</span>
-                  <span>{hasDue ? 'Ôn tập ngay' : isCompletedToday ? 'Ôn thêm tự do' : isPartiallyLearned ? 'Tiếp tục ôn' : `Bắt đầu học bộ ${isGrammar ? 'ngữ pháp' : 'từ vựng'} này`}</span>
-                </button>
+                {hasDue && (
+                  <button
+                    onClick={() => navigate(`${studyBaseUrl}?studyMode=due`)}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                    title="Ôn lại các thẻ đã đến hạn trong chủ đề này (miễn phí, không tốn hạn mức thẻ mới)"
+                  >
+                    <span>🔥</span>
+                    <span>Ôn đến hạn ({detail.summary.dueCards} thẻ)</span>
+                  </button>
+                )}
+
+                {hasNew && (
+                  <button
+                    onClick={handleRequestNewCardsStudy}
+                    className={`w-full py-3 px-4 rounded-xl text-on-ai font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer ${
+                      isGrammar
+                        ? 'bg-purple-600 hover:bg-purple-700'
+                        : 'bg-ai hover:bg-ai-hover'
+                    }`}
+                  >
+                    <span>▶</span>
+                    <span>
+                      {isPartiallyLearned
+                        ? `Học tiếp (${detail.summary.newCards} thẻ mới)`
+                        : `Bắt đầu học bộ ${isGrammar ? 'ngữ pháp' : 'từ vựng'} này`}
+                    </span>
+                  </button>
+                )}
+
+                {isCompletedToday && (
+                  <button
+                    onClick={() => navigate(`${studyBaseUrl}?extraPractice=true`)}
+                    className="w-full py-3 px-4 rounded-xl bg-ai-soft hover:bg-ai-soft/80 text-ai border border-ai/30 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>↻</span>
+                    <span>Ôn thêm tự do</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -291,7 +378,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                       : 'bg-paper-100 text-success border border-success/30 hover:bg-success-soft'
                   }`}
                 >
-                  🟢 Đã nhớ ({detail.summary.learnedCards})
+                  🟢 Đã nhớ ({learningCardsCount})
                 </button>
                 <button
                   onClick={() => { setStatusFilter('New'); setCurrentPage(1); }}
@@ -320,6 +407,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                 <span className="absolute left-3 top-2 text-sumi-faint text-xs">🔍</span>
                 <input
                   type="text"
+                  aria-label="Tìm thẻ trong bộ"
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   placeholder={isGrammar ? 'Tìm mẫu câu, công thức, nghĩa...' : 'Tìm từ vựng, hiragana, nghĩa...'}
@@ -331,7 +419,7 @@ export const FlashcardSetDetailView: React.FC = () => {
             {/* ==================== CARD LIST TABLE ==================== */}
             <div className="bg-paper-50 rounded-2xl border border-line shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="jx-flash-card-list w-full text-left border-collapse" role="table" aria-label="Các thẻ trong bộ">
                   <thead>
                     <tr className="bg-paper-100 border-b border-line text-[11px] font-bold text-sumi-muted uppercase tracking-wider">
                       <th className="py-3 px-4 w-12 text-center">STT</th>
@@ -348,10 +436,10 @@ export const FlashcardSetDetailView: React.FC = () => {
                       <th className="py-3 px-4 w-24 text-right">THAO TÁC</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-line text-xs text-sumi">
+                  <tbody role="rowgroup" className="divide-y divide-line text-xs text-sumi">
                     {paginatedCards.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="py-12 text-center text-sumi-muted">
+                      <tr role="row">
+                        <td role="cell" colSpan={6} className="jx-flash-card-empty py-12 text-center text-sumi-muted">
                           Không có thẻ nào phù hợp với bộ lọc hiện tại.
                         </td>
                       </tr>
@@ -361,14 +449,14 @@ export const FlashcardSetDetailView: React.FC = () => {
                         const formattedIndex = globalIndex < 10 ? `0${globalIndex}` : globalIndex;
 
                         return (
-                          <tr key={card.itemId} className="hover:bg-paper-100/60 transition-colors">
+                          <tr key={card.itemId} role="row" className="jx-flash-card-row hover:bg-paper-100/60 transition-colors">
                             {/* STT */}
-                            <td className="py-4 px-4 text-center font-bold text-sumi-faint">
+                            <td role="cell" className="py-4 px-4 text-center font-bold text-sumi-faint">
                               {formattedIndex}
                             </td>
 
                             {/* Cột 1: Từ vựng / Mẫu câu */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {isGrammar ? (
                                 <span className="font-extrabold text-purple-600 dark:text-purple-400 text-sm">
                                   {card.frontText}
@@ -388,7 +476,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 2: Cách kết hợp / Từ loại */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {isGrammar ? (
                                 <span className="px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[11px] font-bold border border-purple-500/20 inline-block">
                                   {card.readingOrFormation || '—'}
@@ -401,7 +489,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 3: Ý nghĩa / Ví dụ */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {isGrammar ? (
                                 <div className="space-y-1">
                                   <div className="font-bold text-sumi">{card.meaning}</div>
@@ -424,7 +512,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 4: Trạng thái SRS */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {card.srsState === 'Due' ? (
                                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-warning-soft text-warning border border-warning/30">
                                   🔥 Đến hạn hôm nay
@@ -441,13 +529,14 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 5: Thao tác */}
-                            <td className="py-4 px-4 text-right">
+                            <td role="cell" className="py-4 px-4 text-right">
                               <div className="inline-flex items-center gap-2">
                                 {/* Phát âm */}
                                 <button
                                   onClick={() => handlePlayAudio(card.frontText)}
                                   className="w-7 h-7 rounded-lg bg-paper-100 hover:bg-paper-200 text-sumi flex items-center justify-center transition-colors text-xs border border-line cursor-pointer"
                                   title="Nghe phát âm"
+                                  aria-label={`Nghe phát âm ${card.frontText}`}
                                 >
                                   🔊
                                 </button>
@@ -460,6 +549,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                                       : 'bg-paper-100 hover:bg-paper-200 text-sumi-faint border border-line'
                                   }`}
                                   title={card.isBookmarked ? 'Bỏ lưu' : 'Đánh dấu lưu thẻ'}
+                                  aria-label={`${card.isBookmarked ? 'Bỏ lưu' : 'Đánh dấu lưu'} ${card.frontText}`}
                                 >
                                   🔖
                                 </button>
@@ -489,21 +579,39 @@ export const FlashcardSetDetailView: React.FC = () => {
                     >
                       ❮
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={`w-7 h-7 rounded-md font-bold transition-all cursor-pointer ${
-                          currentPage === p
-                            ? isGrammar
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-ai text-on-ai'
-                            : 'border border-line bg-paper-100 hover:bg-paper-200 text-sumi'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                      if (
+                        totalPages > 7 &&
+                        p !== 1 &&
+                        p !== totalPages &&
+                        Math.abs(p - currentPage) > 1
+                      ) {
+                        if (p === 2 || p === totalPages - 1) {
+                          return (
+                            <span key={`ellipsis-${p}`} className="px-1.5 text-sumi-faint text-xs select-none">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p)}
+                          className={`w-7 h-7 rounded-md font-bold transition-all cursor-pointer ${
+                            currentPage === p
+                              ? isGrammar
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-ai text-on-ai'
+                              : 'border border-line bg-paper-100 hover:bg-paper-200 text-sumi'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      );
+                    })}
                     <button
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
@@ -517,6 +625,27 @@ export const FlashcardSetDetailView: React.FC = () => {
             </div>
           </>
         )}
+
+      <FlashcardStudyQuotaModal
+        isOpen={quotaModalOpen}
+        setTitle={detail?.summary?.setTitle || ''}
+        totalNewCards={detail?.summary?.newCards || 0}
+        learnedCardsCount={detail?.summary?.learnedCards || 0}
+        quota={quota}
+        unlocking={unlocking}
+        unlockError={modalUnlockError}
+        unlockSuccess={modalUnlockSuccess}
+        onUnlockExtra={handleUnlockExtraInModal}
+        onContinue={() => {
+          setQuotaModalOpen(false);
+          navigate(`${studyBaseUrl}?studyMode=new`);
+        }}
+        onExtraPractice={() => {
+          setQuotaModalOpen(false);
+          navigate(`${studyBaseUrl}?extraPractice=true`);
+        }}
+        onClose={() => setQuotaModalOpen(false)}
+      />
     </div>
   );
 };

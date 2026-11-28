@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce21381e4f",
+      "Fields": {
+        "Meaning": "Gói, bọc",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "包む（つつむ）có nghĩa là gói, bọc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196915": "Anh/chị gói làm quà giúp tôi được không?",
+        "196916": "Xin gói làm quà giúp tôi."
+      },
+      "SourceHash": "f8d8682237bbb6cbf93b3a3e9dbe2b4fc7eca56c997160a1302aa0591213e570"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "776c4df05f",
+      "Fields": {
+        "Meaning": "Vợ, vợ mình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "妻（つま）có nghĩa là vợ, vợ mình.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "07b95e4464122e0636d15c4ed21822748b41ebf8e7df97d593a4cebbb79c1cf4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "342df55815",
+      "Fields": {
+        "Meaning": "Dự định, ý định",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "つもり（つもり）có nghĩa là dự định, ý định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152381": "Tôi định đi du học năm sau.",
+        "154765": "Tôi định về chậm nhất vào ngày hai mươi."
+      },
+      "SourceHash": "f02b9b6d9314712e299e4865bb9dabaa6f26d0e68c7873c86b0ed165047738b5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "15f9f72b7c",
+      "Fields": {
+        "Meaning": "Câu, đánh bắt bằng cần câu",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "釣る（つる）có nghĩa là câu, đánh bắt bằng cần câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156744": "Hôm qua tôi câu được một con cá lớn.",
+        "168269": "Tôi không câu được nhiều cá như đã nghĩ."
+      },
+      "SourceHash": "dc324873ed0f25133053040737f70910e9742f077983dff3568c57334eb6b6f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0319cd1801",
+      "Fields": {
+        "Meaning": "Dẫn theo, đưa theo",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "連れる（つれる）có nghĩa là dẫn theo, đưa theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137728": "Một người đàn ông dẫn theo con chó lớn bước vào.",
+        "202099": "Nhưng tôi phải đưa mẹ đi cùng."
+      },
+      "SourceHash": "699ce71393f1a531807a45c6b54395366c9ec78c15902c90e3d6de423834eac6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa30940947",
+      "Fields": {
+        "Meaning": "Lịch sự, cẩn thận, chỉn chu",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "丁寧（ていねい）có nghĩa là lịch sự, cẩn thận, chỉn chu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76263": "Khi viết chữ Hán, hãy chú ý nét chấm và nét phẩy, viết nhanh và cẩn thận nhất có thể.",
+        "89464": "Cô ấy cúi chào tôi một cách lịch sự."
+      },
+      "SourceHash": "985757ef5b284ea207180cf45ffda1a9155e33d6a66cfae4aa731285b6843790"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ccdf4613d1",
+      "Fields": {
+        "Meaning": "Văn bản, giáo trình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テキスト（テキスト）có nghĩa là văn bản, giáo trình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123026": "Đừng quên sách toán lần nào nữa.",
+        "223512": "Giáo trình này được soạn cho người mới bắt đầu."
+      },
+      "SourceHash": "b3b854d76cca928d8a9a9830740cc2eefc77318a6e67eaea175d1b0c9ac5f88e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fa043680e3",
+      "Fields": {
+        "Meaning": "Phù hợp, thích hợp",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "適当（てきとう）có nghĩa là phù hợp, thích hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179231": "Nên chọn tất có cỡ vừa.",
+        "236792": "Hãy đọc bất cứ cuốn sách nào bạn thấy phù hợp."
+      },
+      "SourceHash": "b737c3a778a584bac65c2a73273054aeed9410d9bc84c3f07cd963f9a9f1ece4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bbf07b44f0",
+      "Fields": {
+        "Meaning": "Cố gắng hết mức có thể",
+        "PartOfSpeech": "Cụm từ, phó từ, bổ nghĩa với の",
+        "Explanation": "できるだけ（できるだけ）có nghĩa là cố gắng hết mức có thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147685": "Xin hãy nói chậm nhất có thể.",
+        "202294": "Hãy đọc càng nhiều sách càng tốt."
+      },
+      "SourceHash": "dfb487fa4159934ce8499172f4f625e75f81a2e9afcb2a88305d4db978b0857b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b4206ea6cb",
+      "Fields": {
+        "Meaning": "Giúp đỡ, phụ giúp",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "手伝う（てつだう）có nghĩa là giúp đỡ, phụ giúp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148504": "Cảm ơn bạn đã giúp tôi.",
+        "228856": "Tôi luôn sẵn lòng giúp anh/chị."
+      },
+      "SourceHash": "077a6724ab8437d7ff8ec261899bad0214842856ba6de63b5fc7db6e5eb38ae7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "02dea2f4f6",
+      "Fields": {
+        "Meaning": "Quần vợt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テニス（テニス）có nghĩa là quần vợt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84831": "Bố tôi và tôi chơi quần vợt vào Chủ nhật.",
+        "235690": "Vì tôi đã chơi quần vợt cả ngày mà."
+      },
+      "SourceHash": "c388aa421ac25231276bd1ca4d78a8f2bd5fc96b78f99834562b4bbe75eb28d6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be7c090b8e",
+      "Fields": {
+        "Meaning": "Găng tay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手袋（てぶくろ）có nghĩa là găng tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196468": "Paul đeo găng tay trước khi ra ngoài.",
+        "221299": "Đôi găng tay này không đủ cả hai chiếc."
+      },
+      "SourceHash": "dab1a6f67b1e39255685987aacb1cb7c6ba185f5045a5bd4917a97f22c2994da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a9687d55e3",
+      "Fields": {
+        "Meaning": "Chùa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "寺（てら）có nghĩa là chùa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191178": "Trước đây có một ngôi chùa ngay tại đây.",
+        "223936": "Ngôi chùa này được xây khi nào?"
+      },
+      "SourceHash": "b9feb9b6dfa9051463c306468801a29b8dfcd05d98ad9d3a3ef7b4d4ca66790f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "67fb8c065d",
+      "Fields": {
+        "Meaning": "Điểm, chấm, khía cạnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "点（てん）có nghĩa là điểm, chấm, khía cạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199403": "Có thể thấy cả những chấm nhỏ nhất.",
+        "214406": "Tôi đồng ý với bạn về mọi mặt."
+      },
+      "SourceHash": "29fe4a71ba2dbc544816e925eae1b70f02d4f29a8d700dcc1c8a76f0856fdc43"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "29b43fab16",
+      "Fields": {
+        "Meaning": "Nhân viên cửa hàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "店員（てんいん）có nghĩa là nhân viên cửa hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124975": "Nhân viên dán nhãn lên kiện hành lý đó.",
+        "226066": "Nhân viên cười gượng rồi trả lời."
+      },
+      "SourceHash": "dac51532cee3462ad26b5874c9f0fd60aa54b8fcdc60eb82627796c42c5c0b8a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5fd0c77ef5",
+      "Fields": {
+        "Meaning": "Dự báo thời tiết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "天気予報（てんきよほう）có nghĩa là dự báo thời tiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125078": "Dự báo thời tiết hiếm khi đúng.",
+        "125101": "Dự báo thời tiết đúng rồi đấy."
+      },
+      "SourceHash": "4bc452c5f6ee838127c78f35a2bfeae6063744f0a08245ef0fe7e9528361372d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db2fc03fcf",
+      "Fields": {
+        "Meaning": "Đèn điện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "電灯（でんとう）có nghĩa là đèn điện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124765": "Đèn điện được cho là do Edison phát minh.",
+        "192401": "Lucy bật công tắc đèn."
+      },
+      "SourceHash": "d8cf582ea1a933c2941e6af32b0b21dae2addf9650c94d00798dbda9ce8d4611"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "84e17fcbc2",
+      "Fields": {
+        "Meaning": "Điện tín",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "電報（でんぽう）có nghĩa là điện tín.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126612": "Đến nơi tôi sẽ báo bằng điện tín.",
+        "162168": "Tôi nhận được điện tín từ cô ấy."
+      },
+      "SourceHash": "e57ef026e2161d3bdf676ca4ffa9b5d170903820f60c51a423ed9a8fb8441786"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "80eba2fabb",
+      "Fields": {
+        "Meaning": "Triển lãm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "展覧会（てんらんかい）có nghĩa là triển lãm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157575": "Tôi định sớm đi xem triển lãm đó.",
+        "165110": "Chúng tôi tổ chức triển lãm mỗi năm."
+      },
+      "SourceHash": "f4c7bf880383bf1098b74675753ccf35d7f06ca4b9de69bda3599faa7e0fba22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "53162e310d",
+      "Fields": {
+        "Meaning": "Đô, đơn vị hành chính của Tokyo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "都（と）có nghĩa là đô, đơn vị hành chính của Tokyo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124528": "Tôi đến trụ sở chính quyền đô Tokyo rồi lại xếp hàng chờ ở đó.",
+        "236216": "Nhân viên nói thêm: “Anh/chị có thể lấy tại trụ sở chính quyền đô Tokyo.”"
+      },
+      "SourceHash": "ad91d715fef2693a5c90fd04c94cf670a63754ee429e011d45157fe821a1bc50"
+    }
+  ]
+}

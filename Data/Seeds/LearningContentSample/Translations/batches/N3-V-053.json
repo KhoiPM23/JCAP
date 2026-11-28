@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d19e1e7cb4",
+      "Fields": {
+        "Meaning": "Đỉnh",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "頂上（ちょうじょう）có nghĩa là đỉnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125848": "Bình minh nhìn từ đỉnh núi thật đẹp.",
+        "151744": "Cuối cùng chúng tôi cũng lên đến đỉnh."
+      },
+      "SourceHash": "2b9440608c6a0923034ce8fea7269a1ac9da7561a617b8363af56852dd3f3fa1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3ce84453e7",
+      "Fields": {
+        "Meaning": "Cho tôi, xin nhận",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "ちょうだい（ちょうだい）có nghĩa là cho tôi, xin nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75697": "Chúng tôi dự định tiếp nhận ý kiến của người dân.",
+        "223314": "Cho mình bông hồng này nhé."
+      },
+      "SourceHash": "394565e267f9c09f451400274d11788f4c4270b02064dd9d8739fea39d53840c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e1e017ee0",
+      "Fields": {
+        "Meaning": "Tiết kiệm, tiền tiết kiệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "貯金（ちょきん）có nghĩa là tiết kiệm, tiền tiết kiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93098": "Cô ấy tiết kiệm được nhiều tiền.",
+        "99839": "Anh ấy để dành mười đô la mỗi tuần."
+      },
+      "SourceHash": "c0bbfca123bdeebcc88dace61e8710bf62d240e84b820758230ef183d827d8ce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d6e26a0b9f",
+      "Fields": {
+        "Meaning": "Trực tiếp",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ, bổ nghĩa với の, phó từ",
+        "Explanation": "直接（ちょくせつ）có nghĩa là trực tiếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94788": "Sao bạn không nói trực tiếp với cô ấy?",
+        "154536": "Tôi nhận thông tin đó trực tiếp từ anh ấy."
+      },
+      "SourceHash": "906d604dca7da29bb943804a46f3c9ce28ce535ec44c35fede1a8ac30afdee3d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5441f9df9d",
+      "Fields": {
+        "Meaning": "Tác giả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "著者（ちょしゃ）có nghĩa là tác giả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159950": "Tôi biết tên tác giả đó.",
+        "219748": "Ai là tác giả cuốn sách này?"
+      },
+      "SourceHash": "d0b5705e059f8b10557bb462edd368412b6a513426ec32d9dbdd5acb6883d879"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6e524d6fdc",
+      "Fields": {
+        "Meaning": "Bụi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "塵（ちり）có nghĩa là bụi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143903": "Bụi tích lâu ngày cũng thành núi.",
+        "235683": "Một năm trôi qua, thi thể ông ấy hóa thành bụi."
+      },
+      "SourceHash": "e11635ad6ca6ca48a01c333ae57bf87e1969c172e7e38fbda7df1234cababcc0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e1b2d5c37",
+      "Fields": {
+        "Meaning": "Cuối cùng, rốt cuộc",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "遂に（ついに）có nghĩa là cuối cùng, rốt cuộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111891": "Cuối cùng ông ấy từ chức hiệu trưởng trường đại học.",
+        "111909": "Cuối cùng anh ấy tìm ra cách làm."
+      },
+      "SourceHash": "092686b7814c134d7f1acaf888a1ce97238c8b4a9a1fd737ed0d9fc9dc5f056d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a1d4ed495c",
+      "Fields": {
+        "Meaning": "Đi qua, thông qua",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "通過（つうか）có nghĩa là đi qua, thông qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79020": "Dự thảo ngân sách đã được Thượng viện thông qua.",
+        "125585": "Cẩn thận xe chạy qua."
+      },
+      "SourceHash": "e51b040d475055e0f72ab0d35f31f79d00c2933905cbab4d3c12fa0b4981e606"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6082d893b1",
+      "Fields": {
+        "Meaning": "Đi học, đi đến trường",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "通学（つうがく）có nghĩa là đi học, đi đến trường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161397": "Tôi luôn đi học bằng xe buýt.",
+        "203957": "Phần lớn học sinh đi bộ đến trường."
+      },
+      "SourceHash": "84edbca52d5f5f2598f28b068fb94590b6ed95b116b2ce26d657000496baa4a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "048a8dade7",
+      "Fields": {
+        "Meaning": "Lưu thông, qua lại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "通行（つうこう）có nghĩa là lưu thông, qua lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224289": "Xe lớn bị cấm lưu thông ở đây.",
+        "230246": "Ở Mỹ, xe chạy bên phải đường."
+      },
+      "SourceHash": "c12b755c54b762b42d3e15c4a95920bcfb2fea4ce6ddbb920872717b1979fe0e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "855d156059",
+      "Fields": {
+        "Meaning": "Thông, kết nối, am hiểu",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "通じる（つうじる）có nghĩa là thông, kết nối, am hiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87767": "Vừa nối máy được, cô ấy đã bắt đầu nói.",
+        "108949": "Anh ấy am hiểu tình hình nước ngoài."
+      },
+      "SourceHash": "4d76a7ab63929294a639bbb387547983b9689f3e3258badbac71c24eeff79cbe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f144cdb49c",
+      "Fields": {
+        "Meaning": "Liên lạc, truyền tin",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "通信（つうしん）có nghĩa là liên lạc, truyền tin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "115376": "Anh ấy gửi tin qua vô tuyến.",
+        "137801": "Bão làm gián đoạn liên lạc với đất liền."
+      },
+      "SourceHash": "5c32152e829bb9533aae808e7167dbfb403bc9a948af4bf01607e8d3e689752b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2ddd05a675",
+      "Fields": {
+        "Meaning": "Bám vào, bị bắt",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "捕まる（つかまる）có nghĩa là bám vào, bị bắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113351": "Anh ấy bị bắt vì chạy quá tốc độ.",
+        "192278": "Hãy bám chắc vào dây."
+      },
+      "SourceHash": "dc4cfce087c82614e9b0eabdde21a98170e0116d30833861c4b95fcc282e4639"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "331fc42604",
+      "Fields": {
+        "Meaning": "Nắm, chộp, nắm bắt",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "掴む（つかむ）có nghĩa là nắm, chộp, nắm bắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109858": "Anh ấy nắm được một sợi dây nên thoát nạn.",
+        "216017": "Jim chộp lấy tay Julie."
+      },
+      "SourceHash": "6bdb076c5579d27a067dedfe7a8a75b5282bff8605faf8d1c4c2f28edbdaa68c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e6e567643f",
+      "Fields": {
+        "Meaning": "Sự mệt mỏi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "疲れ（つかれ）có nghĩa là sự mệt mỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93344": "Cô ấy cảm thấy hơi mệt.",
+        "162127": "Tôi mệt quá, không thể leo nổi."
+      },
+      "SourceHash": "602a5841f81cddae3f5c95a70e0ba314c327ed721b2a8707c6be7986451c8bfc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7044f13335",
+      "Fields": {
+        "Meaning": "Giao thiệp, mối quan hệ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "付き合い（つきあい）có nghĩa là giao thiệp, mối quan hệ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102088": "Ông ấy quen biết mọi người trong thị trấn.",
+        "102246": "Anh ấy quen vị thống đốc nhiều năm rồi."
+      },
+      "SourceHash": "0bc55b20757d2e93a55556d0975b75f027f2da1187ffefb4bc597089d3dd9106"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9edfc06f0c",
+      "Fields": {
+        "Meaning": "Lần lượt, liên tiếp",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と, danh từ",
+        "Explanation": "次々（つぎつぎ）có nghĩa là lần lượt, liên tiếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96933": "Họ lần lượt lên đường.",
+        "146981": "Những túp lều lần lượt bị gió quật đổ."
+      },
+      "SourceHash": "e189209d3dd0e580adeabaecd5c284966a213e7c596b4f9e70b4decfa546b197"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d5a89e32c4",
+      "Fields": {
+        "Meaning": "Đảm nhận, bắt đầu lên đường",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "就く（つく）có nghĩa là đảm nhận, bắt đầu lên đường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79364": "Nhờ bạn giúp đỡ, tôi kiếm được việc.",
+        "166021": "Chúng tôi lên đường về nhà."
+      },
+      "SourceHash": "c7b9c1d12c4f1d61b2532ed663b20387c5c2f229ffce7e5077c940979d14c1f8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af699ddbb2",
+      "Fields": {
+        "Meaning": "Gắn, đặt, ghi",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "付ける（つける）có nghĩa là gắn, đặt, ghi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88314": "Trước kia cô ấy viết nhật ký, giờ thì không.",
+        "178838": "Cậu định giá chiếc xe này cao quá."
+      },
+      "SourceHash": "e2f94fcab35caef2cf8685ff3d4f1b19ca85865083dc56eb8857c9bab185173a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d3ff79d95",
+      "Fields": {
+        "Meaning": "Đất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "土（つち）có nghĩa là đất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148478": "Hãy phủ một ít đất lên hạt giống.",
+        "518854": "Anh ấy tưới nước lên đất."
+      },
+      "SourceHash": "c4768026e71abc71b2f6e8c75da0f35ca38240fc1c0957234166e7545b8f9756"
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f77054caf",
+      "Fields": {
+        "Meaning": "Vòng, vành, nhóm gắn kết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "輪（わ）có nghĩa là vòng, vành, nhóm gắn kết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185955": "Chúng tôi lớn lên trong vòng tay gia đình.",
+        "226723": "Bố có thể thổi nhiều vòng khói thuốc."
+      },
+      "SourceHash": "abb0c7d2cd48f9824c3b325dfd502d48e059ab6f73832ab6289e739d27993542"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "06d663e37a",
+      "Fields": {
+        "Meaning": "Rượu vang",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ワイン（ワイン）có nghĩa là rượu vang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92957": "Cô ấy rót đầy ly rượu vang.",
+        "231361": "Sao bạn không uống loại rượu vang ngon đó?"
+      },
+      "SourceHash": "b47e1cf92ec1372961eefd266171fae661938fc5b2e47243897d397683d9e304"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1861d938a",
+      "Fields": {
+        "Meaning": "Ích kỷ, tùy ý, đỏng đảnh",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "わがまま（わがまま）có nghĩa là ích kỷ, tùy ý, đỏng đảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90316": "Cô ấy hoàn toàn không ích kỷ.",
+        "140158": "Đừng để con trai muốn làm gì thì làm."
+      },
+      "SourceHash": "34d0625016244a37d8767e7488120504cd0b45317993347bc7ff8ce9ce57c526"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "31f9300fb0",
+      "Fields": {
+        "Meaning": "Chia tay, ly biệt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "別れ（わかれ）có nghĩa là chia tay, ly biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157704": "Tôi nói lời từ biệt với khách.",
+        "185457": "Gặp gỡ là khởi đầu của chia ly."
+      },
+      "SourceHash": "f5c21a50fa93a48b3b39b6038f0d688094e0043652d94a2ec2fdf4e2184c4006"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "037c2ecb86",
+      "Fields": {
+        "Meaning": "Bên cạnh, dưới cánh tay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "脇（わき）có nghĩa là bên cạnh, dưới cánh tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87543": "Cô ấy kẹp một cuốn sách trắng dưới cánh tay.",
+        "120727": "Tôi thấy anh ấy kẹp cặp tài liệu dưới cánh tay đi tới."
+      },
+      "SourceHash": "d667c90000095ec337dca16ae0fbbb24158c31d08055f52bc465b41d663b87e7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b8be0151e",
+      "Fields": {
+        "Meaning": "Chia, tách, phân biệt",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "分ける（わける）có nghĩa là chia, tách, phân biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82995": "Mẹ chia tiền cho các con.",
+        "176861": "Bạn không phân biệt được mơ và thực sao?"
+      },
+      "SourceHash": "67e9ae096fabde6a3ebeab4f505b810f23d9300414aee32812e3139a8165bf8b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b778777901",
+      "Fields": {
+        "Meaning": "Cố ý",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "わざと（わざと）có nghĩa là cố ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105595": "Có vẻ anh ấy cố tình để tôi chờ.",
+        "120658": "Tôi không nghĩ anh ấy cố tình làm thế."
+      },
+      "SourceHash": "9e8598a21f42db9d6f7f0894c109b60a5a7f734044656b47b1e00310afbaac6e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b87cfb16ef",
+      "Fields": {
+        "Meaning": "Chỉ, rất ít",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "僅か（わずか）có nghĩa là chỉ, rất ít.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158568": "Tôi chỉ có 1.000 yên.",
+        "187165": "Chỉ còn một tuần nữa là đến kỳ nghỉ hè."
+      },
+      "SourceHash": "2c0c13801f27931e2122a04aa32ba84462851fd51bfb1ce777eaf38f63446efd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7eeb8eff1",
+      "Fields": {
+        "Meaning": "Chủ đề, đề tài được bàn tán",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "話題（わだい）có nghĩa là chủ đề, đề tài được bàn tán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92490": "Cô ấy trở thành người được bàn tán ở nước đó.",
+        "206007": "Chủ đề đó đáng để thảo luận."
+      },
+      "SourceHash": "66a9e0af582688d66ee2805d49583817444b8fba358f596ada1b520bcb24b0d4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40312166c1",
+      "Fields": {
+        "Meaning": "Tiếng cười, nụ cười",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "笑い（わらい）có nghĩa là tiếng cười, nụ cười.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88658": "Cô ấy không nhịn được cười.",
+        "226066": "Nhân viên cười gượng rồi trả lời."
+      },
+      "SourceHash": "e0ef3ba5fe5976ae0b18e2521e2fd3da36fe255ba877c4568e7c8cd83bc2faf6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "733619e0ef",
+      "Fields": {
+        "Meaning": "Chia, đập vỡ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "割る（わる）có nghĩa là chia, đập vỡ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140413": "Hãy cho tôi xem hòn đá đã làm vỡ kính cửa sổ.",
+        "195710": "Michael làm vỡ đĩa mất rồi."
+      },
+      "SourceHash": "0f9da326d424c8d69f2640a35d4ea7231793bee7ca3d7ec74e05976c13fa5ec8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b440e7ed66",
+      "Fields": {
+        "Meaning": "Lời nói xấu, lời xúc phạm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "悪口（わるくち）có nghĩa là lời nói xấu, lời xúc phạm.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "bd849f8b3b636d126f16958de3044ea5c4d4f0060227211ee42fb3a60abee240"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fc07b1856",
+      "Fields": {
+        "Meaning": "Chúng tôi, chúng ta",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "我々（われわれ）có nghĩa là chúng tôi, chúng ta.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191588": "Chúng ta nên giữ lời hứa.",
+        "216245": "Nhưng chúng tôi vẫn tiếp tục mà không có anh ấy."
+      },
+      "SourceHash": "44458bae1ad82f55f4da107ee4059b3abfe96b41af748028e1d01e46031e8e9f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef9bb7868b",
+      "Fields": {
+        "Meaning": "Vịnh",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "湾（わん）có nghĩa là vịnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141363": "Con sông chảy từ núi xuống rồi đổ vào vịnh.",
+        "167070": "Từ nhà chúng tôi có thể nhìn xuống vịnh."
+      },
+      "SourceHash": "69b195b28b0b83f2b784b412d0503561d1267fde2c05ee01e3923d5b5b3e285d"
+    }
+  ]
+}

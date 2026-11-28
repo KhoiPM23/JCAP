@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sore-demo",
+      "Fields": {
+        "Meaning": "Dù vậy, thế mà vẫn",
+        "Formation": "Câu trước ＋ それでも ＋ câu sau",
+        "Explanation": "Nêu kết quả vẫn xảy ra dù hoàn cảnh trước đó khiến người nghe có thể kỳ vọng điều ngược lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sore-demo:example:1": "Anh ấy thất bại nhiều lần. Dù vậy anh ấy vẫn không bỏ cuộc.",
+        "sore-demo:example:2": "Quán này hơi đắt. Dù vậy lúc nào cũng đông khách."
+      },
+      "SourceHash": "7b1c6d30f76a769851635950711fc1c40dc530de4dac7105c897684ece04c3f8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sore-ni",
+      "Fields": {
+        "Meaning": "Hơn nữa, thêm vào đó",
+        "Formation": "Câu trước ＋ それに ＋ câu bổ sung",
+        "Explanation": "Thêm một đặc điểm hoặc lý do cùng hướng với ý trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sore-ni:example:1": "Phòng này rộng. Hơn nữa, nó rất gần ga.",
+        "sore-ni:example:2": "Hôm nay tôi mệt rồi. Hơn nữa, mai còn phải dậy sớm."
+      },
+      "SourceHash": "a475cda0a47fd43e4fe122d58ccd328c17e5732f9514801189ca1b827e536352"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sonna-ni",
+      "Fields": {
+        "Meaning": "Đến mức ấy, đến thế",
+        "Formation": "そんなに ＋ vị ngữ",
+        "Explanation": "Chỉ mức độ được nhắc đến hoặc suy ra từ tình huống. Trong câu phủ định thường có nghĩa không đến mức đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sonna-ni:example:1": "Bạn không cần vội đến thế đâu.",
+        "sonna-ni:example:2": "Câu này không khó đến thế."
+      },
+      "SourceHash": "5f0c42ba4511cb1fde6b56bcbf4b942cdbcf37f1549e9336d785a01119fe11f3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "daga-desuga",
+      "Fields": {
+        "Meaning": "Nhưng, tuy nhiên",
+        "Formation": "Câu trước ＋ だが／ですが ＋ câu sau",
+        "Explanation": "Nối hai ý tương phản. ですが lịch sự hơn だが.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "daga-desuga:example:1": "Tôi gọi cho anh ấy nhiều lần nhưng không được hồi đáp.",
+        "daga-desuga:example:2": "Tôi đã đặt chỗ, nhưng không còn chỗ trống."
+      },
+      "SourceHash": "322914c31996ebffaaee4e2123dde2b2637fa0cadefb77e88b5b3ba4806db071"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tagaru",
+      "Fields": {
+        "Meaning": "Tỏ ra muốn làm gì",
+        "Formation": "Gốc ます ＋ たがる／たがっている",
+        "Explanation": "Dùng khi nhận xét mong muốn của người khác qua hành vi. たがっている thường nói mong muốn đang thể hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tagaru:example:1": "Em trai tôi lúc nào cũng muốn ra ngoài chơi.",
+        "tagaru:example:2": "Đứa trẻ đang muốn ăn bánh kẹo."
+      },
+      "SourceHash": "7095ce5b8b1c9141aa0e4ea1c493a1f2e60ab08c5733dcbda3ae33ee7f778421"
+    }
+  ]
+}

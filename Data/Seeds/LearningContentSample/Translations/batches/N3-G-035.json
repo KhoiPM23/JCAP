@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-kawatte",
+      "Fields": {
+        "Meaning": "Thay cho, thay mặt",
+        "Formation": "Danh từ ＋ に代わって／に代わり",
+        "Explanation": "Chỉ người đại diện hoặc thứ được dùng thay cho thứ trước đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-kawatte:example:1": "Tôi xin gửi lời chào thay mặt giám đốc.",
+        "ni-kawatte:example:2": "Gần đây ngày càng nhiều người dùng tiền điện tử thay cho tiền mặt."
+      },
+      "SourceHash": "daaccb0c02176b032d39b1e9d1a4454c254b25662d4f2f618393f7dcef2184fa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-kan-shite",
+      "Fields": {
+        "Meaning": "Về, liên quan đến",
+        "Formation": "Danh từ ＋ に関して／に関する ＋ danh từ",
+        "Explanation": "に関して nêu chủ đề, còn に関する bổ nghĩa cho danh từ theo sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-kan-shite:example:1": "Cảnh sát đang điều tra về vụ việc đó.",
+        "ni-kan-shite:example:2": "Tôi đang đọc một cuốn sách về vấn đề môi trường."
+      },
+      "SourceHash": "ff581adde68fd46e57dd95d34cb069c2f07b8a784693d9a8d0d869db25a44760"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-kurabete",
+      "Fields": {
+        "Meaning": "So với",
+        "Formation": "Mốc so sánh ＋ に比べて",
+        "Explanation": "Đặt một đối tượng làm mốc rồi nêu chênh lệch hoặc đặc điểm của đối tượng đang xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-kurabete:example:1": "Năm nay mưa nhiều hơn năm ngoái.",
+        "ni-kurabete:example:2": "So với thành phố, giá cả ở nông thôn thấp hơn."
+      },
+      "SourceHash": "b79533ebcc11a5b152fa35313f24ce4abcbe1c69438e8d89e9c8b87e20e683b8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-shitagatte",
+      "Fields": {
+        "Meaning": "Theo, càng… thì càng",
+        "Formation": "Danh từ ＋ にしたがって／động từ thể từ điển ＋ にしたがって",
+        "Explanation": "Có thể nói làm theo chỉ dẫn hoặc hai thay đổi diễn ra song song.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-shitagatte:example:1": "Càng lên cao trên núi, không khí càng loãng.",
+        "ni-shitagatte:example:2": "Hãy sơ tán theo hướng dẫn của nhân viên."
+      },
+      "SourceHash": "066c8546bc9b91009d7463f97a469f06dabe3fc7c86015f6a6770c6dd4ca2370"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-shite-wa",
+      "Fields": {
+        "Meaning": "Xét là… thì, so với mức thường thấy",
+        "Formation": "Mệnh đề thể thường hoặc danh từ ＋ にしては",
+        "Explanation": "Đưa ra nhận xét khác với điều thường mong đợi ở người hoặc hoàn cảnh đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-shite-wa:example:1": "Đối với người mới học, anh ấy chơi piano khá giỏi.",
+        "ni-shite-wa:example:2": "Đang mùa đông mà hôm nay ấm nhỉ."
+      },
+      "SourceHash": "78589164b02ba7554c55a7d650a6b7efb40b03ad9fb9eb32b84bfe1ab1f7ea56"
+    }
+  ]
+}

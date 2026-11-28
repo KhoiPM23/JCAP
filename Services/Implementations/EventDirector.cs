@@ -72,7 +72,8 @@ public class EventDirector : IEventDirector
         int totalEventsTriggeredSoFar,
         int remainingMissionsCount,
         string? compatibleEventsJson,
-        string? lastUserUtterance = null)
+        string? lastUserUtterance = null,
+        string? scenarioContext = null)
     {
         var level = (jlptLevel ?? "N5").Trim().ToUpperInvariant();
 
@@ -119,13 +120,24 @@ public class EventDirector : IEventDirector
 
         if (candidateCodes.Count == 0)
         {
-            // Default pool theo trình độ nếu scenario không cấu hình riêng
-            candidateCodes = level switch
+            if (!string.IsNullOrWhiteSpace(scenarioContext))
             {
-                "N5" => new List<string> { "EV_SOLD_OUT", "EV_MISHEARD" },
-                "N4" => new List<string> { "EV_SOLD_OUT", "EV_MISHEARD", "EV_DELAY", "EV_SPEAK_FAST" },
-                _ => new List<string> { "EV_SOLD_OUT", "EV_MISHEARD", "EV_DELAY", "EV_SPEAK_FAST", "EV_INDIRECT_REFUSAL" }
-            };
+                candidateCodes = ResolveContextCompatibleEvents(scenarioContext, level);
+                if (candidateCodes.Count == 0)
+                {
+                    return new EventDirectorDecision { ShouldTriggerEvent = false };
+                }
+            }
+            else
+            {
+                // Default pool theo trình độ khi không truyền scenarioContext (giữ tương thích unit test độc lập)
+                candidateCodes = level switch
+                {
+                    "N5" => new List<string> { "EV_SOLD_OUT", "EV_MISHEARD" },
+                    "N4" => new List<string> { "EV_SOLD_OUT", "EV_MISHEARD", "EV_DELAY", "EV_SPEAK_FAST" },
+                    _ => new List<string> { "EV_SOLD_OUT", "EV_MISHEARD", "EV_DELAY", "EV_SPEAK_FAST", "EV_INDIRECT_REFUSAL" }
+                };
+            }
         }
 
         if (candidateCodes.Count == 0)
@@ -149,5 +161,48 @@ public class EventDirector : IEventDirector
             EventCode = triggeredDef.EventCode,
             DirectiveForAiPrompt = directive
         };
+    }
+
+    private static List<string> ResolveContextCompatibleEvents(string scenarioContext, string level)
+    {
+        var ctx = scenarioContext.ToLowerInvariant();
+        bool isStation = ctx.Contains("ga") || ctx.Contains("tàu") || ctx.Contains("station") || ctx.Contains("shinkansen") || ctx.Contains("駅") || ctx.Contains("切符");
+        bool isCafe = ctx.Contains("cafe") || ctx.Contains("cà phê") || ctx.Contains("カフェ") || ctx.Contains("đồ uống");
+        bool isRamenOrDining = ctx.Contains("ramen") || ctx.Contains("mì") || ctx.Contains("quán ăn") || ctx.Contains("nhà hàng") || ctx.Contains("ラーメン");
+        bool isKonbini = ctx.Contains("tiện lợi") || ctx.Contains("konbini") || ctx.Contains("siêu thị") || ctx.Contains("コンビニ");
+        bool isWorkOrPeer = ctx.Contains("làm thêm") || ctx.Contains("baito") || ctx.Contains("công ty") || ctx.Contains("đồng nghiệp") || ctx.Contains("bạn bè");
+        bool isInterviewOrMedicalOrElderly = ctx.Contains("phỏng vấn") || ctx.Contains("面接") || ctx.Contains("bệnh viện") || ctx.Contains("khám") || ctx.Contains("cụ già") || ctx.Contains("người già");
+
+        if (isInterviewOrMedicalOrElderly)
+        {
+            return new List<string>();
+        }
+
+        var pool = new List<string>();
+        if (isStation)
+        {
+            pool.Add("EV_DELAY");
+        }
+        else if (isCafe)
+        {
+            pool.Add("EV_SOLD_OUT");
+            pool.Add("EV_MISHEARD");
+        }
+        else if (isRamenOrDining || isKonbini)
+        {
+            pool.Add("EV_SOLD_OUT");
+        }
+
+        if (isWorkOrPeer && level is not "N5")
+        {
+            pool.Add("EV_INDIRECT_REFUSAL");
+        }
+
+        if ((isRamenOrDining || isCafe || isKonbini || isStation) && level is "N4" or "N3")
+        {
+            pool.Add("EV_SPEAK_FAST");
+        }
+
+        return pool;
     }
 }

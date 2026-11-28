@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { Icon } from '../../components/jcap/Icon';
 import { flashcardService } from '../../services/flashcardService';
+import { FlashcardStudyQuotaModal } from './FlashcardStudyQuotaModal';
 import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType, BookmarkItem } from '../../types/flashcard';
 
 export const FlashcardSetsView: React.FC = () => {
@@ -55,6 +56,15 @@ export const FlashcardSetsView: React.FC = () => {
   const [jlptFilter, setJlptFilter] = useState<string>(initialJlpt);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isDueModalOpen, setIsDueModalOpen] = useState<boolean>(false);
+  const [quotaModalTarget, setQuotaModalTarget] = useState<{
+    setTitle: string;
+    totalNewCards: number;
+    learnedCardsCount: number;
+    targetUrl: string;
+    extraPracticeUrl?: string;
+  } | null>(null);
+  const [modalUnlockError, setModalUnlockError] = useState<string | null>(null);
+  const [modalUnlockSuccess, setModalUnlockSuccess] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [bookmarksLoading, setBookmarksLoading] = useState<boolean>(false);
 
@@ -205,7 +215,7 @@ export const FlashcardSetsView: React.FC = () => {
     }
   }, [activeTab]);
 
-  // Mở thêm 10 thẻ mới bằng Credits thực sự qua API
+  // Mở thêm thẻ mới bằng Credits thực sự qua API
   const handleUnlockExtra = async () => {
     setUnlocking(true);
     setErrorMessage(null);
@@ -214,12 +224,49 @@ export const FlashcardSetsView: React.FC = () => {
     const res = await flashcardService.unlockExtraNewCards();
     if (res.success && res.data) {
       setQuota(res.data);
-      setSuccessMessage('Mở thêm 10 thẻ mới hôm nay thành công (-5 Credits)!');
+      setSuccessMessage(
+        res.message || `Mở thêm ${res.data.unlockBatchSize} thẻ mới hôm nay thành công (-${res.data.unlockCreditCost} Credits)!`
+      );
       setTimeout(() => setSuccessMessage(null), 4000);
     } else {
       setErrorMessage(res.message || 'Không thể mở thêm thẻ mới.');
     }
     setUnlocking(false);
+  };
+
+  // Mở thêm thẻ mới ngay bên trong modal cảnh báo hạn mức
+  const handleUnlockExtraInModal = async () => {
+    setUnlocking(true);
+    setModalUnlockError(null);
+    setModalUnlockSuccess(null);
+
+    const res = await flashcardService.unlockExtraNewCards();
+    if (res.success && res.data) {
+      setQuota(res.data);
+      setModalUnlockSuccess(
+        res.message || `Đã mở thêm ${res.data.unlockBatchSize} thẻ mới (-${res.data.unlockCreditCost} Credits)!`
+      );
+    } else {
+      setModalUnlockError(res.message || 'Không thể mở thêm thẻ mới.');
+    }
+    setUnlocking(false);
+  };
+
+  // Kiểm tra hạn mức thẻ mới trước khi vào phiên học thẻ mới (hết quota hoặc số thẻ mới > hạn mức còn lại)
+  const handleRequestNewCardsStudy = (target: {
+    setTitle: string;
+    totalNewCards: number;
+    learnedCardsCount: number;
+    targetUrl: string;
+    extraPracticeUrl?: string;
+  }) => {
+    if (quota && (quota.remainingNewCardsToday <= 0 || target.totalNewCards > quota.remainingNewCardsToday)) {
+      setModalUnlockError(null);
+      setModalUnlockSuccess(null);
+      setQuotaModalTarget(target);
+      return;
+    }
+    navigate(target.targetUrl);
   };
 
   // Giả lập thời gian trôi qua để kiểm thử SRS
@@ -309,25 +356,30 @@ export const FlashcardSetsView: React.FC = () => {
     return safeSets.reduce((acc, curr) => acc + (curr?.dueCards || 0), 0);
   }, [quota, safeSets]);
 
+  // Kiểm tra người học đã từng học bất kỳ thẻ nào chưa (để phân biệt trạng thái chưa học gì vs đã hoàn thành hết thẻ đến hạn hôm nay)
+  const hasAnyLearnedCards = useMemo(() => {
+    if (typeof quota?.totalLearnedCards === 'number') {
+      return quota.totalLearnedCards > 0;
+    }
+    return (quota?.studiedNewCardsToday ?? 0) > 0 || safeSets.some((s) => (s?.learnedCards || 0) > 0);
+  }, [quota, safeSets]);
+
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
+    <div className="jx-flash-library mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== 1. PAGE HEADER ==================== */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🗂️</span>
-              <h1 className="text-2xl sm:text-3xl font-black text-sumi tracking-tight">
-                Flashcard
-              </h1>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-sumi tracking-tight">
+              Flashcard
+            </h1>
             <p className="text-sm text-sumi-muted mt-1">
               Ôn tập ngắt quãng (SRS SM-2) theo các chủ đề N5 – N3 và danh sách đánh dấu cá nhân
             </p>
           </div>
 
           {/* Công cụ giả lập kiểm thử SRS */}
-          <div className="flex items-center flex-wrap gap-2 bg-paper-50 p-1.5 rounded-2xl border border-line shadow-xs self-start sm:self-auto">
+          <div className="jx-flash-simulation flex items-center flex-wrap gap-2 bg-paper-50 p-1.5 rounded-2xl border border-line shadow-xs self-start sm:self-auto">
             <span className="text-xs font-bold text-sumi-muted px-2 flex items-center gap-1">
               <span>🧪</span>
               <span className="hidden md:inline">Test SRS:</span>
@@ -380,7 +432,7 @@ export const FlashcardSetsView: React.FC = () => {
         )}
 
         {/* ==================== 2. SUB-NAVIGATION TABS ==================== */}
-        <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
+        <div className="jx-flash-tabs flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
           {/* Tab 1: Bộ thẻ theo chủ đề */}
           <Link
             to="/flashcards"
@@ -422,17 +474,21 @@ export const FlashcardSetsView: React.FC = () => {
           <div className="bg-paper-50 border border-line rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             {/* Cột 1: Nhắc thẻ đến hạn */}
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-paper-100 flex items-center justify-center text-2xl shadow-xs border border-line">
-                🔥
+              <div className="w-12 h-12 rounded-2xl bg-paper-100 flex items-center justify-center text-2xl shadow-xs border border-line shrink-0">
+                {totalDueToday > 0 ? '🔥' : hasAnyLearnedCards ? '✅' : '🌱'}
               </div>
               <div>
                 <h3 className="text-sm font-extrabold text-sumi">
                   {totalDueToday > 0
                     ? `Hôm nay bạn có ${totalDueToday} thẻ đến hạn cần ôn lại!`
-                    : 'Tuyệt vời! Bạn đã hoàn thành hết thẻ đến hạn hôm nay!'}
+                    : hasAnyLearnedCards
+                    ? 'Tuyệt vời! Bạn đã hoàn thành hết thẻ đến hạn hôm nay!'
+                    : 'Bạn chưa có thẻ nào cần ôn lại'}
                 </h3>
                 <p className="text-xs text-sumi-muted mt-0.5">
-                  Thẻ ôn lại luôn hoàn toàn miễn phí và không tính vào hạn mức thẻ mới.
+                  {totalDueToday > 0 || hasAnyLearnedCards
+                    ? 'Thẻ ôn lại luôn hoàn toàn miễn phí và không tính vào hạn mức thẻ mới.'
+                    : 'Hãy chọn một bộ thẻ bên dưới để bắt đầu học — hệ thống SRS sẽ tự động nhắc lịch khi đến hạn ôn tập (ôn lại luôn miễn phí).'}
                 </p>
                 {totalDueToday > 0 && (
                   <button
@@ -466,16 +522,22 @@ export const FlashcardSetsView: React.FC = () => {
                 />
               </div>
               <div className="flex items-center justify-between text-[11px] text-sumi-muted pt-0.5">
-                <span>
-                  Còn <span className="font-bold text-ai">{quota.remainingNewCardsToday} thẻ mới</span> miễn phí hôm nay
-                </span>
+                {quota.remainingNewCardsToday > 0 ? (
+                  <span>
+                    Còn <span className="font-bold text-ai">{quota.remainingNewCardsToday} thẻ mới</span> hôm nay
+                  </span>
+                ) : (
+                  <span className="font-bold text-danger">
+                    🔒 Đã hết hạn mức thẻ mới hôm nay
+                  </span>
+                )}
                 <button
                   onClick={handleUnlockExtra}
                   disabled={unlocking}
                   className="px-2.5 py-1 bg-paper-100 hover:bg-paper-200 border border-line text-sumi rounded-lg text-[11px] font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 disabled:opacity-50 cursor-pointer"
-                  title="Mở thêm 10 thẻ mới bằng Credit"
+                  title={`Mở thêm ${quota.unlockBatchSize} thẻ mới bằng Credit`}
                 >
-                  <span>{unlocking ? 'Đang mở...' : '+ 10 thẻ'}</span>
+                  <span>{unlocking ? 'Đang mở...' : `+ ${quota.unlockBatchSize} thẻ`}</span>
                   <span className="text-warning font-extrabold">({quota.unlockCreditCost} 🪙)</span>
                 </button>
               </div>
@@ -580,7 +642,22 @@ export const FlashcardSetsView: React.FC = () => {
                   <span>Kiểm tra ({bookmarks.length} thẻ)</span>
                 </button>
                 <button
-                  onClick={() => navigate('/flashcards/study/0/Mixed?source=bookmark')}
+                  onClick={() => {
+                    const dueBookmarks = bookmarks.filter((b) => b.srsState === 'Due').length;
+                    const newBookmarks = bookmarks.filter((b) => b.srsState === 'New').length;
+                    const learnedBookmarks = bookmarks.length - newBookmarks;
+                    if (dueBookmarks === 0 && newBookmarks > 0) {
+                      handleRequestNewCardsStudy({
+                        setTitle: 'Kho thẻ cá nhân đã lưu (Bookmark)',
+                        totalNewCards: newBookmarks,
+                        learnedCardsCount: learnedBookmarks,
+                        targetUrl: '/flashcards/study/0/Mixed?source=bookmark',
+                        extraPracticeUrl: '/flashcards/study/0/Mixed?source=bookmark&extraPractice=true',
+                      });
+                      return;
+                    }
+                    navigate('/flashcards/study/0/Mixed?source=bookmark');
+                  }}
                   className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
                 >
                   <Icon name="play_arrow" size={16} />
@@ -880,9 +957,11 @@ export const FlashcardSetsView: React.FC = () => {
               {paginatedSets.map((set) => {
               const isGrammar = set.contentType === 'Grammar';
               const hasDue = set.dueCards > 0;
-              const isCompletedToday = !hasDue && set.learnedCards === set.totalCards && set.totalCards > 0;
+              const hasNew = set.newCards > 0;
+              const isCompletedToday = !hasDue && !hasNew && set.totalCards > 0;
               const isBrandNew = set.learnedCards === 0;
-              const isPartiallyLearned = !hasDue && !isCompletedToday && set.learnedCards > 0;
+              const isPartiallyLearned = set.learnedCards > 0 && hasNew;
+              const studyBaseUrl = `/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`;
 
               return (
                 <div
@@ -891,7 +970,7 @@ export const FlashcardSetsView: React.FC = () => {
                 >
                   {/* Top: Badges & Status */}
                   <div>
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-2">
                         {/* JLPT Badge */}
                         <span className={`px-2.5 py-0.5 rounded-md text-xs font-extrabold border border-line ${
@@ -912,27 +991,29 @@ export const FlashcardSetsView: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* State Badge */}
-                      {hasDue && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-warning-soft text-warning border border-warning/30 animate-pulse">
-                          🔥 {set.dueCards} thẻ đến hạn
-                        </span>
-                      )}
-                      {isPartiallyLearned && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-ai-soft text-ai border border-ai/30">
-                          📖 Đang học
-                        </span>
-                      )}
-                      {isCompletedToday && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-success-soft text-success border border-success/30">
-                          ✅ Hoàn thành hôm nay
-                        </span>
-                      )}
-                      {isBrandNew && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-paper-200 text-sumi-muted border border-line">
-                          ✨ Chưa học
-                        </span>
-                      )}
+                      {/* State Badges */}
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                        {hasDue && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-warning-soft text-warning border border-warning/30 animate-pulse">
+                            🔥 {set.dueCards} đến hạn
+                          </span>
+                        )}
+                        {isPartiallyLearned && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-ai-soft text-ai border border-ai/30">
+                            📖 Đang học
+                          </span>
+                        )}
+                        {isCompletedToday && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-success-soft text-success border border-success/30">
+                            ✅ Hoàn thành hôm nay
+                          </span>
+                        )}
+                        {isBrandNew && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-paper-200 text-sumi-muted border border-line">
+                            ✨ Chưa học
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Set Title & Description */}
@@ -966,58 +1047,76 @@ export const FlashcardSetsView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Bottom: Action Buttons */}
-                  <div className="grid grid-cols-3 gap-2 pt-2">
-                    <button
-                      onClick={() => navigate(`/flashcards/sets/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                      className="px-4 py-2.5 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs transition-colors border border-line flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <span>📋</span>
-                      <span>Xem thẻ</span>
-                    </button>
+                  {/* Bottom: Action Buttons (Tách riêng Ôn đến hạn & Học tiếp/Bắt đầu học) */}
+                  <div className="space-y-2 pt-2">
+                    {/* Hàng chính: Học / Ôn tập */}
+                    <div className={`grid gap-2 ${hasDue && hasNew ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      {hasDue && (
+                        <button
+                          onClick={() => navigate(`${studyBaseUrl}?studyMode=due`)}
+                          className="px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          title="Ôn lại các thẻ đã đến hạn trong chủ đề này (miễn phí, không tốn hạn mức thẻ mới)"
+                        >
+                          <span>🔥</span>
+                          <span>Ôn đến hạn ({set.dueCards})</span>
+                        </button>
+                      )}
 
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/flashcards/test/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                      className="px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors border border-indigo-200 flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <span>📝</span>
-                      <span>Kiểm tra</span>
-                    </button>
+                      {hasNew && (
+                        <button
+                          onClick={() =>
+                            handleRequestNewCardsStudy({
+                              setTitle: set.setTitle,
+                              totalNewCards: set.newCards,
+                              learnedCardsCount: set.learnedCards,
+                              targetUrl: `${studyBaseUrl}?studyMode=new`,
+                              extraPracticeUrl: `${studyBaseUrl}?extraPractice=true`,
+                            })
+                          }
+                          className="px-3.5 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          title={
+                            set.learnedCards > 0
+                              ? 'Học tiếp các thẻ mới chưa học trong chủ đề này'
+                              : 'Bắt đầu học các thẻ mới của chủ đề này'
+                          }
+                        >
+                          <span>▶</span>
+                          <span>
+                            {set.learnedCards > 0 ? `Học tiếp (${set.newCards} mới)` : 'Bắt đầu học'}
+                          </span>
+                        </button>
+                      )}
 
-                    {hasDue ? (
+                      {isCompletedToday && (
+                        <button
+                          onClick={() => navigate(`${studyBaseUrl}?extraPractice=true`)}
+                          className="px-4 py-2.5 bg-ai-soft hover:bg-ai-soft/80 text-ai font-bold rounded-xl text-xs transition-all border border-ai/30 flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <span>↻</span>
+                          <span>Ôn thêm tự do</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Hàng phụ: Xem thẻ & Kiểm tra */}
+                    <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                        className="px-4 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                        onClick={() => navigate(`/flashcards/sets/${set.topicId}/${set.contentType.toLowerCase()}`)}
+                        className="px-4 py-2 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs transition-colors border border-line flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <span>▶</span>
-                        <span>Ôn tập ngay</span>
+                        <span>📋</span>
+                        <span>Xem thẻ</span>
                       </button>
-                    ) : isCompletedToday ? (
+
                       <button
-                        onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}?extraPractice=true`)}
-                        className="px-4 py-2.5 bg-ai-soft hover:bg-ai-soft/80 text-ai font-bold rounded-xl text-xs transition-all border border-ai/30 flex items-center justify-center gap-1.5 cursor-pointer"
+                        type="button"
+                        onClick={() => navigate(`/flashcards/test/${set.topicId}/${set.contentType.toLowerCase()}`)}
+                        className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors border border-indigo-200 flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <span>↻</span>
-                        <span>Ôn thêm tự do</span>
+                        <span>📝</span>
+                        <span>Kiểm tra</span>
                       </button>
-                    ) : set.learnedCards > 0 ? (
-                      <button
-                        onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                        className="px-4 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <span>▶</span>
-                        <span>Tiếp tục ôn</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                        className="px-4 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <span>▶</span>
-                        <span>Bắt đầu học</span>
-                      </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               );
@@ -1231,6 +1330,36 @@ export const FlashcardSetsView: React.FC = () => {
           </div>,
           document.body
         )}
+
+      {/* ==================== MODAL CẢNH BÁO HẠN MỨC THẺ MỚI ==================== */}
+      <FlashcardStudyQuotaModal
+        isOpen={!!quotaModalTarget}
+        setTitle={quotaModalTarget?.setTitle || ''}
+        totalNewCards={quotaModalTarget?.totalNewCards || 0}
+        learnedCardsCount={quotaModalTarget?.learnedCardsCount || 0}
+        quota={quota}
+        unlocking={unlocking}
+        unlockError={modalUnlockError}
+        unlockSuccess={modalUnlockSuccess}
+        onUnlockExtra={handleUnlockExtraInModal}
+        onContinue={() => {
+          if (quotaModalTarget) {
+            const url = quotaModalTarget.targetUrl;
+            setQuotaModalTarget(null);
+            navigate(url);
+          }
+        }}
+        onExtraPractice={
+          quotaModalTarget?.extraPracticeUrl
+            ? () => {
+                const url = quotaModalTarget.extraPracticeUrl!;
+                setQuotaModalTarget(null);
+                navigate(url);
+              }
+            : undefined
+        }
+        onClose={() => setQuotaModalTarget(null)}
+      />
     </div>
   );
 };

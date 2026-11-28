@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import type { RoleplayMessageDto } from '../../types/roleplay';
-import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 import { SumiInkIndicator } from './SumiInkIndicator';
-import { cleanFuriganaHtml, sanitizeDisplayJapanese } from '../../utils/japaneseSanitizer';
+import { alignFuriganaWithOriginal, sanitizeDisplayJapanese } from '../../utils/japaneseSanitizer';
 
 export interface RoleplayConversationStreamProps {
   messages: RoleplayMessageDto[];
@@ -40,7 +39,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
       return (
         <span
           className={isUser ? 'bubble-user text-base font-sans' : 'bubble-ai text-base font-sans'}
-          dangerouslySetInnerHTML={{ __html: cleanFuriganaHtml(msg.furiganaHtml) }}
+          dangerouslySetInnerHTML={{ __html: alignFuriganaWithOriginal(msg.furiganaHtml, msg.japaneseText) }}
         />
       );
     }
@@ -91,10 +90,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
 
                       <button
                         type="button"
-                        onClick={() => {
-                          ukiyoSound.playSubtleTap();
-                          onPlayAudio(msg);
-                        }}
+                        onClick={() => onPlayAudio(msg)}
                         className={`p-1.5 rounded-lg transition cursor-pointer flex-shrink-0 ${
                           isPlaying
                             ? 'bg-[var(--ai)] text-white'
@@ -125,10 +121,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
                 <span className="text-[11px] font-bold text-slate-500 px-1">Bạn</span>
 
                 <div
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    onSelectUserMessage(msg);
-                  }}
+                  onClick={() => onSelectUserMessage(msg)}
                   className={`p-4 rounded-2xl rounded-tr-xs transition cursor-pointer relative shadow-xs border ${
                     isSelected
                       ? 'bg-[#EFF5FA] text-[var(--sumi)] border-[var(--ai)]/50 ring-2 ring-[var(--ai)]/40 shadow-sm'
@@ -166,7 +159,6 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              ukiyoSound.playWoodblockSnap();
                               onRedoTurn(msg);
                             }}
                             className="px-2 py-0.5 rounded bg-amber-200/60 hover:bg-amber-300 text-amber-950 font-bold text-[10px]"

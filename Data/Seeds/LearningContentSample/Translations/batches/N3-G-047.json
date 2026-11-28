@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-na-ki-ga-suru",
+      "Fields": {
+        "Meaning": "Có cảm giác rằng",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ような気がする",
+        "Explanation": "Nêu ấn tượng hoặc linh cảm chủ quan chưa chắc chắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-na-ki-ga-suru:example:1": "Tôi có cảm giác đã gặp anh ấy ở đâu đó.",
+        "you-na-ki-ga-suru:example:2": "Tôi có cảm giác hôm nay sẽ có chuyện tốt."
+      },
+      "SourceHash": "5e18b0ae3c454828318620089404dae8fa002384d4f75ce699ef036d076d1f8a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-mieru",
+      "Fields": {
+        "Meaning": "Trông như, có vẻ",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ように見える／danh từ ＋ のように見える",
+        "Explanation": "Nêu ấn tượng dựa trên vẻ ngoài hoặc dấu hiệu quan sát được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-mieru:example:1": "Bức tranh này trông như bản thật, nhưng thực ra là bản sao.",
+        "you-ni-mieru:example:2": "Cô ấy trông có vẻ hơi mệt."
+      },
+      "SourceHash": "de73a488aee32723601595e95fdb3672a3a3255d83b20c0fa861e041cbd37e77"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "yorimo",
+      "Fields": {
+        "Meaning": "Hơn, so với",
+        "Formation": "Mốc so sánh ＋ よりも",
+        "Explanation": "よりも nhấn mạnh mốc so sánh. Có thể đi với ほうが để nêu phía nổi trội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "yorimo:example:1": "Mùa hè năm nay nóng hơn năm ngoái nhiều.",
+        "yorimo:example:2": "Đi bộ nhanh hơn đi tàu điện đấy."
+      },
+      "SourceHash": "2b43fad01ad18d37455f941d50ce2a61a2299d3017c9a4fbef075d7beb69a73a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "renyoukei",
+      "Fields": {
+        "Meaning": "Dạng liên dụng để nối các vế",
+        "Formation": "Gốc ます của động từ／tính từ い đổi い thành く (いい → よく)",
+        "Explanation": "Có thể đặt dạng liên dụng giữa câu để nối vế, thường trong văn viết hoặc lời trình bày gọn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "renyoukei:example:1": "Tôi dậy lúc sáu giờ sáng, tập nhẹ rồi ra ngoài.",
+        "renyoukei:example:2": "Sản phẩm này chất lượng tốt mà giá cũng phải chăng."
+      },
+      "SourceHash": "111f6fda594c30abd346dbbd4b9c7727774cf91b67c3a7e78042c578225cfeb5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wake-ga-nai",
+      "Fields": {
+        "Meaning": "Không thể nào, chẳng có lý nào",
+        "Formation": "Mệnh đề bổ nghĩa ＋ わけがない",
+        "Explanation": "Bác bỏ khả năng dựa trên lý lẽ hoặc tình huống đã biết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wake-ga-nai:example:1": "Anh ấy học nhiều đến thế thì không thể nào thi trượt.",
+        "wake-ga-nai:example:2": "Trẻ con không thể nào giải được bài khó thế này."
+      },
+      "SourceHash": "dcfbda7d1389f11b83af86d5bcae7a1f615b7d5822717c122b1da1b85e9e8352"
+    }
+  ]
+}

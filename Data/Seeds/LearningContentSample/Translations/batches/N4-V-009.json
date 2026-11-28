@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e4e7e09df0",
+      "Fields": {
+        "Meaning": "Được quyết định, được ấn định",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "決まる（きまる）có nghĩa là được quyết định, được ấn định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175925": "Hãy chỉ ăn những bữa đã được quy định.",
+        "228654": "Vẫn chưa quyết định khi nào bắt đầu."
+      },
+      "SourceHash": "7c72b4ac29acd0d8e37d5cd7cadf15522da8f853095fa78f3370f1e2531ea0c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed36e1d3a7",
+      "Fields": {
+        "Meaning": "Cậu, bạn (thân mật)",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "Cách gọi thân mật, phụ thuộc quan hệ và hoàn cảnh. Không giới hạn ở nam nói với nữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147838": "Quên bài tập về nhà là do cậu bất cẩn.",
+        "157469": "Tôi nợ cậu bao nhiêu?"
+      },
+      "SourceHash": "1ebcc908fa4ee06b1509a47b208fb1dcc74202c3d3ce8da071a0f263c46fb22c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a98f898ab",
+      "Fields": {
+        "Meaning": "Quyết định, chọn, chỉnh cho đẹp",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "決める（きめる）có nghĩa là quyết định, chọn, chỉnh cho đẹp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213665": "Tôi quyết định đi đến đó.",
+        "230078": "Ồ, trông bạn diện bảnh nhỉ."
+      },
+      "SourceHash": "f2205c3a519c275388dfaf104b314d339dafa4b74b2abaaf4c48ea6aa3d639ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af80712b7b",
+      "Fields": {
+        "Meaning": "Cảm giác, tâm trạng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "気持ち（きもち）có nghĩa là cảm giác, tâm trạng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172263": "Sáng nay tôi không muốn ra ngoài.",
+        "183198": "Buổi sáng dễ chịu quá, phải không?"
+      },
+      "SourceHash": "101d039acdd10762f01328b0e9259e301c43c4fe68737a3cb4a8d98982f6c61d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a2a012c05f",
+      "Fields": {
+        "Meaning": "Kimono, trang phục truyền thống Nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "着物（きもの）có nghĩa là kimono, trang phục truyền thống Nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83095": "Mẹ tôi thường mặc kimono ở nhà.",
+        "92348": "Cô ấy trông lạ khi mặc bộ kimono đó."
+      },
+      "SourceHash": "572dd7dfa7ac6d2c605bfa6981c94b1b368ecf10be0d818a44f3e5f8bac4a82d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb029e617e",
+      "Fields": {
+        "Meaning": "Khách, khách hàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "客（きゃく）có nghĩa là khách, khách hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74683": "Vì mới đầu xuân nên cũng không có nhiều khách.",
+        "79109": "Bạn có mời khách đến ăn tối không?"
+      },
+      "SourceHash": "b7bc71c181278d34d19d1b49cf2aa93cd3ea72e67402a43dc88b59a693aedad7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a02c2a6790",
+      "Fields": {
+        "Meaning": "Gấp, đột ngột, dốc hoặc xiết",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "Câu thứ hai dùng 急ぐ, động từ nghĩa là vội, cùng chữ 急.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182548": "Bạn không cần vội đâu.",
+        "220822": "Dòng sông này chảy xiết."
+      },
+      "SourceHash": "8beb6d005ea57327752ac570282f75be6e158d0110dcc852f7dbe17d3347750f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b6027b4099",
+      "Fields": {
+        "Meaning": "Tàu tốc hành",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "急行（きゅうこう）có nghĩa là tàu tốc hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182437": "Tàu tốc hành khởi hành lúc sáu giờ và đến Tokyo lúc chín giờ.",
+        "182438": "Vé tàu tốc hành giá bao nhiêu?"
+      },
+      "SourceHash": "6e2d1ef92e115fd1b9abdcf3f03aa68ade39bacadf7d86e776002422ac05c16e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "319186af72",
+      "Fields": {
+        "Meaning": "Giáo dục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "教育（きょういく）có nghĩa là giáo dục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "4720": "Tôi thấy thất vọng về nền giáo dục trên thế giới này.",
+        "205271": "Đó là vấn đề lớn thứ hai, sau giáo dục."
+      },
+      "SourceHash": "77ebbcbb8f26d57adea0423865a72eaf65e6ecd3f306cdea5e3f33d3875d05c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a7b79370f",
+      "Fields": {
+        "Meaning": "Nhà thờ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "教会（きょうかい）có nghĩa là nhà thờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "180218": "Nhà thờ nằm ở rìa thị trấn.",
+        "211419": "Nhà thờ đó có từ năm 1173."
+      },
+      "SourceHash": "eabac34e1511368b5f1aa370700229a2c7f2812f08e6de672e11d550361461a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a9dcbea815",
+      "Fields": {
+        "Meaning": "Cạnh tranh, thi đua",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "競争（きょうそう）có nghĩa là cạnh tranh, thi đua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "181517": "Bản thân sự cạnh tranh không phải là điều xấu.",
+        "194977": "Cả nhóm cho bọ cánh cứng thi với nhau."
+      },
+      "SourceHash": "aed54f9cb21dff7a20763e4a1fc8a72f6438194cbcc3c32c75d7686e149bc350"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23ea485338",
+      "Fields": {
+        "Meaning": "Sự quan tâm, hứng thú",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "興味（きょうみ）có nghĩa là sự quan tâm, hứng thú.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184788": "Bạn có hứng thú với việc học ngoại ngữ không?",
+        "232171": "Bạn có thích tìm hiểu về hoa không?"
+      },
+      "SourceHash": "b6daeb42b9ba286e7fd2b859a8ab90d26912c2f22387d178cba32640dc3a75f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6d55823a0",
+      "Fields": {
+        "Meaning": "Khu lân cận, gần nhà",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "近所（きんじょ）có nghĩa là khu lân cận, gần nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120461": "Anh ấy chuyển đến sống gần đây.",
+        "228214": "Một khách sạn gần nhà tôi bốc cháy."
+      },
+      "SourceHash": "edadf6017ecb174bbfb0cccb4ca1a2df5a8b15e3add278bd20401b14217d8170"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f36e445797",
+      "Fields": {
+        "Meaning": "Tình trạng, sức khỏe",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "具合（ぐあい）có nghĩa là tình trạng, sức khỏe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150500": "Đồng hồ chạy không ổn.",
+        "210195": "Đứa bé có vẻ không khỏe."
+      },
+      "SourceHash": "0aae9f5f584893d96067393eef2d140765886af8fcb5b9149f01f4f16b10afb0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a70d257a61",
+      "Fields": {
+        "Meaning": "Không khí, bầu không khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "空気（くうき）có nghĩa là không khí, bầu không khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144505": "Con người không thể sống thiếu không khí.",
+        "169418": "Không khí trên núi rất trong lành."
+      },
+      "SourceHash": "07487d2009b690ec821de69b88522d729c140b49d2fc8fb06a490a50910b35a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f74a8f3a4",
+      "Fields": {
+        "Meaning": "Sân bay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "空港（くうこう）có nghĩa là sân bay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79357": "Bạn của anh/chị có đến sân bay tiễn không?",
+        "200324": "Bạn sẽ khởi hành từ sân bay nào?"
+      },
+      "SourceHash": "303fa6f9936c6c60add0b438736e6009cff21d48bf84106ec7abee29502ba3dd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5b90cb965",
+      "Fields": {
+        "Meaning": "Cỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "草（くさ）có nghĩa là cỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175661": "Trên Mặt Trăng không có cỏ mọc.",
+        "182312": "Bò sống bằng cách ăn cỏ."
+      },
+      "SourceHash": "d51278c4b56a5fda73d65d71dc37955ddf8aca2544b29319f3f55f43a6cd79d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8da4537a2",
+      "Fields": {
+        "Meaning": "Cho, làm giúp (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "くださる（くださる）có nghĩa là cho, làm giúp (kính ngữ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78725": "Cảm ơn anh/chị đã đến.",
+        "194302": "Anh/chị nói lại một lần nữa được không ạ?"
+      },
+      "SourceHash": "2111cc5916df2ebacc6674149d1d2962e68499f3940d206af5ce5448ef12d8ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78c6412e35",
+      "Fields": {
+        "Meaning": "Cổ, việc làm (trong thành ngữ)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "首 chỉ cổ. Trong câu đầu, hình ảnh ngọn đèn trước gió nói đến nguy cơ mất việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209467": "Phần cổ và đầu đó rất mềm.",
+        "233205": "Công việc của cậu đang như ngọn đèn trước gió."
+      },
+      "SourceHash": "e3576290d7cf3678641334939c62c1f1a4d4ede35c6769228e081dcb7bbab5b6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7db3da6e1b",
+      "Fields": {
+        "Meaning": "Mây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "雲（くも）có nghĩa là mây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75596": "Đến chiều tối có vài đám mây xuất hiện.",
+        "189379": "Mây đang dần đen lại."
+      },
+      "SourceHash": "a34a4c25a820e000726111fca9f6d1a037c8c000079c93c8cd5c10fcff4da451"
+    }
+  ]
+}

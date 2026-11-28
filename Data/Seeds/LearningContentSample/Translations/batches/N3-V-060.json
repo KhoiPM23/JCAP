@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5564da9929",
+      "Fields": {
+        "Meaning": "Giữa, một nửa",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "半ば（なかば）có nghĩa là giữa, một nửa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93529": "Cô ấy tái hôn khi khoảng 45 tuổi.",
+        "168954": "Khởi đầu tốt coi như đã thành công một nửa."
+      },
+      "SourceHash": "1e5afb15a354bf3e88f0031a398b649d7a482a28f44dc346c32311aa4613ffcb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "124f4d078f",
+      "Fields": {
+        "Meaning": "Bạn, đồng đội, người cùng nhóm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "仲間（なかま）có nghĩa là bạn, đồng đội, người cùng nhóm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91235": "Cô ấy giao du với bạn xấu.",
+        "124878": "Ông Tanaka là một trong những bạn câu cá của bố tôi."
+      },
+      "SourceHash": "d599a9e72addd92995ba2ade59163dccd71ed40fd2edb44eb818b1d918d80999"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3a05b3d90",
+      "Fields": {
+        "Meaning": "Tầm nhìn, quang cảnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "眺め（ながめ）có nghĩa là tầm nhìn, quang cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126084": "Cho tôi phòng có tầm nhìn đẹp ạ.",
+        "220063": "Quang cảnh nhìn từ phòng này thật tuyệt."
+      },
+      "SourceHash": "eb183655c0d502cff0d038a03f5d7a326a404279d8777631a87abebee85b0398"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "402b531dd3",
+      "Fields": {
+        "Meaning": "Ngắm, nhìn",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "眺める（ながめる）có nghĩa là ngắm, nhìn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97860": "Họ đang ngắm khu vườn đẹp ấy.",
+        "187417": "Tôi ngắm biển suốt nhiều giờ."
+      },
+      "SourceHash": "a84f6d4806472daf1bc28b8b658c38cbe0fe1985b14674178929cfec4c3697c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a588d2a3e0",
+      "Fields": {
+        "Meaning": "Dòng chảy, diễn biến",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "流れ（ながれ）có nghĩa là dòng chảy, diễn biến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78261": "Dòng nước chảy vào ao.",
+        "121434": "Chiếc thuyền trắng trôi theo dòng nước."
+      },
+      "SourceHash": "83607ecbdb2a5d6cd6df07156ed6bcca76ee48fe5d2be8c20d06f34f40543e81"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b7b23bf678",
+      "Fields": {
+        "Meaning": "Chảy, trôi, được phát",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "流れる（ながれる）có nghĩa là chảy, trôi, được phát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124072": "Thời ấy nước sạch còn chảy trong con sông này.",
+        "212837": "Tin đó vừa được phát trên radio."
+      },
+      "SourceHash": "faae46a1922dd0809a6b569648d73167e0fc4de237ecf196638eae149590b5f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28631b73ea",
+      "Fields": {
+        "Meaning": "Không có, không kèm",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "無し（なし）có nghĩa là không có, không kèm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80927": "Không có tin tức tức là vẫn bình an.",
+        "192872": "Cuối cùng tôi và người đó không còn nợ nần gì nhau."
+      },
+      "SourceHash": "7275c893de75f50e53ffe81b58b483fd63fc0686e59db8014862aceb55126028"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de314c95de",
+      "Fields": {
+        "Meaning": "Bởi vì",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "なぜなら（なぜなら）có nghĩa là bởi vì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199223": "Vì anh ấy đã mời tôi.",
+        "199225": "Bởi vì tôi là phóng viên báo chí."
+      },
+      "SourceHash": "5004a6078ad234cd2b293f8d072b7d5a915c6190200d9a6de9cf6abd6f197160"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "10b368ca88",
+      "Fields": {
+        "Meaning": "Bí ẩn, câu đố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "謎（なぞ）có nghĩa là bí ẩn, câu đố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120756": "Việc anh ấy bỏ việc vẫn là một bí ẩn.",
+        "223417": "Bạn nghĩ ra đáp án cho câu đố này không?"
+      },
+      "SourceHash": "ec18b50dd578d9f4649756b0caf8cb4f1aba0763435025f6d96a8a8cd25d4e24"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b63615acb",
+      "Fields": {
+        "Meaning": "Hiểu ra, chấp nhận, thấy thuyết phục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "納得（なっとく）có nghĩa là hiểu ra, chấp nhận, thấy thuyết phục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87486": "Cô ấy tin rằng anh ấy trung thực.",
+        "236543": "“Ra vậy.” Cuối cùng Willie cũng hiểu."
+      },
+      "SourceHash": "5bb0864b77568f2d88d5e2e3ef623b9cea8c22ca717beca34485db30ec4499d2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d47958486",
+      "Fields": {
+        "Meaning": "Cái gì, gì",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "何（なに）có nghĩa là cái gì, gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76831": "Này ông kia! Ông đang làm gì vậy?",
+        "172752": "Thông báo vừa rồi nói gì vậy?"
+      },
+      "SourceHash": "f0aef1c99ee211b3cb4d840a8810b961918deb75736d7bdf2dc3a7d61ea9fa36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "08f3d1eb54",
+      "Fields": {
+        "Meaning": "Cái gì đó, điều gì đó",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "何か（なにか）có nghĩa là cái gì đó, điều gì đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90940": "Cô ấy bỏ việc vì một lý do nào đó.",
+        "224252": "Đến đây có gì bị bỏ sót không?"
+      },
+      "SourceHash": "460076bbdc3a2bdd6d894d92c43ab02be5f9dc55010e9a7e97014fb8f4edc710"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5efa5daa2b",
+      "Fields": {
+        "Meaning": "Không có gì, chẳng… gì",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "なにも（なにも）có nghĩa là không có gì, chẳng… gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91526": "Cô ấy gần như chẳng ăn gì.",
+        "186512": "Người không mắc sai lầm thì chẳng tạo ra được gì."
+      },
+      "SourceHash": "105a8566d85fbf5dad9ce5db494e88d0c8f24dc876f82404c86e3c5687e332b5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ede43e44c",
+      "Fields": {
+        "Meaning": "Nồi, món lẩu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鍋（なべ）có nghĩa là nồi, món lẩu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155223": "Tôi nấu súp bằng nồi lớn.",
+        "224417": "Ở đây có một cái nồi không có quai."
+      },
+      "SourceHash": "5049da1da9ccd8f9ce039659e1fa096cab40c829955752ecd6a2563dd69ec9fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04f80af544",
+      "Fields": {
+        "Meaning": "Sống, tươi, nguyên, trực tiếp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生（なま）có nghĩa là sống, tươi, nguyên, trực tiếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74282": "Dùng bao cao su đúng là làm giảm cảm giác, nên nếu được thì tôi muốn quan hệ không dùng bao.",
+        "225838": "Bắp cải cũng có thể ăn sống."
+      },
+      "SourceHash": "a02a2174f6a341bb7aae59c224dd721a22a59247d8597cc20419eba131ab545a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6e5fe06358",
+      "Fields": {
+        "Meaning": "Lười, sao nhãng",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "怠ける（なまける）có nghĩa là lười, sao nhãng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100116": "Anh ấy lười học.",
+        "137918": "Đừng dính dáng đến người lười biếng."
+      },
+      "SourceHash": "42a9bb74971f5376a79541605996a0a01e5a16b0f79ecfd98d6cb3a1ef7fbd1e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cae492d243",
+      "Fields": {
+        "Meaning": "Sóng, làn sóng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "波（なみ）có nghĩa là sóng, làn sóng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141100": "Con tàu bị sóng đưa đẩy.",
+        "225679": "Sóng vỡ tung tạo thành bọt."
+      },
+      "SourceHash": "b4dbb9cf4dd1873b95c6a3a0848dc4a5b0a9c930a949d8205f245a83189c3bad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "037925a6d6",
+      "Fields": {
+        "Meaning": "Nước mắt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "涙（なみだ）có nghĩa là nước mắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209393": "Nước mắt trào ra từ mắt cô bé.",
+        "235388": "Hai giọt nước mắt lăn xuống má cô ấy."
+      },
+      "SourceHash": "85554bc637691aa134fb0587abc97e8a1adfd60b431d10f54813b05f6d9aff31"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f56822dfc",
+      "Fields": {
+        "Meaning": "Lo lắng, khổ sở",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "悩む（なやむ）có nghĩa là lo lắng, khổ sở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96814": "Họ khổ sở vì thiếu lương thực.",
+        "121757": "Lo lắng cũng chẳng có ích gì."
+      },
+      "SourceHash": "b17c69794d1df1bde10629cdbf84f6aec2d212c980476bde262b55fb6cf6a567"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0989459c37",
+      "Fields": {
+        "Meaning": "Dây thừng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "縄（なわ）có nghĩa là dây thừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101557": "Anh ấy bị trói vào cây bằng dây thừng.",
+        "180474": "Tên cướp dùng dây thừng trói hai tay tôi ra sau lưng."
+      },
+      "SourceHash": "2c69ddc30409574215c3c51007d249550d10996abb7bd5605facd75bdcaa5749"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-shite-mo",
+      "Fields": {
+        "Meaning": "Ngay cả nếu, dù có là",
+        "Formation": "Mệnh đề thể thường hoặc danh từ ＋ にしても",
+        "Explanation": "Tạm chấp nhận một giả định rồi nêu nhận xét vẫn đúng trong trường hợp đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-shite-mo:example:1": "Dù có đi thì cũng mất thời gian chuẩn bị.",
+        "ni-shite-mo:example:2": "Dù chỉ đùa, nói như thế cũng quá đáng."
+      },
+      "SourceHash": "7e80161c8bdc8abe04937935dad68e3f2d0ec6a72d7397a1dece09cb2822a5c9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-chigai-nai",
+      "Fields": {
+        "Meaning": "Chắc chắn là, hẳn là",
+        "Formation": "Mệnh đề thể thường hoặc danh từ ＋ に違いない",
+        "Explanation": "Diễn tả suy đoán chắc chắn từ dấu hiệu. Danh từ và tính từ な thường bỏ だ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-chigai-nai:example:1": "Đèn đã tắt nên chắc hẳn anh ấy ngủ rồi.",
+        "ni-chigai-nai:example:2": "Viên đá quý này chắc chắn là hàng thật."
+      },
+      "SourceHash": "90854df435f8f48cb3d0ea818b4255547b0996138ab69153eb05c2a67e297b76"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-tsuite",
+      "Fields": {
+        "Meaning": "Về, liên quan đến",
+        "Formation": "Danh từ ＋ について／についての ＋ danh từ",
+        "Explanation": "Đánh dấu chủ đề được tìm hiểu, trình bày hoặc nhận xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-tsuite:example:1": "Tôi đang tìm hiểu lịch sử của thị trấn này.",
+        "ni-tsuite:example:2": "Xin cho tôi biết ý kiến của anh chị về vấn đề đó."
+      },
+      "SourceHash": "7e9ca577275a1390b28fdb679ff244a325fde32cb3d0a1fe8a22d500177e7cd7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-tsurete",
+      "Fields": {
+        "Meaning": "Càng… thì càng, theo đà",
+        "Formation": "Động từ thể từ điển hoặc danh từ chỉ sự thay đổi ＋ につれて",
+        "Explanation": "Một trạng thái thay đổi dần khi trạng thái kia tiến triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-tsurete:example:1": "Theo thời gian, cơn đau dần biến mất.",
+        "ni-tsurete:example:2": "Càng lớn tuổi, thể lực của tôi càng giảm."
+      },
+      "SourceHash": "ca469f342c965db0d9d58eebf387b4a1bb6d0d6aea0068a3f4d9815e8467f362"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-totte",
+      "Fields": {
+        "Meaning": "Đối với, xét từ góc độ",
+        "Formation": "Người hoặc nhóm ＋ にとって",
+        "Explanation": "Nêu người hoặc nhóm làm mốc đánh giá giá trị, độ khó hay ý nghĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-totte:example:1": "Đối với tôi, gia đình là quan trọng nhất.",
+        "ni-totte:example:2": "Bài này quá khó đối với trẻ em."
+      },
+      "SourceHash": "04367166b71c8b912ce9fb107eaa27468ffe4ce8401a2f9473d4c5f1684dba72"
+    }
+  ]
+}

@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 import {
   extractJapaneseKeywords,
   deriveJapaneseCloze,
   sanitizeDisplayJapanese,
   generateClientFuriganaHtml,
+  alignFuriganaWithOriginal,
+  stripRubyToPlainJapanese,
 } from '../../utils/japaneseSanitizer';
 
 // Clean, lightweight SVG Icons (No Emojis)
@@ -80,6 +81,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
 }) => {
   const [hintTier, setHintTier] = useState<1 | 2 | 3>(1);
   const [altIndex, setAltIndex] = useState<number>(0);
+  const [showHintFurigana, setShowHintFurigana] = useState<boolean>(true);
   const effectiveLockedTier = Math.max(hintTier, lockedTier || 1);
 
   // Danh sách các phương án ý đồ (Alternative Intents)
@@ -118,14 +120,12 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
     );
 
   const handleSwitchTier = (tier: 1 | 2 | 3) => {
-    ukiyoSound.playSubtleTap();
     setHintTier(tier);
     onTierChange?.(tier);
   };
 
   const handlePlayAudio = () => {
     if (!onPlaySampleAudio) return;
-    ukiyoSound.playSubtleTap();
     if (hintTier === 2) {
       const textToPlay = primaryKeywords.length > 0 ? primaryKeywords.join('、 ') : cleanSample;
       onPlaySampleAudio(textToPlay);
@@ -135,7 +135,6 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
   };
 
   const handleApplyCurrentTier = () => {
-    ukiyoSound.playSubtleTap();
     if (hintTier === 1) {
       onUseHint(cleanSample, 1);
     } else if (hintTier === 2) {
@@ -149,10 +148,10 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
     <div
       role="region"
       aria-label="Gợi ý hội thoại"
-      className="w-full washi-parchment bg-[#FAF6EE]/95 rounded-2xl border border-[#DFD2B8] shadow-xs p-3 sm:p-3.5 flex flex-col gap-2.5 animate-slide-up select-none transition-all duration-200"
+      className="w-full washi-parchment bg-[#FAF6EE] rounded-xl border border-[#DFD2B8] shadow-xs p-2.5 flex flex-col gap-1.5 animate-slide-up select-none transition-all duration-200"
     >
       {/* Hidden helper preserving exact test strings for regression checks */}
-      <div className="sr-only">
+      <div className="hidden" aria-hidden="true">
         <span>Cấp 1: Từ khoá (-10đ)</span>
         <span>Nâng cấp gợi ý: Cấp 2</span>
         <span>Cấp 3: Trọn câu Tokyo (Trần 50đ)</span>
@@ -179,14 +178,26 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
           {allOptions.length > 1 && (
             <button
               type="button"
-              onClick={() => {
-                ukiyoSound.playSubtleTap();
-                setAltIndex((prev) => (prev + 1) % allOptions.length);
-              }}
+              onClick={() => setAltIndex((prev) => (prev + 1) % allOptions.length)}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/85 hover:bg-white text-[var(--sumi)] text-[10px] font-bold border border-[#DCCCB0] shadow-2xs transition active:scale-95 cursor-pointer shrink-0"
               title="Đổi sang hướng diễn đạt khác"
             >
               <span>Ý khác ({altIndex + 1}/{allOptions.length})</span>
+            </button>
+          )}
+
+          {(hintTier === 2 || hintTier === 3) && (
+            <button
+              type="button"
+              onClick={() => setShowHintFurigana((prev) => !prev)}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-2xs transition active:scale-95 cursor-pointer shrink-0 ${
+                showHintFurigana
+                  ? 'bg-[var(--ai-soft)] text-[var(--ai)] border-[var(--ai)]/40'
+                  : 'bg-white/85 text-[var(--sumi-muted)] border-[#DCCCB0] hover:text-[var(--ai)]'
+              }`}
+              title={showHintFurigana ? 'Ẩn phiên âm Furigana' : 'Hiện phiên âm Furigana'}
+            >
+              <span>{showHintFurigana ? 'Ẩn Furi' : 'Furi'}</span>
             </button>
           )}
         </div>
@@ -202,7 +213,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   ? 'bg-white text-[var(--ai)] shadow-2xs font-black'
                   : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt, ưu đãi lần đầu (0đ, trần 90đ)' : 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt (-10đ tự chủ, trần 85đ)'}
+              title={isFirstUseInSession ? 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt, ưu đãi lần đầu (0đ, tự chủ 100/100đ)' : 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt (-10đ tự chủ, tối đa 90/100đ)'}
             >
               Cấp 1: Ý nói {isFirstUseInSession ? '(0đ)' : '(-10đ)'}
             </button>
@@ -214,7 +225,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   ? 'bg-white text-[var(--ai)] shadow-2xs font-black'
                   : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 2: Gợi ý các từ then chốt, ưu đãi lần đầu (-15đ, trần 80đ)' : 'Cấp 2: Gợi ý các từ then chốt (-30đ tự chủ, trần 70đ)'}
+              title={isFirstUseInSession ? 'Cấp 2: Gợi ý các từ then chốt, ưu đãi lần đầu (-15đ, tối đa 85/100đ)' : 'Cấp 2: Gợi ý các từ then chốt (-30đ tự chủ, tối đa 70/100đ)'}
             >
               Cấp 2: Từ then chốt {isFirstUseInSession ? '(-15đ)' : '(-30đ)'}
             </button>
@@ -226,7 +237,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   ? 'bg-white text-[var(--shu)] shadow-2xs font-black'
                   : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo, ưu đãi lần đầu (-40đ, trần 60đ)' : 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo (-60đ tự chủ, trần 50đ)'}
+              title={isFirstUseInSession ? 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo, ưu đãi lần đầu (-40đ, tối đa 60/100đ)' : 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo (-60đ tự chủ, tối đa 40/100đ)'}
             >
               Cấp 3: Trọn câu {isFirstUseInSession ? '(-40đ)' : '(-60đ)'}
             </button>
@@ -234,10 +245,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
 
           <button
             type="button"
-            onClick={() => {
-              ukiyoSound.playSubtleTap();
-              onClose();
-            }}
+            onClick={() => onClose()}
             className="text-[#6D5A3E] hover:text-[var(--sumi)] p-1 rounded-md hover:bg-[#EFE7D6] transition cursor-pointer"
             title="Đóng gợi ý (Học viên tự nói vào micro)"
             aria-label="Đóng gợi ý"
@@ -249,13 +257,13 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
 
       {/* DÒNG CÂU TIẾNG VIỆT HOÀN CHỈNH */}
       <div className="pl-7 pr-2">
-        <p className="text-xs sm:text-sm font-extrabold text-[var(--sumi)] leading-relaxed break-words">
+        <p className="text-xs font-extrabold text-[var(--sumi)] leading-snug break-words">
           "{activeMeaning || missionTitle || 'Diễn đạt ý theo bối cảnh'}"
         </p>
       </div>
 
       {/* HÀNG 2: NỘI DUNG THEO TỪNG CẤP ĐỘ + HÀNH ĐỘNG ĐỒNG BỘ */}
-      <div className="bg-white/90 p-2.5 sm:p-3 rounded-xl border border-[#E6DAC2] shadow-2xs flex flex-col gap-2.5">
+      <div className="bg-white p-2 sm:p-2.5 rounded-lg border border-[#E6DAC2] shadow-2xs flex flex-col gap-1.5">
         {hintTier === 1 && (
           <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
             <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--sumi)] min-w-0 flex-1">
@@ -270,7 +278,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               type="button"
               onClick={() => handleSwitchTier(2)}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer shrink-0 ml-auto"
-              title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 2 (-15đ, trần 80đ)' : 'Nâng cấp gợi ý: Cấp 2 (-30đ, trần 70đ)'}
+              title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 2 (-15đ Tự chủ, tối đa 85/100đ)' : 'Nâng cấp gợi ý: Cấp 2 (-30đ Tự chủ, tối đa 70/100đ)'}
             >
               <span>Xem từ khóa</span>
               <ArrowRightIcon className="w-3 h-3 text-white/80" />
@@ -287,7 +295,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               </span>
               <div className="flex flex-wrap gap-2 items-center">
                 {primaryKeywords.map((kw, idx) => {
-                  const effectiveFuri = generateClientFuriganaHtml(kw);
+                  const effectiveFuri = alignFuriganaWithOriginal(generateClientFuriganaHtml(kw), kw);
                   return (
                     <div
                       key={idx}
@@ -295,17 +303,20 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                     >
                       <button
                         type="button"
-                        onClick={() => {
-                          ukiyoSound.playSubtleTap();
-                          onUseHint(kw, 2);
-                        }}
+                        onClick={() => onUseHint(kw, 2)}
                         className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 text-xs sm:text-sm font-bold text-[var(--sumi)] font-jp transition active:scale-95 cursor-pointer"
                         title="Bấm để chèn từ này vào ô nhập, hoặc nhìn vào để tự nói"
                       >
-                        <span
-                          className="leading-snug"
-                          dangerouslySetInnerHTML={{ __html: effectiveFuri || kw }}
-                        />
+                        {showHintFurigana ? (
+                          <span
+                            className="leading-snug"
+                            dangerouslySetInnerHTML={{ __html: effectiveFuri || kw }}
+                          />
+                        ) : (
+                          <span className="leading-snug">
+                            {stripRubyToPlainJapanese(kw)}
+                          </span>
+                        )}
                         <span className="text-[10px] text-[#8A6A3B] font-sans font-normal">+</span>
                       </button>
 
@@ -314,7 +325,6 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            ukiyoSound.playSubtleTap();
                             onPlaySampleAudio(kw);
                           }}
                           className="pr-2 pl-1 py-1 text-[var(--ai)] hover:text-[var(--ai-hover)] transition cursor-pointer"
@@ -350,7 +360,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   type="button"
                   onClick={() => handleSwitchTier(3)}
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
-                  title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 3 trọn câu (-40đ, trần 60đ)' : 'Nâng cấp gợi ý: Cấp 3 trọn câu (-60đ, trần 50đ)'}
+                  title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 3 (-40đ Tự chủ, tối đa 60/100đ)' : 'Nâng cấp gợi ý: Cấp 3 (-60đ Tự chủ, tối đa 40/100đ)'}
                 >
                   <span>Xem trọn câu</span>
                   <ArrowRightIcon className="w-3 h-3 text-white/80" />
@@ -364,10 +374,18 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
           <div className="flex flex-col gap-2.5">
             <div className="min-w-0">
               {(() => {
-                const effectiveFuri = activeOption.furiganaHtml || generateClientFuriganaHtml(cleanSample);
+                if (!showHintFurigana) {
+                  return (
+                    <p className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-relaxed break-words">
+                      {stripRubyToPlainJapanese(cleanSample)}
+                    </p>
+                  );
+                }
+                const rawFuri = activeOption.furiganaHtml || generateClientFuriganaHtml(cleanSample);
+                const effectiveFuri = alignFuriganaWithOriginal(rawFuri, cleanSample);
                 return effectiveFuri && (effectiveFuri.includes('<ruby>') || activeOption.furiganaHtml) ? (
                   <div
-                    className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-relaxed break-words"
+                    className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-[2.05] break-words"
                     dangerouslySetInnerHTML={{ __html: effectiveFuri }}
                   />
                 ) : (

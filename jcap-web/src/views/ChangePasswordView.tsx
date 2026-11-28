@@ -75,14 +75,14 @@ export function ChangePasswordView() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-[#E6EDF5] bg-white shadow-sm">
+    <div className="jx-touch-page mx-auto max-w-3xl overflow-hidden rounded-xl border border-[#E6EDF5] bg-white shadow-sm">
       <div className="border-b border-[#E6EDF5] px-6 py-6 sm:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">Hồ sơ học viên</p>
         <h1 className="mt-2 text-2xl font-bold text-[#071A44]">Bảo mật tài khoản</h1>
         <p className="mt-2 text-sm text-[#71809A]">{user?.email}</p>
       </div>
 
-      <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[0.75fr_1.25fr]">
+      <div className="jx-mobile-card-padding grid gap-8 p-6 sm:p-8 md:grid-cols-[0.75fr_1.25fr]">
         <div>
           <h2 className="font-bold text-[#071A44]">{hasPassword === false ? 'Tạo mật khẩu JCAP' : 'Đổi mật khẩu'}</h2>
           <p className="mt-2 text-sm leading-6 text-[#71809A]">

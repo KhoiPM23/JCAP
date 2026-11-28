@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kiri",
+      "Fields": {
+        "Meaning": "Chỉ, kể từ đó không còn",
+        "Formation": "Số lượng ＋ きり／động từ thể た ＋ きり",
+        "Explanation": "Sau thể た, nêu việc xảy ra một lần rồi không lặp lại hoặc trạng thái tiếp diễn từ đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kiri:example:1": "Tôi chỉ gặp anh ấy một lần và từ đó chưa gặp lại.",
+        "kiri:example:2": "Bà tôi bị bệnh và đã nằm liệt giường nhiều năm."
+      },
+      "SourceHash": "114986239aedb6ac6fdf4384ba1ebfea8e13b6a1dbac77acdd7ffb983e36f910"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kiru",
+      "Fields": {
+        "Meaning": "Làm hết, làm đến cùng",
+        "Formation": "Gốc ます ＋ 切る",
+        "Explanation": "Nhấn mạnh hành động được thực hiện trọn vẹn hoặc đến giới hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kiru:example:1": "Cả nhà tôi ăn hết chỗ thức ăn đã mua.",
+        "kiru:example:2": "Tôi đã chạy hết quãng đường marathon dài."
+      },
+      "SourceHash": "bdbe5c024cca5069a864c0696969ac698f195ea2ad24c0c35cea912f366983b5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kirenai",
+      "Fields": {
+        "Meaning": "Không thể làm hết",
+        "Formation": "Gốc ます ＋ 切れない",
+        "Explanation": "Dạng phủ định khả năng của hậu tố 切る, dùng khi số lượng hoặc mức độ vượt quá khả năng làm hết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kirenai:example:1": "Đồ ăn nhiều quá, tôi không thể ăn hết.",
+        "kirenai:example:2": "Trên trời có vô số ngôi sao, không thể đếm hết."
+      },
+      "SourceHash": "da694e2719f6bca9ba7cbb0cea845ab0fd712ea3660d722f5865237a9fed635e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kuse-ni",
+      "Fields": {
+        "Meaning": "Vậy mà, dù… vẫn (trách móc)",
+        "Formation": "Mệnh đề bổ nghĩa ＋ くせに",
+        "Explanation": "Nêu điều trái với kỳ vọng kèm thái độ chê trách hoặc coi thường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kuse-ni:example:1": "Biết rõ vậy mà anh ấy chẳng nói cho tôi gì cả.",
+        "kuse-ni:example:2": "Bản thân chẳng chịu làm mà chỉ biết phàn nàn."
+      },
+      "SourceHash": "6f20738a0f9e208528a76a81b3536e0aefe8da83f4d977c0e45d266951ec60cd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kurai-gurai",
+      "Fields": {
+        "Meaning": "Khoảng, đến mức",
+        "Formation": "Số lượng ＋ くらい／ぐらい hoặc mệnh đề bổ nghĩa ＋ くらい／ぐらい",
+        "Explanation": "Dùng để ước lượng số lượng hoặc nêu một tình huống minh họa mức độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kurai-gurai:example:1": "Đi bộ đến ga mất khoảng 15 phút.",
+        "kurai-gurai:example:2": "Tôi đau bụng đến mức không cử động được."
+      },
+      "SourceHash": "13ccf42efd5b0b0dd64a1e53952662b24231df46dc6269f213ae662e2614031b"
+    }
+  ]
+}

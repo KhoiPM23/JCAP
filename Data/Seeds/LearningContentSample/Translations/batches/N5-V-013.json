@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 từ và 39 câu theo bản Nhật. Mục 再来年 có một câu nguồn.",
+    "Dùng lại bản dịch câu 74148. Câu 172375 có lỗi chính tả ở いらしゃいました, đã ghi dạng chuẩn trong phần lưu ý."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4a11eb5fb4",
+      "Fields": {
+        "Meaning": "Xin lỗi",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "ごめんなさい dùng để xin lỗi khi làm phiền hoặc mắc lỗi. Có thể nêu lý do trước lời xin lỗi.",
+        "UsageNotes": "Với người thân, có thể dùng ごめん."
+      },
+      "Examples": {
+        "219061": "Xin lỗi, nhưng tôi nghe không rõ.",
+        "226510": "Xin lỗi vì đã ngắt lời."
+      },
+      "SourceHash": "50816ba26953e83ca5fe49cb9f24ded4789d12aecd9bd2aaf326bda28a2722e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6313cc9cb5",
+      "Fields": {
+        "Meaning": "Cái này, đây, điều này",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "これ chỉ vật hoặc điều gần người nói. Từ này đứng độc lập. Khi đứng trước danh từ, dùng この, như この本.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74148": "Đây là anh trai tôi. Anh ấy trông bảnh nhỉ.",
+        "143331": "Rốt cuộc chuyện này là thế nào?"
+      },
+      "SourceHash": "29508eae00665e58eae4a5e68b7b9079ec270fe101c75973cf22f3980af00124"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3793173687",
+      "Fields": {
+        "Meaning": "Tháng này",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "今月（こんげつ）chỉ tháng hiện tại. 今月の売り上げ nghĩa là doanh số tháng này.",
+        "UsageNotes": "今月いっぱい nghĩa là đến hết tháng này."
+      },
+      "Examples": {
+        "172460": "Doanh số tháng này không tốt.",
+        "172471": "Tôi sẽ ở đây đến hết tháng này."
+      },
+      "SourceHash": "84cadf3f38cc93a8a45d81c03fe56ce9289144de5cff496e00473c40f73b15ab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a27eadef1",
+      "Fields": {
+        "Meaning": "Tuần này",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "今週（こんしゅう）chỉ tuần hiện tại. 今週は đưa tuần này làm chủ đề của câu.",
+        "UsageNotes": "Câu 172375 ghi いらしゃいました. Dạng viết chuẩn là いらっしゃいました."
+      },
+      "Examples": {
+        "172375": "Tuần này anh/chị đã ở đâu ạ?",
+        "172390": "Tuần này bạn đã làm gì?"
+      },
+      "SourceHash": "92e41da7bdea276a5790306c3e0420be2b14a740ea347fddeae9e7a3b88787e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e1978f90df",
+      "Fields": {
+        "Meaning": "Như thế này, kiểu này",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "こんな đứng trước danh từ để nói về loại hoặc tình trạng đang được chỉ ra. こんな本 là sách kiểu này, còn こんな日 là ngày như thế này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217309": "Đọc sách kiểu này thì được ích gì?",
+        "217322": "Ngày như thế này tôi không muốn ra ngoài."
+      },
+      "SourceHash": "32c35ecf0bc9d1adc0bf599e63633183c55b933b187c0c75f57f5ed57d355cea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a65b39cf7",
+      "Fields": {
+        "Meaning": "Xin chào (lời chào ban ngày)",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "こんにちは là lời chào thường dùng vào ban ngày. Chữ は ở cuối được đọc là わ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217287": "Chào George, dạo này thế nào?",
+        "217298": "Xin chào, anh/chị có phải là Jackie Scott không ạ?"
+      },
+      "SourceHash": "0d3ff004b223442a186c493225092f6b3b24d885714e80eea8a1f6c7c0327a7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb1c9a5df9",
+      "Fields": {
+        "Meaning": "Tối nay",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "今晩（こんばん）chỉ buổi tối của ngày hôm nay. 今晩は có thể dùng để mở đầu câu nói về tối nay.",
+        "UsageNotes": "こんばんは là lời chào buổi tối."
+      },
+      "Examples": {
+        "171245": "Không biết tối nay có tiệc không nhỉ?",
+        "171264": "Tối nay chơi cờ vua nhé?"
+      },
+      "SourceHash": "d5214937acb63229f68024d2c7e1e806d2927ccd623fa2e02aef70534594b0d1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6c0551dd8a",
+      "Fields": {
+        "Meaning": "Chào buổi tối",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "こんばんは là lời chào dùng vào buổi tối. Chữ は ở cuối được đọc là わ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "347753": "Chào buổi tối, mọi người ở Chicago!",
+        "426900": "Chào buổi tối."
+      },
+      "SourceHash": "af508b506677b8e56ddae45e6908ccde3fb977940cd1a4b11e670cb93cc77d42"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ba7ba2434",
+      "Fields": {
+        "Meaning": "Nào, thôi nào, để xem",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "さあ có thể mở đầu lời thúc giục hoặc lời đề nghị. Khi đứng một mình để đáp câu hỏi, từ này cũng có thể diễn tả sự ngập ngừng.",
+        "UsageNotes": "Hai câu nguồn dùng さあ để chuyển sang hành động tiếp theo."
+      },
+      "Examples": {
+        "195024": "Mọi người, nào, nghe đây.",
+        "216960": "Nào, chúng ta kết thúc buổi tiệc thôi."
+      },
+      "SourceHash": "219c79e62fbab712a3e40d7dccb419ab59617cbb5af445abcbb49b718016026d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a96e3a2b33",
+      "Fields": {
+        "Meaning": "Ví tiền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "財布（さいふ）chỉ ví dùng để đựng tiền hoặc thẻ. Cũng có thể gặp cách viết サイフ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170210": "Tôi bị mất ví và hộ chiếu rồi.",
+        "216852": "Anh ấy chợt nhận ra ví đã biến mất."
+      },
+      "SourceHash": "b779c4ef64aa01ddf2302a283e3d5c1254ae987b130bb54bb2d49e7f4a36dba9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20fcc4f54f",
+      "Fields": {
+        "Meaning": "Phía trước, phần tiếp theo, tương lai, trước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "先（さき）có thể chỉ nơi xa hơn theo hướng đang đi hoặc phần tiếp theo theo thời gian. それから先 là phần sau đó, còn 先まで là đến một chỗ xa hơn phía trước.",
+        "UsageNotes": "Trong 先に, từ này thường chỉ làm trước, như 先に行く (đi trước)."
+      },
+      "Examples": {
+        "194388": "Xin đi thêm một chút nữa.",
+        "205916": "Tôi muốn nghe phần tiếp theo của câu chuyện."
+      },
+      "SourceHash": "8d16eaef1cdf4900ec78caa20327958774dc2324de6cf98a4d72d3e9ba3ae688"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4c39babf5f",
+      "Fields": {
+        "Meaning": "Nở (hoa)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "咲く（さく）dùng khi hoa nở. Trong 花が咲く, hoa đi với が.",
+        "UsageNotes": "Thể て là 咲いて."
+      },
+      "Examples": {
+        "202946": "Hoa tulip đã nở rất đẹp.",
+        "217953": "Những bông hoa này nở vào mùa xuân."
+      },
+      "SourceHash": "cb6a9a50a1bc31538498829a8c5e3dd045877075bfeb652b6ddeddbda2a72c7d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c10cb3070d",
+      "Fields": {
+        "Meaning": "Bài văn, việc viết bài văn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "作文（さくぶん）chỉ bài văn hoặc việc viết bài văn. 作文を書く nghĩa là viết bài văn, còn 〜という題で nêu đề bài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170165": "Bạn viết xong bài văn chưa?",
+        "236141": "Hãy viết một bài văn với đề “Tình bạn”."
+      },
+      "SourceHash": "c2147a678fef31c3c4a68c6c07824d4db9fed12af2f8d3aad92de3a6ef877e79"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4e2aefb855",
+      "Fields": {
+        "Meaning": "Giương, che (ô), đưa ra",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "傘を差す nghĩa là giương ô để che mưa hoặc nắng. 差す cũng gặp trong cụm 手を差し出す (đưa tay ra).",
+        "UsageNotes": "差さずに nghĩa là không giương ô mà vẫn làm việc tiếp theo trong câu nguồn."
+      },
+      "Examples": {
+        "92769": "Cô ấy giương ô giữa trời nắng gay gắt.",
+        "109822": "Anh ấy vẫn tiếp tục đi trong mưa mà không che ô."
+      },
+      "SourceHash": "f12a70bd91b6cd451b2de3199eee27c2e09acd865272d1cbd2aa02b4e9ac0ebd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a371cc6a54",
+      "Fields": {
+        "Meaning": "Tạp chí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "雑誌（ざっし）chỉ tạp chí. 雑誌を買う là mua tạp chí, còn 雑誌を読む là đọc tạp chí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204129": "Đọc tạp chí kiểu đó thật ngớ ngẩn.",
+        "210481": "Có thể mua cuốn tạp chí đó ở đâu?"
+      },
+      "SourceHash": "afc12fdd38309c705416e813668cfc880a20af0a623f6401507586a4481916c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8af5030b7a",
+      "Fields": {
+        "Meaning": "Đường (gia vị)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "砂糖（さとう）chỉ đường dùng để tạo vị ngọt. 砂糖なし nghĩa là không có đường. あまり〜ない diễn tả số lượng hoặc mức độ không nhiều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170890": "Chúng ta phải xoay xở mà không có đường.",
+        "196232": "Trong hũ không còn nhiều đường."
+      },
+      "SourceHash": "b17851cb8363c1eef299b78c1023026f6434ca7f9740b7503b7bfcb7acde7849"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "688bc67044",
+      "Fields": {
+        "Meaning": "Lạnh (thời tiết, không khí)",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "寒い（さむい）tả thời tiết lạnh hoặc cảm giác lạnh do môi trường. 寒いから nghĩa là vì trời lạnh.",
+        "UsageNotes": "Khi tả vật lạnh khi chạm vào, thường dùng 冷たい（つめたい）."
+      },
+      "Examples": {
+        "125110": "Trời vừa lạnh vừa mưa.",
+        "184049": "Trời lạnh nên bạn cần mặc áo khoác."
+      },
+      "SourceHash": "e6b9d7dbce55c9afce28a8fd8d9e3ef9e138dda8a22f02a5a78631f0b6ba5619"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a1f511640",
+      "Fields": {
+        "Meaning": "Tạm biệt",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "さようなら là lời chào khi chia tay. Trong giao tiếp thân mật, またね cũng thường dùng khi dự kiến gặp lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202137": "Vậy hẹn gặp lại tối nay nhé. Tạm biệt!",
+        "216704": "Tạm biệt. Hẹn gặp lại nhé."
+      },
+      "SourceHash": "cc57e20c7c0e01737775cfe364a4d7ec798ebd15f8199444c7ec8f3a3e3c59e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "45c705d5b2",
+      "Fields": {
+        "Meaning": "Năm sau nữa, hai năm nữa",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "再来年（さらいねん）chỉ năm sau năm tới, tức hai năm sau năm hiện tại.",
+        "UsageNotes": "来年 là năm tới. 一昨年 là năm kia trong quá khứ."
+      },
+      "Examples": {
+        "140720": "Ông tôi dự định nghỉ hưu vào năm sau nữa."
+      },
+      "SourceHash": "f4c29441c44a230152237ff0cb95e179cfd57ea1155b95fdc32d8cadfc447327"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5cb07674a3",
+      "Fields": {
+        "Meaning": "Ba",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "三（さん）là số ba. 三千円（さんぜんえん）nghĩa là ba nghìn yên.",
+        "UsageNotes": "二、三 đứng trước danh từ có thể chỉ khoảng hai hoặc ba, nghĩa là vài."
+      },
+      "Examples": {
+        "123182": "Có hai, ba điểm bất lợi nhỉ.",
+        "219631": "Cuốn sách này giá ba nghìn yên."
+      },
+      "SourceHash": "2325a15690e613421e66dcbb8fcb1bc2e67e58f9f0d0faa826f8f321b825fe4a"
+    }
+  ]
+}

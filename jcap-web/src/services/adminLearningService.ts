@@ -1,11 +1,12 @@
 import type { ContentDetail, ContentKind, ContentRow, LearningFilters, LearningKind, LearningPage, SaveContent, SaveTopic, TopicDetail, TopicOption, TopicRow } from '../types/adminLearning';
+import { resolveApiUrl } from '../utils/apiBase';
 
 export class LearningApiError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
 async function request<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
   const token = localStorage.getItem('jcap_token');
-  const response = await fetch(`/api/admin/learning/${path}`, {
+  const response = await fetch(resolveApiUrl(`/api/admin/learning/${path}`), {
     method, signal, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -22,7 +23,7 @@ function params(filters: LearningFilters) {
 export const adminLearningService = {
   topics: (filters: LearningFilters, signal?: AbortSignal) => request<LearningPage<TopicRow>>(`topics?${params(filters)}`, 'GET', undefined, signal),
   contents: (kind: ContentKind, filters: LearningFilters, signal?: AbortSignal) => request<LearningPage<ContentRow>>(`${kind}?${params(filters)}`, 'GET', undefined, signal),
-  options: (signal?: AbortSignal) => request<TopicOption[]>('topics/options', 'GET', undefined, signal),
+  options: (signal?: AbortSignal, kind?: ContentKind) => request<TopicOption[]>(`topics/options${kind ? `?kind=${kind}` : ''}`, 'GET', undefined, signal),
   topic: (id: number, signal?: AbortSignal) => request<TopicDetail>(`topics/${id}`, 'GET', undefined, signal),
   detail: (kind: ContentKind, id: number, signal?: AbortSignal) => request<ContentDetail>(`${kind}/${id}`, 'GET', undefined, signal),
   saveTopic: (id: number | null, data: SaveTopic) => request<TopicDetail>(id ? `topics/${id}` : 'topics', id ? 'PUT' : 'POST', data),

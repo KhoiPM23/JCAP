@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "masu",
+      "Fields": {
+        "Meaning": "Đuôi động từ lịch sự",
+        "Formation": "Động từ bỏ ます ＋ ます／ません／ました／ませんでした",
+        "Explanation": "Các đuôi này lần lượt biểu thị khẳng định phi quá khứ, phủ định phi quá khứ, khẳng định quá khứ và phủ định quá khứ ở thể lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "masu:example:1": "Sáng nào tôi cũng uống cà phê.",
+        "masu:example:2": "Hôm qua tôi không đi học."
+      },
+      "SourceHash": "039646d3dbdb1f2a62ebe862371f381839811741c416cebd2b79c54eb0c59b27"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "masen-ka",
+      "Fields": {
+        "Meaning": "Anh/chị có muốn cùng làm không",
+        "Formation": "Động từ bỏ ます ＋ ませんか",
+        "Explanation": "Dùng ませんか để mời hoặc đề nghị một cách lịch sự, cho người nghe cơ hội quyết định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "masen-ka:example:1": "Cuối tuần mình đi xem phim nhé?",
+        "masen-ka:example:2": "Anh/chị có muốn uống trà không?"
+      },
+      "SourceHash": "0b02f4fc4392813db07659cd1ca0a38e08aad186bd9648cea473dd66533ea399"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mada",
+      "Fields": {
+        "Meaning": "Vẫn, chưa",
+        "Formation": "まだ ＋ câu khẳng định hoặc phủ định",
+        "Explanation": "Với khẳng định, まだ thường chỉ trạng thái còn tiếp diễn. Với phủ định, nó có thể cho biết điều mong đợi chưa xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mada:example:1": "Mẹ tôi vẫn đang ngủ.",
+        "mada:example:2": "Tôi vẫn chưa biết câu trả lời."
+      },
+      "SourceHash": "ca1070c1cc0af219393aa81b6e0fde893bf55b0d5bf53ef51c19091b9a708a7c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mada-te-imasen",
+      "Fields": {
+        "Meaning": "Vẫn chưa làm gì",
+        "Formation": "まだ ＋ động từ thể て ＋ いません",
+        "Explanation": "Dùng mẫu này để nói đến thời điểm đang xét, một việc chưa được thực hiện. まだ cũng có thể đứng sau tân ngữ như trong câu đầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mada-te-imasen:example:1": "Tôi vẫn chưa ăn trưa.",
+        "mada-te-imasen:example:2": "Tôi vẫn chưa đọc email đó."
+      },
+      "SourceHash": "c2215ab9fcf4c4c4deffb67513aa8a1ded81d11811b4289cc90cb7d4f94d9b74"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "made",
+      "Fields": {
+        "Meaning": "Đến, cho đến",
+        "Formation": "Mốc thời gian hoặc địa điểm ＋ まで\nĐộng từ dạng từ điển ＋ まで",
+        "Explanation": "まで đánh dấu điểm kết thúc về thời gian hoặc không gian. Một hành động cũng có thể làm mốc kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "made:example:1": "Hôm qua tôi làm việc đến mười giờ tối.",
+        "made:example:2": "Tàu này đi đến Yokohama."
+      },
+      "SourceHash": "64f87b28ab52e99f30c9eda0af26809afabb547c359af1681be5c37ee7f1f226"
+    }
+  ]
+}

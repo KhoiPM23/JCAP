@@ -1,9 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { placementTestService } from '../../../services/placementTestService';
 import { cx } from '../utils';
 import { AppSidebar } from './AppSidebar';
 import { LearnerNotificationBell } from '../../learner/LearnerNotificationBell';
+import { usePhoneViewport } from '../../../hooks/usePhoneViewport';
+import { LearnerMobileNavigation } from './LearnerMobileNavigation';
+import { PlacementTestInvitationModal } from '../../placement/PlacementTestInvitationModal';
 
 const COLLAPSE_KEY = 'jcap.sidebar.collapsed';
 
@@ -27,14 +32,20 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * Các trang đã làm lại theo design system nên có chế độ tối. Trang còn lại (Credit, Flashcard, Kết quả, chi tiết kịch bản…)
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
-const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards'];
+const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards', '/placement-test/history'];
+/** Diễn đàn, Hỗ trợ và Thư viện Shadowing: sáng dùng giấy ấm của Khám phá (HANDOFF 9h–9j), tối dùng hoc-tap-dem */
+const isPaperPath = (p: string) =>
+  p.startsWith('/community') || p.startsWith('/forum') || p.startsWith('/feedback') || p === '/shadowing' || p === '/shadowing/catalog';
+
 const isThemedPath = (p: string) =>
   p === '/learning' ||
   p.startsWith('/learning/') ||
   p.startsWith('/scenarios') ||
   p.startsWith('/roleplay/results') ||
+  p.startsWith('/placement-test') ||
   p.startsWith('/profile') ||
   p.startsWith('/flashcards') ||
+  isPaperPath(p) ||
   THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
 
 /**
@@ -89,9 +100,43 @@ const PageFrame: React.FC<{ routeKey: string; currentKey: React.MutableRefObject
  */
 export const LearnerShell: React.FC = () => {
   const { pathname } = useLocation();
+  const mobile = usePhoneViewport();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  const { user, refreshUser } = useAuth();
   const { isDark, themeFor } = useTheme();
+  const [inviteDismissed, setInviteDismissed] = useState(false);
+
+  // Ràng buộc chặt với hasSeenPlacementPrompt === false để tránh bật nhầm khi field chưa nạp hoặc tài khoản đã bỏ qua
+  const shouldShowPlacementInvite =
+    !inviteDismissed &&
+    user?.role !== 'Admin' &&
+    user?.placementTestStatus === 'NotStarted' &&
+    user?.hasSeenPlacementPrompt === false;
+
+  const handleStartPlacementFromModal = () => {
+    setInviteDismissed(true);
+    navigate('/placement-test');
+  };
+
+  const handleSkipPlacementFromModal = async () => {
+    setInviteDismissed(true);
+    try {
+      await placementTestService.skip();
+      window.dispatchEvent(
+        new CustomEvent('jcap_profile_updated', {
+          detail: {
+            hasSeenPlacementPrompt: true,
+            placementTestStatus: 'Skipped',
+          },
+        }),
+      );
+      await refreshUser();
+    } catch {
+      /* bỏ qua lỗi mạng tạm thời, đã ẩn modal trong phiên hiện tại */
+    }
+  };
   const mapRoute = isMapPath(pathname);
   // Chuyển cảnh chỉ bắt đầu sau khi phần việc nặng đã xong, để hoạt ảnh chạy trên luồng chính rảnh:
   // - rời bản đồ: trang mới được dựng và bố cục khi còn ẩn (render, tính style, đo chữ), hai khung hình sau mới chạy hiệu ứng;
@@ -122,6 +167,7 @@ export const LearnerShell: React.FC = () => {
     stampsPage ||
     cleanPath.startsWith('/scenarios') ||
     cleanPath.startsWith('/roleplay/results') ||
+    cleanPath.startsWith('/placement-test') ||
     cleanPath.startsWith('/profile');
 
   // Nền ngoài khung (vùng cuộn thừa, đầu trang) theo màu tối khi bật chế độ tối; chỉ đặt khi khung học viên đang hiện
@@ -162,8 +208,8 @@ export const LearnerShell: React.FC = () => {
   };
 
   return (
-    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={stampsPage && !isDark ? themeFor('map') : themeFor('learn')}>
-      <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />
+    <div className={cx('jx-app', mobile && 'is-mobile', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={(stampsPage || isPaperPath(cleanPath)) && !isDark ? themeFor('map') : themeFor('learn')}>
+      {mobile ? <LearnerMobileNavigation /> : <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />}
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}
       {mapMounted && (
@@ -175,7 +221,7 @@ export const LearnerShell: React.FC = () => {
               </div>
             }
           >
-            <JapanMapView active={mapRoute} />
+            <JapanMapView active={mapRoute} mobileLayout={mobile} />
           </React.Suspense>
         </div>
       )}
@@ -184,7 +230,7 @@ export const LearnerShell: React.FC = () => {
       <div className="jx-pgbg" aria-hidden="true" />
 
       {!mapRoute && (
-        <main className={cx('jx-page', pending && 'is-pending', isWavyPage && 'jx-waves')}>
+        <main key={mobile ? pathname : undefined} className={cx('jx-page', pending && 'is-pending', isWavyPage && 'jx-waves')}>
           <PageFrame key={pathname} routeKey={pathname} currentKey={currentKey} ghostRef={ghostRef} className="jx-page-inner px-4 py-5 md:p-8">
             {lightIsland ? (
               <div data-theme="hoc-tap" className="jx-light-island">
@@ -201,7 +247,13 @@ export const LearnerShell: React.FC = () => {
       {/* Bản sao mờ dần của trang vừa rời đi */}
       <div ref={ghostRef} className="jx-ghosts" aria-hidden="true" />
       {/* Chuông thông báo chỉ hiện ở góc trên bên trái của Trang chủ / Hành trình */}
-      <LearnerNotificationBell />
+      {!mobile && <LearnerNotificationBell />}
+      {/* Hộp thoại mời làm Placement Test khi người học mới đăng nhập lần đầu */}
+      <PlacementTestInvitationModal
+        open={shouldShowPlacementInvite}
+        onStart={handleStartPlacementFromModal}
+        onSkip={handleSkipPlacementFromModal}
+      />
     </div>
   );
 };

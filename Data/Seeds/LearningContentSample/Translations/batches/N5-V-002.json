@@ -1,0 +1,314 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu trực tiếp 40 câu Nhật; bản dịch do AI biên soạn và tự rà soát, chưa có thẩm định độc lập.",
+    "Câu 217779 chứa dạng thân mật あっち, được nguồn gắn với cả あちら và あっち. Giữ cùng bản dịch cho cùng câu và giải thích biến thể.",
+    "Câu 236207 có từ ダックスフント・ソーセージ khá ít gặp. Giữ tên Dachshund trong bản dịch, không thay nội dung hoặc tự tạo câu nguồn mới.",
+    "厚い: ví dụ dùng danh từ 厚さ; 甘い: ví dụ 194851 nói sự nuông chiều; không dịch máy móc cả hai thành tính chất vật lý.",
+    "ある: giải thích rõ cây cối cũng dùng ある, tránh diễn giải rằng chỉ mọi thứ không có sự sống mới dùng được."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34e6f7d220",
+      "Fields": {
+        "Meaning": "Phía kia; đằng kia; bên kia",
+        "PartOfSpeech": "Đại từ chỉ phương hướng, nơi chốn",
+        "Explanation": "あちら chỉ hướng hoặc nơi xa cả người nói và người nghe, có sắc thái lịch sự hơn あっち. Cũng có thể dùng lịch sự khi chỉ một người, như あちらの方 (vị kia).",
+        "UsageNotes": "あっち là dạng thân mật, xuất hiện trong câu ví dụ đầu. Khi chỉ một vật ở xa, dùng あれ; khi đặt trước danh từ chỉ vật, dùng あの."
+      },
+      "Examples": {
+        "217779": "Cuốn sách bên này dễ hơn cuốn sách bên kia.",
+        "234350": "Khi đến bên đó, hãy viết thư cho tôi nhé."
+      },
+      "SourceHash": "87ccc5dd77bff6501af4224db14a03df9c6d82771fae1b4d74a45592445f0cbe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9949d87445",
+      "Fields": {
+        "Meaning": "Dày; sâu đậm, hậu hĩnh hoặc nồng hậu tùy ngữ cảnh",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "厚い thường tả vật có độ dày lớn, như 厚い本 (cuốn sách dày). 厚さ là danh từ chỉ độ dày. Trong những cụm như 情が厚い hoặc 手厚い, chữ 厚 diễn đạt tình cảm sâu đậm hay sự đối đãi chu đáo.",
+        "UsageNotes": "厚い (dày), 暑い (nóng về thời tiết) và 熱い (nóng về nhiệt độ của vật) đều đọc là あつい nhưng khác nghĩa và chữ viết."
+      },
+      "Examples": {
+        "85389": "Lớp băng dày 2 inch.",
+        "205578": "Nó dày 4 cm."
+      },
+      "SourceHash": "6f66918d1747c461d311cec8feaebfd4d8c590bffbe4b8e35da4d362d8fbe0ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7b4aecdf7b",
+      "Fields": {
+        "Meaning": "Nóng; nóng bức về thời tiết",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "暑い dùng để nói trời hoặc không khí nóng khiến người ta cảm thấy nóng bức. 暑くなる nghĩa là trời trở nên nóng hơn.",
+        "UsageNotes": "Dùng 熱い khi tả đồ uống hoặc đồ vật nóng; dùng 暑い khi nói thời tiết nóng."
+      },
+      "Examples": {
+        "147452": "Mình ra ngoài trước khi trời nóng lên nhé.",
+        "201579": "Sao trời lại nóng thế này?"
+      },
+      "SourceHash": "0ed7fcbcec8a2544c57625d6ed8ac9f1d405787e8ca7c9d841d586becfc07298"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a379d413fd",
+      "Fields": {
+        "Meaning": "Nóng; có nhiệt độ cao khi chạm hoặc dùng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "熱い dùng cho vật, thức ăn hoặc đồ uống có nhiệt độ cao, như 熱いコーヒー (cà phê nóng). Cũng có thể dùng theo nghĩa bóng để tả cảm xúc mãnh liệt.",
+        "UsageNotes": "Không dùng 熱い thay cho 暑い khi chỉ nói trời nóng."
+      },
+      "Examples": {
+        "147486": "Để tôi pha cho bạn một ít cà phê nóng nhé.",
+        "236207": "Bạn có muốn dùng xúc xích Dachshund nóng không?"
+      },
+      "SourceHash": "47f0a192d819bbe2bcdacada159e9de0ad4c04bd6a8df05d065c4e06bb39ce2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60dd63379e",
+      "Fields": {
+        "Meaning": "Đằng kia; phía bên kia",
+        "PartOfSpeech": "Đại từ chỉ phương hướng, nơi chốn",
+        "Explanation": "あっち là cách nói thân mật của あちら, chỉ hướng hoặc nơi ở xa cả người nói và người nghe. あっちに nghĩa là ở hoặc về phía đằng kia.",
+        "UsageNotes": "Trong giao tiếp lịch sự, có thể dùng あちら. Phân biệt こっち (phía này), そっち (phía đó, gần người nghe) và あっち (phía kia)."
+      },
+      "Examples": {
+        "217779": "Cuốn sách bên này dễ hơn cuốn sách bên kia.",
+        "4892691": "Hình như có thang máy ở đằng kia đấy."
+      },
+      "SourceHash": "2679c52576700919102fe6a183ec8a029cd3e0a3ae62187c9f979b4c078637aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f134c9b38",
+      "Fields": {
+        "Meaning": "Sau; sau đó",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "後 với cách đọc あと chỉ thời điểm hoặc thứ tự sau một việc, một vật. Dùng danh từ ＋ の後 để nói sau…, như 食事の後 (sau bữa ăn). 後で nghĩa là lát nữa hoặc sau đó.",
+        "UsageNotes": "Chữ 後 có nhiều cách đọc tùy từ. Mục này dùng あと; 後ろ đọc うしろ và thường chỉ phía sau trong không gian."
+      },
+      "Examples": {
+        "189518": "Sau cơn mưa trời lại sáng.",
+        "229928": "Trong bảng chữ cái, B đứng sau A."
+      },
+      "SourceHash": "eb8ded45e10e0efedd7726d963ddbe110e0de82cdf260cac39be9839e822c5af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "afdf384f68",
+      "Fields": {
+        "Meaning": "Bạn; anh; chị (người nghe)",
+        "PartOfSpeech": "Đại từ nhân xưng",
+        "Explanation": "あなた dùng để chỉ người đang được nói chuyện cùng. Tùy quan hệ và ngữ cảnh, tiếng Việt có thể dịch là bạn, anh hoặc chị. あなたたち chỉ nhiều người nghe.",
+        "UsageNotes": "Trong giao tiếp Nhật, thường gọi tên kèm さん hoặc dùng chức danh khi đã biết người đối diện. Không cần lặp あなた ở mọi câu; từ này có thể nghe xa cách hoặc thiếu tự nhiên trong một số quan hệ."
+      },
+      "Examples": {
+        "198640": "Này, các bạn đừng đi mà.",
+        "200726": "Cuốn sách nào là của bạn?"
+      },
+      "SourceHash": "97e8286a386ab392b1598b944d8f2918c20aca162b33c95a8a8ee931aac65a69"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4aab699864",
+      "Fields": {
+        "Meaning": "Anh trai của mình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "兄 dùng khi nói về anh trai của mình với người ngoài gia đình. Khi gọi anh hoặc nói về anh trai của người khác một cách lịch sự, thường dùng お兄さん（おにいさん）.",
+        "UsageNotes": "Nhãn khiêm nhường trong nguồn mô tả cách gọi người nhà khi nói với người ngoài; không cần dịch thành một nghĩa riêng trong tiếng Việt."
+      },
+      "Examples": {
+        "74148": "Đây là anh trai tôi. Anh ấy trông bảnh nhỉ.",
+        "176617": "Anh trai tôi đang tìm một căn hộ."
+      },
+      "SourceHash": "d84eb3a52e664c348684394e1659a54c5f1378849843ffefbf502e24d4c74ccb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8bfeb208b4",
+      "Fields": {
+        "Meaning": "Chị gái của mình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "姉 dùng khi nói về chị gái của mình với người ngoài gia đình. Khi gọi chị hoặc nói lịch sự về chị gái của người khác, thường dùng お姉さん（おねえさん）.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141894": "Tháng trước, chị gái tôi sinh một bé trai nặng 6 pao.",
+        "168901": "Chị gái tôi là quần giúp tôi."
+      },
+      "SourceHash": "cf2c2cdf73cb5d9a72de17f985f98aef84206dd1bc7124b2bbd41ac6c4698bb9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ac4706068b",
+      "Fields": {
+        "Meaning": "… kia; … đó (đứng trước danh từ)",
+        "PartOfSpeech": "Từ chỉ định bổ nghĩa cho danh từ",
+        "Explanation": "あの đứng trước danh từ để chỉ người hoặc vật xa cả người nói và người nghe, hoặc điều cả hai đã biết. Ví dụ あの本 là cuốn sách kia.",
+        "UsageNotes": "Không dùng あの một mình để thay cho danh từ; dùng あれ khi muốn nói cái kia. あの còn có cách dùng làm tiếng ngập ngừng, nhưng đó không phải nghĩa được học trong mục này."
+      },
+      "Examples": {
+        "219724": "Cuốn sách này không dễ bằng cuốn sách kia.",
+        "231361": "Sao bạn không uống loại rượu vang ngon đó?"
+      },
+      "SourceHash": "ef2c3f6293a50f3ef81e412f5c42f777f8d9978bd74fb213aa039690c7a19b45"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0cf05b3a0d",
+      "Fields": {
+        "Meaning": "Căn hộ; nhà có nhiều căn hộ cho thuê",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アパート chỉ nhà ở chia thành nhiều căn hộ, hoặc căn hộ trong kiểu nhà đó. Trong cách gọi ở Nhật, từ này thường gợi đến tòa nhà nhỏ hoặc thấp tầng; có thể dùng アパートを探す để nói tìm căn hộ.",
+        "UsageNotes": "アパート và マンション đều liên quan đến nhà chung cư/căn hộ, nhưng cách gọi thực tế còn phụ thuộc loại công trình và cách quảng cáo."
+      },
+      "Examples": {
+        "176617": "Anh trai tôi đang tìm một căn hộ.",
+        "229463": "Căn hộ đẹp nhỉ."
+      },
+      "SourceHash": "65e69b016736c7181b2d0f485e9e792998b7106cef749ca518130008975c93d2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a5aceb6426",
+      "Fields": {
+        "Meaning": "Tắm; hứng, đón lên người",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "あびる thường viết là 浴びる. シャワーを浴びる nghĩa là tắm vòi sen. Từ này cũng dùng khi cơ thể đón nhận ánh nắng, nước hoặc một tác động khác từ bên ngoài.",
+        "UsageNotes": "Chất hoặc tác động đón nhận thường đi với を, như 日光を浴びる (đón ánh nắng). Tắm bồn thường nói お風呂に入る."
+      },
+      "Examples": {
+        "209749": "Lúc đó tôi đang tắm vòi sen.",
+        "215743": "Tôi có thể tắm vòi sen được không ạ?"
+      },
+      "SourceHash": "aed0b3f12f366136db5c7bf7195a0cd93ba15d0f955ded98b1facbfeb96a02cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0509cb3b27",
+      "Fields": {
+        "Meaning": "Nguy hiểm; coi chừng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "危ない diễn tả tình huống có nguy cơ gây hại. Khi thốt lên 危ない！, người nói đang cảnh báo coi chừng. 危ないところだった có thể diễn tả suýt gặp nguy hiểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183596": "Coi chừng! Xe tải đang tới!",
+        "183713": "Thoát trong gang tấc! Suýt nữa thì nguy rồi."
+      },
+      "SourceHash": "f210524e69c948320d35da271fc48c5e37fb01db044ca4a61d88ae800bc18f21"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4afffe5811",
+      "Fields": {
+        "Meaning": "Ngọt; dễ dãi, nuông chiều; thiếu nghiêm khắc",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "甘い tả vị ngọt của đồ ăn hoặc đồ uống. Khi nói 人に甘い, từ này diễn tả việc dễ dãi hoặc nuông chiều ai. Cũng có thể chỉ cách đánh giá thiếu nghiêm khắc hoặc quá lạc quan.",
+        "UsageNotes": "Chọn nghĩa theo đối tượng: 甘いチョコレート là sô-cô-la ngọt, còn 子どもに甘い là nuông chiều trẻ."
+      },
+      "Examples": {
+        "194851": "Tôi cứ hay mềm lòng mà nuông chiều Mary.",
+        "223560": "Sô-cô-la này rất ngọt và ngon."
+      },
+      "SourceHash": "7c2448d5f458f3810d7d17ea6a5edf6fa954e8efb1d6cfc7c475fb9b82e0ba37"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eac90e8e98",
+      "Fields": {
+        "Meaning": "Không… lắm; không… nhiều (đi với phủ định)",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "Ở cách dùng sơ cấp, あまり kết hợp với dạng phủ định để diễn tả mức độ hoặc tần suất không cao. あまり読まない là không đọc nhiều; あまり暑くない là không nóng lắm.",
+        "UsageNotes": "Nghĩa không… lắm đến từ cả cụm あまり…ない. あまり có những cách dùng khác ngoài mẫu phủ định, nên không tự gán nghĩa phủ định cho mọi trường hợp."
+      },
+      "Examples": {
+        "196985": "Tôi không nói tiếng Pháp nhiều.",
+        "221356": "Tôi không đọc loại sách này nhiều."
+      },
+      "SourceHash": "1086685c4f0d7a7dde1e73c0fa98025f93b3e6c49a2548bc3430e4596e1a4372"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d72771a3c",
+      "Fields": {
+        "Meaning": "Kẹo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "飴 chỉ kẹo, thường là loại kẹo dùng để ngậm. Có thể dùng 飴を一つ để nói một viên kẹo và 飴をなめる để nói ngậm kẹo.",
+        "UsageNotes": "飴 (kẹo) và 雨 (mưa) cùng được viết bằng kana là あめ nhưng khác chữ Kanji và có thể khác trọng âm tùy phương ngữ."
+      },
+      "Examples": {
+        "139909": "Con trai tôi lấy một viên kẹo trong hộp.",
+        "229358": "Nếu con ngoan thì sẽ được cho kẹo nhé."
+      },
+      "SourceHash": "3e803a47bfba639fec34554085f7e6a944f238a9ae6336749119aceede47865f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "277a58c9df",
+      "Fields": {
+        "Meaning": "Mưa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "雨 là danh từ chỉ mưa. Dùng 雨が降る（あめがふる）để nói trời mưa và 雨にぬれる để nói bị ướt vì mưa.",
+        "UsageNotes": "Phân biệt 雨 (mưa) với 飴 (kẹo), cũng có cách đọc kana là あめ."
+      },
+      "Examples": {
+        "80133": "Nhờ có cái cây mà tôi không bị ướt mưa.",
+        "172827": "Có thể trời sẽ mưa ngay bây giờ."
+      },
+      "SourceHash": "9c9cdf0d19482b07a17995d15d13418227ce902045c9a5840f97726be75c0bca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f8fa96946f",
+      "Fields": {
+        "Meaning": "Rửa; giặt",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "洗う diễn tả việc dùng nước hoặc chất làm sạch để làm sạch một vật. Tùy đối tượng, dịch là rửa hoặc giặt: 手を洗う (rửa tay), 服を洗う (giặt quần áo), 車を洗う (rửa xe).",
+        "UsageNotes": "Dạng thể て là 洗って, dạng bị động là 洗われる."
+      },
+      "Examples": {
+        "148947": "Người đang rửa xe là Jones.",
+        "228970": "Chiếc xe này đã được rửa khi nào?"
+      },
+      "SourceHash": "488838d6289179a657837d768b4da7ddb0e970a905b9d9897a023e8ae24bb1ef"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "93461820fe",
+      "Fields": {
+        "Meaning": "Cảm ơn",
+        "PartOfSpeech": "Thán từ; lời cảm ơn",
+        "Explanation": "ありがとう dùng để bày tỏ lòng biết ơn trong giao tiếp thân mật. Cách nói lịch sự hơn là ありがとうございます. Có thể dùng V-てくれてありがとう để cảm ơn ai đã làm một việc cho mình.",
+        "UsageNotes": "Chọn mức lịch sự phù hợp với người nghe; với người chưa thân hoặc trong dịch vụ, thường dùng dạng có ございます."
+      },
+      "Examples": {
+        "197814": "Cảm ơn bạn đã lặn lội từ xa đến.",
+        "213900": "Cảm ơn anh/chị đã nói như vậy."
+      },
+      "SourceHash": "234d5656bea29a8cd260913c4e977eb2f9c6129662f5e82cacbf47e10023e45a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ac08788418",
+      "Fields": {
+        "Meaning": "Có; tồn tại (đồ vật, cây cối, sự việc)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ; phủ định bất quy tắc",
+        "Explanation": "ある diễn tả sự tồn tại của đồ vật, cây cối hoặc sự việc, và cũng có thể diễn tả có hoặc sở hữu một thứ. Ví dụ 本がある (có sách), 木がある (có cây), 予定がある (có kế hoạch). Dạng lịch sự là あります.",
+        "UsageNotes": "Người và động vật thường dùng いる. Dạng phủ định thông thường của ある là ない, không phải あらない; dạng lịch sự là ありません hoặc ないです."
+      },
+      "Examples": {
+        "77204": "Nếu có chuyện muốn nói thì hãy gọi điện cho tôi.",
+        "80097": "Cây cối hầu như không có, mà nếu có thì cũng rất ít."
+      },
+      "SourceHash": "18119f5428b2532452dd37caffd1d6bcd985c9a3dd91cad9a037a6bfcd2b30e4"
+    }
+  ]
+}

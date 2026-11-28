@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dffd722c2c",
+      "Fields": {
+        "Meaning": "Tự sát",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "自殺（じさつ）có nghĩa là tự sát.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "4f7934dcdb65404b01040c72868dd103e83a2c84cf21aff2daa75e738e943bc9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "11ac991f58",
+      "Fields": {
+        "Meaning": "Sự thật, sự việc có thật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事実（じじつ）có nghĩa là sự thật, sự việc có thật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110520": "Sớm muộn gì anh ấy cũng biết sự thật đó.",
+        "228075": "Hóa ra lời đồn là thật."
+      },
+      "SourceHash": "2c89f0c3d59f23c3f10eed556ca25d7bd6530b878d4cdf44b997b715791d4806"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dff67195c3",
+      "Fields": {
+        "Meaning": "Chi tiêu, khoản chi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "支出（ししゅつ）có nghĩa là chi tiêu, khoản chi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148278": "Đừng chi quá thu nhập.",
+        "148283": "Phải chi tiêu phù hợp với thu nhập."
+      },
+      "SourceHash": "91a25356a3de140dfe3d0be2c2f8d3a7ab783eabc6a7f6d5f63ea91b092ea98c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fbf3bca708",
+      "Fields": {
+        "Meaning": "Hoàn cảnh, tình hình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事情（じじょう）có nghĩa là hoàn cảnh, tình hình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92675": "Cô ấy tận dụng mọi tình huống.",
+        "102156": "Anh ấy am hiểu tình hình Trung Quốc."
+      },
+      "SourceHash": "70092fa6543c9a3cb230d8765baa11e8653cda429bcd67e195e212d5da342bcd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25190a5f67",
+      "Fields": {
+        "Meaning": "Nhà thơ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "詩人（しじん）có nghĩa là nhà thơ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88035": "Cô ấy không phải nhà thơ xuất sắc gì.",
+        "90699": "Cô ấy vừa là học giả vừa là nhà thơ."
+      },
+      "SourceHash": "0a83844fb7ff120590a6a82bfdacfdc705d00a668a9410fa829c3b1053de7043"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bf4dea448b",
+      "Fields": {
+        "Meaning": "Chính mình, bản thân",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "自身（じしん）có nghĩa là chính mình, bản thân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176747": "Chính bạn nên dự cuộc họp.",
+        "216403": "Chính Jane viết bức thư này."
+      },
+      "SourceHash": "fa6af32292af9f764922b0a035d0bb71c41f915247e4aa839a19cc8cb0a7021b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0983432238",
+      "Fields": {
+        "Meaning": "Chìm, lặn",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "沈む（しずむ）có nghĩa là chìm, lặn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74912": "Trông cứ như chuột chạy khỏi con tàu đang chìm nhỉ.",
+        "138160": "Mặt trời lặn xuống dưới đường chân trời."
+      },
+      "SourceHash": "830750ed3b8b774b88ab3916451754a26e59b0c1047cb092b8c70f2df039bad1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b381a57b1",
+      "Fields": {
+        "Meaning": "Tự nhiên, thiên nhiên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "自然（しぜん）có nghĩa là tự nhiên, thiên nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84981": "Vợ chồng yêu thương nhau là điều hoàn toàn tự nhiên.",
+        "210435": "Vụ cháy rừng xảy ra do nguyên nhân tự nhiên."
+      },
+      "SourceHash": "63e55fa68c98b55f0ae779fac74236d3ddfa7df3c28a5f370cc16c85d1dfe1fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b7517a4f00",
+      "Fields": {
+        "Meaning": "Tư tưởng, hệ tư tưởng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "思想（しそう）có nghĩa là tư tưởng, hệ tư tưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118840": "Anh ấy thiếu lý tưởng về mặt tư tưởng.",
+        "168254": "Tư tưởng được biểu đạt bằng lời nói."
+      },
+      "SourceHash": "7aa2f9cf093a278cd02a949ffc245527ca3019afe51b9bf5ffd2157b9fb9f851"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a521aa0cd",
+      "Fields": {
+        "Meaning": "Lưỡi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "舌（した）có nghĩa là lưỡi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101394": "Anh ấy bị bỏng lưỡi vì trà nóng.",
+        "224901": "Cà phê nóng đến mức bỏng lưỡi."
+      },
+      "SourceHash": "8a7db5e030a2ba6828f19c6edf5601662e899084b41fb73bd30722fe0aa8cdf2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8dbeaa8a0",
+      "Fields": {
+        "Meaning": "Ngay khi, tùy vào, đầu đuôi sự việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Sau gốc ます, 次第 chỉ việc làm ngay khi điều kiện xảy ra. Trong こういう次第だ, từ này chỉ đầu đuôi sự việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179349": "Tới sân bay tôi sẽ gọi ngay.",
+        "225047": "Đầu đuôi sự việc là vậy."
+      },
+      "SourceHash": "eaa173986e8e63dc5febde2481799ec9ca2af8423a571a79e70c2c0d06452619"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "372efcc496",
+      "Fields": {
+        "Meaning": "Tình hình, tình thế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事態（じたい）có nghĩa là tình hình, tình thế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145538": "Đừng lo. Tình hình đang khá lên.",
+        "150781": "Tình hình khá cấp bách."
+      },
+      "SourceHash": "a9519c8717a7f40311fde321e90594afe4de94d9ae9490275025761a608084b8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "658adc9590",
+      "Fields": {
+        "Meaning": "Tuân theo, làm theo",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "従う（したがう）có nghĩa là tuân theo, làm theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81463": "Làm theo bản năng thường dễ đi sai đường.",
+        "176820": "Bạn phải nghe lời bố mẹ."
+      },
+      "SourceHash": "f6fd5d69246f53612741cf2fdd55a94ad821413b51d2282394a1ab41dd3ad569"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d18731cba",
+      "Fields": {
+        "Meaning": "Do đó, vì vậy",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "したがって đứng đầu câu nghĩa là do đó. Hai câu nguồn dùng にしたがって, nghĩa là theo hoặc tùy theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145460": "Chúng tôi thi đấu theo luật mới.",
+        "177014": "Bạn sẽ tiến bộ tùy theo khả năng của mình."
+      },
+      "SourceHash": "bf245f399c62bfc1198d94db6da326abc2df9b4c771a4b040a19e35b22cf996e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "65b4a1f58b",
+      "Fields": {
+        "Meaning": "Thân thiết, gần gũi",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "親しい（したしい）có nghĩa là thân thiết, gần gũi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175256": "Chó là người bạn thân thiết nhất của con người.",
+        "215287": "John là bạn thân của tôi."
+      },
+      "SourceHash": "ced20c67cc841ad86e32754019181df22c796e35110d547660fa6e42b0356e4c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50e11fed01",
+      "Fields": {
+        "Meaning": "Chất lượng, tính chất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "質（しつ）có nghĩa là chất lượng, tính chất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149543": "Về chất lượng, cái này vượt xa cái kia.",
+        "226870": "Chất lượng trà đang giảm dần."
+      },
+      "SourceHash": "01a9ba91090030c9c2cc0efa9b0f1fee34c552bf7dfa006aa61567f911429f83"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "758bbc40fb",
+      "Fields": {
+        "Meaning": "Thất nghiệp, mất việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "失業（しつぎょう）có nghĩa là thất nghiệp, mất việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149613": "Sau khi mất việc, anh ấy gặp nhiều khó khăn.",
+        "220608": "Vùng này hầu như không có thất nghiệp."
+      },
+      "SourceHash": "b0b4d6925ceb60c80f04c62da21d78186555958015f020b5932a9a70f14e9fa3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae3fd65f95",
+      "Fields": {
+        "Meaning": "Thí nghiệm, thử nghiệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "実験（じっけん）có nghĩa là thí nghiệm, thử nghiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97486": "Họ đã làm một thí nghiệm hóa học mới.",
+        "221477": "Trong thí nghiệm này không được bất cẩn."
+      },
+      "SourceHash": "2a7fc5fb56d34f74dc763c289ec699afe37560a4dd599082cd5d7ff45c62d9bd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ad20880d6",
+      "Fields": {
+        "Meaning": "Hiện thực hóa, thành hiện thực",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "実現（じつげん）có nghĩa là hiện thực hóa, thành hiện thực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "231376": "Ý tưởng đó có khả năng thành hiện thực không?",
+        "233006": "Chúc mọi ước mơ của bạn thành hiện thực."
+      },
+      "SourceHash": "38d507f055f3b4b6b1cfe3ed68b0d6b6865865a01bb3bfb174cc1ed4ac3751dd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6bfc102fca",
+      "Fields": {
+        "Meaning": "Thực hiện, thi hành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "実行（じっこう）có nghĩa là thực hiện, thi hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107960": "Một khi lập kế hoạch, anh ấy nhất định thực hiện.",
+        "127112": "Biết và thực hiện là hai chuyện khác nhau."
+      },
+      "SourceHash": "b163ffe127c24d05194034044c179cfb5e86cbdc790fa007324b3b8b5516e61c"
+    }
+  ]
+}

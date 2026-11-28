@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "725adb9c35",
+      "Fields": {
+        "Meaning": "Dựa trên, căn cứ vào",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "基づく（もとづく）có nghĩa là dựa trên, căn cứ vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98455": "Cuộc tranh cãi của họ bắt nguồn từ hiểu lầm.",
+        "219938": "Câu chuyện này dựa trên sự thật."
+      },
+      "SourceHash": "654963a13fc08fe86950e5431498df1ba0489ef3b6fd395f8d19599108cf0506"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd2ba94516",
+      "Fields": {
+        "Meaning": "Tìm kiếm, yêu cầu",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "求める（もとめる）có nghĩa là tìm kiếm, yêu cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103947": "Anh ấy đến Tokyo tìm việc.",
+        "106041": "Anh ấy đến nhờ tôi giúp."
+      },
+      "SourceHash": "1f2db2f5428fa111011bc70388aff9cada263d3a3bab05926a77df7a883fd6ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae498d63bc",
+      "Fields": {
+        "Meaning": "Người, kẻ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "者（もの）có nghĩa là người, kẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85792": "Ai chịu chi phí thì người đó có quyền quyết định.",
+        "216160": "Chẳng ai chịu chăm chú nghe anh ấy nói."
+      },
+      "SourceHash": "8e0e6e4e50266b3dc1fa4c5e7a132e311c315b4a746920aa69899ad6fa2c5fa8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "013c3a92d2",
+      "Fields": {
+        "Meaning": "Tiếng động",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物音（ものおと）có nghĩa là tiếng động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146521": "Cậu bé run lên khi nghe tiếng động.",
+        "206910": "Tiếng động đó làm tôi mất tập trung khi đọc."
+      },
+      "SourceHash": "913e7b2417e7df7e63b536a2c9d6965c8c80c2738f2577356f507ea6d03f341a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b8002d0f8",
+      "Fields": {
+        "Meaning": "Câu chuyện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物語（ものがたり）có nghĩa là câu chuyện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105999": "Anh ấy kể cho tôi một câu chuyện dài.",
+        "219941": "Đây là câu chuyện về một con mèo."
+      },
+      "SourceHash": "a39494e8a3b4c515d6587e77d4ff4af7ec71f7149f8696a667eddf679a87d9f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e810d0494c",
+      "Fields": {
+        "Meaning": "Sự việc, mọi chuyện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物事（ものごと）có nghĩa là sự việc, mọi chuyện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182560": "Làm gì vội quá thì dễ mắc lỗi đấy.",
+        "229953": "Hãy nhìn mọi việc như chúng vốn có."
+      },
+      "SourceHash": "bd2b77285d33ef807e77be5e3ba01fe59756ea0d8e2d733501771e3481281851"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3cda3baabf",
+      "Fields": {
+        "Meaning": "Hoa văn, tình hình, dấu hiệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "模様（もよう）có nghĩa là hoa văn, tình hình, dấu hiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92485": "Cô ấy thích hoa văn trên chiếc đĩa đó.",
+        "189535": "Trời có vẻ sắp mưa."
+      },
+      "SourceHash": "57168f0a1209d83f53b04d3db6ccf70baf92c0cdf4f34ab943a13c341e794a68"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0e7597cf73",
+      "Fields": {
+        "Meaning": "Lời phàn nàn, lời lẽ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文句（もんく）có nghĩa là lời phàn nàn, lời lẽ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187682": "Chưa ai làm gì thì đừng phàn nàn.",
+        "204407": "Điều đó không phải lý do để bạn phàn nàn."
+      },
+      "SourceHash": "771dc546dee02c85209657a197425e82aa4af31d071c9f0dc8c919627b76a2c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb2bf568d9",
+      "Fields": {
+        "Meaning": "Chẳng bao lâu, rồi sẽ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "やがて（やがて）có nghĩa là chẳng bao lâu, rồi sẽ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110520": "Sớm muộn gì anh ấy cũng biết sự thật đó.",
+        "193117": "Chẳng bao lâu anh ấy quên chuyện đó."
+      },
+      "SourceHash": "7416c9e1a1bb51ca38c69ee18f182e0ecc3c328f3b6056dc7fc4f26c2a3ada83"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "396f83701d",
+      "Fields": {
+        "Meaning": "Vai, vai trò",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "役（やく）có nghĩa là vai, vai trò.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "116129": "Anh ấy muốn đóng vai Hamlet.",
+        "120162": "Anh ấy đóng vai trò quan trọng."
+      },
+      "SourceHash": "99d6036288c514db215bc4e7370b529307f1225967c2bd1466d245460d728c02"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "abfa120074",
+      "Fields": {
+        "Meaning": "Khoảng, xấp xỉ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "約（やく）có nghĩa là khoảng, xấp xỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207991": "Giá khoảng 50 đô la.",
+        "210088": "Thành phố đó có khoảng bốn triệu dân."
+      },
+      "SourceHash": "b39c1d9199c4f923d90a2a3e86358819d3e37486cf40fcf635a208c0bd1d12b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "02424c2277",
+      "Fields": {
+        "Meaning": "Vai trò, phần việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "役割（やくわり）có nghĩa là vai trò, phần việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110106": "Anh ấy hầu như không có vai trò trong việc ra quyết định.",
+        "174832": "Đại học có vai trò gì trong xã hội hiện đại?"
+      },
+      "SourceHash": "9acc4752a6e7ea1de521dd85d7b19ea9c9920f144f24b9a3a08da8781a4dfe67"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0e1d889990",
+      "Fields": {
+        "Meaning": "Tiền thuê nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "家賃（やちん）có nghĩa là tiền thuê nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137657": "Nghe nói chủ nhà muốn tăng tiền thuê.",
+        "186913": "Tiền thuê nhà mỗi tháng là bao nhiêu?"
+      },
+      "SourceHash": "261ef558ddf5bf2c69dbe702a03e88764bad570377ec13967055c59f2b8629af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5f249ce2ae",
+      "Fields": {
+        "Meaning": "Rắc rối, phiền phức",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "厄介（やっかい）có nghĩa là rắc rối, phiền phức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200689": "Đằng nào cũng rắc rối nhỉ.",
+        "204373": "Làm thế sẽ chuốc lấy rắc rối."
+      },
+      "SourceHash": "0dd65e65776a1ad3c47d4817672338baaa1900b687237385352e8ea7a5d723f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "35b2b01bf1",
+      "Fields": {
+        "Meaning": "Chỗ trọ, nhà trọ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "宿（やど）có nghĩa là chỗ trọ, nhà trọ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78137": "Du khách tìm chỗ nghỉ qua đêm.",
+        "147898": "Chủ nhà trọ quát những người làm."
+      },
+      "SourceHash": "e029068e1d60418c6e0d8f9996e2aa825fa6a3d6b53691df3b27d195ac17103c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b9a7186462",
+      "Fields": {
+        "Meaning": "Thuê người, tuyển dụng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "雇う（やとう）có nghĩa là thuê người, tuyển dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110855": "Anh ấy vẫn làm cho công ty đó.",
+        "230540": "Cửa hàng đó thuê tám nhân viên."
+      },
+      "SourceHash": "983be81d45104ca33c3384ba9be24b9617b16d24e624ebf19ab573b2602d187b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "edba3a49e1",
+      "Fields": {
+        "Meaning": "Mái nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "屋根（やね）có nghĩa là mái nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84032": "Gió thổi bay mái nhà chúng tôi.",
+        "109516": "Anh ấy dọn tuyết trên mái nhà."
+      },
+      "SourceHash": "fb95d554080d02b45cd9dcf7563ff97371a48a5a7a9c7d70d3518f664a418642"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa391c76da",
+      "Fields": {
+        "Meaning": "Xé, phá, vi phạm",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "破る（やぶる）có nghĩa là xé, phá, vi phạm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79504": "Đừng thất hứa nhé.",
+        "203217": "Ai đã xé mở phong bì này?"
+      },
+      "SourceHash": "9e73959d8f85932ddfc621afe6219d03ebee3dde2600c35aa13bfb06fe90afaf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22cc737e03",
+      "Fields": {
+        "Meaning": "Nghỉ, thôi việc, từ chức",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "辞める（やめる）có nghĩa là nghỉ, thôi việc, từ chức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104419": "Ông ấy buộc phải từ chức thủ tướng.",
+        "172650": "Hiện tôi không muốn nghỉ việc."
+      },
+      "SourceHash": "bad4802c107499ce9619588ca7104dc6a1d2d96fb8b4eedee07e678568455b23"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "586d4c294b",
+      "Fields": {
+        "Meaning": "Hơi, có phần",
+        "PartOfSpeech": "Phó từ, từ bổ nghĩa đứng trước danh từ",
+        "Explanation": "やや（やや）có nghĩa là hơi, có phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126512": "Xe cũ mà giá thế này thì hơi cao.",
+        "222599": "Nội quy trường này hơi lỏng."
+      },
+      "SourceHash": "fc60f504ab409b6830cfe7abc5528be0f7865ef63068555b1d479d5664cba8ba"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c6202f62c",
+      "Fields": {
+        "Meaning": "Bàn ăn",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "食卓（しょくたく）có nghĩa là bàn ăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87875": "Cô ấy dọn bàn chuẩn bị ăn sáng.",
+        "88601": "Cô ấy bày thức ăn lên bàn."
+      },
+      "SourceHash": "02991a9b72afe405122ffb15c0d992614031a2a5aba6dd0a4c6a99c446ef7301"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50463fe8e3",
+      "Fields": {
+        "Meaning": "Thực phẩm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食品（しょくひん）có nghĩa là thực phẩm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221050": "Thực phẩm này có độc.",
+        "2293362": "Thực phẩm đó không chứa gluten."
+      },
+      "SourceHash": "17ed93e2f82844dce88b02352a84af2737ba8d42db4ad7ec0bc54285f1455a44"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a6128bf81",
+      "Fields": {
+        "Meaning": "Thực vật, cây cối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "植物（しょくぶつ）có nghĩa là thực vật, cây cối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145985": "Anh chị không mang theo cây cối hay động vật sống chứ?",
+        "208907": "Cây đó lớn dần."
+      },
+      "SourceHash": "008c2d9736cc288e6181f262643e1f7b1b63e5dff293b9723758ef217e32a6c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5647f7089",
+      "Fields": {
+        "Meaning": "Thức ăn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食物（しょくもつ）có nghĩa là thức ăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144268": "Con người không thể sống nếu thiếu thức ăn.",
+        "159602": "Tôi sẽ mang nhiều thức ăn về."
+      },
+      "SourceHash": "18a0064bd70cd88c8ba0292253bf69650affb4ac42c5a7e69f5cafa7dfdf11b2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "009a4011b8",
+      "Fields": {
+        "Meaning": "Cảm giác thèm ăn, khẩu vị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食欲（しょくよく）có nghĩa là cảm giác thèm ăn, khẩu vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109785": "Anh ấy ít thấy thèm ăn vì thiếu vận động.",
+        "170622": "Dạo này tôi không thấy ngon miệng."
+      },
+      "SourceHash": "fa86124a09e6c601504761df473b105c4bd2c7f579c465d6b9a05a284a0a8a75"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c4b2e7a3a3",
+      "Fields": {
+        "Meaning": "Thực phẩm, nguồn thức ăn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食料（しょくりょう）có nghĩa là thực phẩm, nguồn thức ăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98043": "Họ không kiếm đủ thức ăn.",
+        "228370": "Ấn Độ hiện đang thiếu thực phẩm."
+      },
+      "SourceHash": "2f4f385b19fcd76e6bf7a2da3ddb1af30a4a4616e764218f35b834ba7577b4a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "49b450eac3",
+      "Fields": {
+        "Meaning": "Lương thực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食糧（しょくりょう）có nghĩa là lương thực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142132": "Hội Chữ thập đỏ phân phát lương thực cho người tị nạn.",
+        "145751": "Đang thiếu lương thực."
+      },
+      "SourceHash": "d50397350f0c0a4578087fb5eb19b8c721812eea7ad6f2a36800ac3a9445c4a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d83bc64e48",
+      "Fields": {
+        "Meaning": "Phòng làm việc, phòng đọc sách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "書斎（しょさい）có nghĩa là phòng làm việc, phòng đọc sách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170376": "Sau khi vợ tôi đi ngủ, tôi làm việc trong phòng riêng.",
+        "223480": "Cánh cửa này dẫn vào phòng làm việc."
+      },
+      "SourceHash": "4a8918128c285179b854868f6d7429b1a73f43e463f4a2326bda7dc01d4df1d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0596cdc023",
+      "Fields": {
+        "Meaning": "Nữ giới, học sinh nữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "女子（じょし）có nghĩa là nữ giới, học sinh nữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222596": "Trường này có nhiều nữ sinh hơn nam sinh.",
+        "223858": "Lớp này có 15 học sinh nam và 28 học sinh nữ."
+      },
+      "SourceHash": "8742c670c6e5e4bbf89b6b5998797aa101d010bf7cdf0e899a09c12ebf5947ae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d64b87f0c2",
+      "Fields": {
+        "Meaning": "Trợ lý, phụ tá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "助手（じょしゅ）có nghĩa là trợ lý, phụ tá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86418": "Cô ấy là một trợ lý có năng lực và đáng tin cậy.",
+        "155935": "Tôi đang tìm trợ lý."
+      },
+      "SourceHash": "6d700b993e3e2f1db2f9d45f5109b5725ac20450dc819c5cb484305be744352a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "107fb6f26b",
+      "Fields": {
+        "Meaning": "Dần dần",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "徐々に（じょじょに）có nghĩa là dần dần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75885": "Từ vựng sẽ tăng dần, nên hãy kiểm tra thường xuyên.",
+        "77484": "Đoàn tàu tăng tốc dần."
+      },
+      "SourceHash": "cab3d3ede5d14bb3743be49771443a38f85b7e6976abcd364e89cfe8f80dbdb2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cfd38a2853",
+      "Fields": {
+        "Meaning": "Chữ ký, ký tên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "署名（しょめい）có nghĩa là chữ ký, ký tên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104266": "Anh ấy đi quanh khu phố để xin chữ ký.",
+        "221344": "Bức thư này không có chữ ký."
+      },
+      "SourceHash": "997d71207c74e01c08962b127632ba957072bf0cbeba364bdbacf1a79d2704ea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88947a7f87",
+      "Fields": {
+        "Meaning": "Sách, sách vở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "書物（しょもつ）có nghĩa là sách, sách vở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97911": "Họ đem cuốn sách đó ra phơi nắng.",
+        "166735": "Chúng ta có thể tìm thấy niềm vui từ sách."
+      },
+      "SourceHash": "618e94a1bd78698978f11bce7ef04934a1bb275e2622f57935ef051690e58a31"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e1cd4e481",
+      "Fields": {
+        "Meaning": "Nữ diễn viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "女優（じょゆう）có nghĩa là nữ diễn viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147225": "Nữ diễn viên ngã ngửa khỏi sân khấu.",
+        "209324": "Nữ diễn viên ấy nói hỏng lời thoại."
+      },
+      "SourceHash": "18cd264ad785086984802e636ae66ee2d98e9c185869296a225fd77ebb128e3e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ba1f1b7ae",
+      "Fields": {
+        "Meaning": "Xử lý, giải quyết",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "処理（しょり）có nghĩa là xử lý, giải quyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101547": "Anh ấy sẽ xử lý tốt vấn đề khó đó.",
+        "232868": "Bạn đã xử lý chiếc xe đó thế nào?"
+      },
+      "SourceHash": "ffebd618f8f31a13660f495d4e1d03cf58c863519b0dc5b4333d4b713a4becaa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a534a4917",
+      "Fields": {
+        "Meaning": "Giấy tờ, hồ sơ, tài liệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "書類（しょるい）có nghĩa là giấy tờ, hồ sơ, tài liệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112674": "Anh ấy ở vị trí có thể xem tài liệu đó.",
+        "221314": "Tôi muốn đưa bức thư này vào hồ sơ."
+      },
+      "SourceHash": "c7e8bfdffd95e60781088028599888eac8af21e2dff68f6b338f67f228e2ae6b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aff4676eed",
+      "Fields": {
+        "Meaning": "Tin, thông báo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "知らせ（しらせ）có nghĩa là tin, thông báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87939": "Cô ấy bình tĩnh đón nhận tin ấy.",
+        "212401": "Tiếc là tin xấu đó có thật."
+      },
+      "SourceHash": "ee8c6488f9aaaa7467f93ad797bc939c6cc6db8f60b56ccfb3384afd0f192afb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55b77976ae",
+      "Fields": {
+        "Meaning": "Mông, phần sau",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "尻（しり）có nghĩa là mông, phần sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104232": "Anh ấy chỉ lo chạy theo các cô gái.",
+        "193037": "Dừng lại, không thì bị đánh đòn đấy."
+      },
+      "SourceHash": "aa74d0e965dad9a7aa0df8a940908c3ae38bc2c710dfad934dcd0a5cc92c7470"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "365fe85edb",
+      "Fields": {
+        "Meaning": "Dấu, ký hiệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "印（しるし）có nghĩa là dấu, ký hiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121325": "Hãy đánh dấu những từ không phát âm được.",
+        "222944": "Ký hiệu này là gì?"
+      },
+      "SourceHash": "d0462deb609f7883cf0ddd60c33d53d09c572084314a12ec732927ba300bd431"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7624d1daae",
+      "Fields": {
+        "Meaning": "Lâu đài, thành",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "城（しろ）có nghĩa là lâu đài, thành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207808": "Có một lâu đài cổ ở phía đông thị trấn.",
+        "208966": "Lâu đài đó được xây năm 1610."
+      },
+      "SourceHash": "900fe8b04874c62a7f52f0cfb2d958e0f23ba15ab38ac263b5d45ff709732878"
+    }
+  ]
+}

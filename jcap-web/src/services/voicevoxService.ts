@@ -1,3 +1,5 @@
+import { resolveApiUrl } from '../utils/apiBase';
+
 export interface VoiceOption {
   id: number;
   speakerName: string;
@@ -14,14 +16,32 @@ export interface VoiceOption {
 // ----------------------------------------------------
 // TẦNG LƯU TRỮ INDEXEDDB: Cache audio WAV bền vững (Persistent Storage)
 // ----------------------------------------------------
-const DB_NAME = 'jcap_audio_cache_db';
+// Đổi tên khi file đã lưu không còn dùng được. v2 (26/11): bản cũ có thể chứa âm thanh sai câu,
+// do API từng trả Cache-Control public 1 năm cho POST /api/tts/synthesize nên lớp cache trung gian trả cùng một file.
+const DB_NAME = 'jcap_audio_cache_v2';
+const OLD_DB_NAMES = ['jcap_audio_cache_db'];
 const STORE_NAME = 'audio_cache';
 const DB_VERSION = 1;
+
+let oldDbsRemoved = false;
+/** Xoá bộ nhớ cũ một lần cho đỡ tốn chỗ; lỗi thì bỏ qua (không ảnh hưởng bộ nhớ mới) */
+function removeOldDbs() {
+  if (oldDbsRemoved) return;
+  oldDbsRemoved = true;
+  for (const name of OLD_DB_NAMES) {
+    try {
+      indexedDB.deleteDatabase(name);
+    } catch {
+      // ignore
+    }
+  }
+}
 
 function openAudioDb(): Promise<IDBDatabase | null> {
   if (typeof window === 'undefined' || !('indexedDB' in window)) {
     return Promise.resolve(null);
   }
+  removeOldDbs();
   return new Promise((resolve) => {
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -128,7 +148,7 @@ class VoiceVoxService {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
     try {
-      const res = await fetch('/api/tts/voices', { signal: controller.signal });
+      const res = await fetch(resolveApiUrl('/api/tts/voices'), { signal: controller.signal });
       clearTimeout(timeoutId);
       if (!res.ok) {
         this.isVoiceVoxAvailable = false;
@@ -195,13 +215,13 @@ class VoiceVoxService {
       }
 
       // 3. Network Fetch
-      // Mặc định 12000ms (Shadowing), Roleplay/Placement có thể truyền timeout dài hơn (25000ms) cho câu dài trên CPU
+      // Mặc định 12000ms (Shadowing), Roleplay/Placement truyền timeout dài hơn (20000-40000ms) cho câu dài trên CPU
       const controller = new AbortController();
       const resolvedTimeoutMs = Math.max(3000, timeoutMs);
       const timeoutId = setTimeout(() => controller.abort(), resolvedTimeoutMs);
 
       try {
-        const res = await fetch('/api/tts/synthesize', {
+        const res = await fetch(resolveApiUrl('/api/tts/synthesize'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -291,6 +311,7 @@ class VoiceVoxService {
   public async prefetchCommonPhrases(speakerId: number = 2): Promise<void> {
     if (typeof window === 'undefined') return;
 
+    // Chỉ nạp từ IndexedDB lên RAM Cache (0ms, KHÔNG gửi 12 request mạng gây nghẽn hàng đợi CPU VOICEVOX)
     for (const phrase of VoiceVoxService.COMMON_PHRASES) {
       const key = `${speakerId}_${phrase}`;
       if (this.blobCache.has(key)) continue;
@@ -300,14 +321,9 @@ class VoiceVoxService {
         if (cachedBlob) {
           const url = URL.createObjectURL(cachedBlob);
           this.blobCache.set(key, url);
-          continue;
         }
-
-        // Tải tuần tự với khoảng nghỉ nhỏ để không làm nghẽn băng thông
-        await this.prefetchAudio(phrase, speakerId);
-        await new Promise((r) => setTimeout(r, 60));
       } catch {
-        // Bỏ qua lỗi mạng
+        // Bỏ qua lỗi đọc IndexedDB
       }
     }
   }

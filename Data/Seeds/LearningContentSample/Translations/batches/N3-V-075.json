@@ -1,0 +1,306 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad70550f9b",
+      "Fields": {
+        "Meaning": "Quả, hạt, thành quả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "実（み）có nghĩa là quả, hạt, thành quả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80094": "Cành cây oằn xuống vì quả nặng.",
+        "191476": "Hạt giống xấu thì ắt cho quả xấu."
+      },
+      "SourceHash": "b72e83d465e781b2db381d74b5eaf847ba45ce5fc71f82882216024ba6215d63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6ebe370c91",
+      "Fields": {
+        "Meaning": "Thân, bản thân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "身（み）có nghĩa là thân, bản thân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147954": "Công việc nặng nhọc bắt đầu ảnh hưởng đến sức khỏe anh ấy.",
+        "196488": "Không biết Paul đã gặp chuyện gì."
+      },
+      "SourceHash": "b7b39fa89601c97687f9a0e80b8c2e5a809990499f30b382aecd66a536401195"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "604e1446f4",
+      "Fields": {
+        "Meaning": "Tiễn, tiễn đưa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "見送り（みおくり）có nghĩa là tiễn, tiễn đưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79297": "Bạn bè có đến sân bay tiễn bạn không?",
+        "157528": "Tôi ra sân bay tiễn mẹ."
+      },
+      "SourceHash": "a69c9164f22c0cb685e38bae6974378edef6a9ccc6e68068135f07d382877a77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e820edd3b",
+      "Fields": {
+        "Meaning": "Đồng minh, người ủng hộ",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "味方（みかた）có nghĩa là đồng minh, người ủng hộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86995": "Cô ấy đứng về phía người nghèo.",
+        "152673": "Tôi đứng về phía dân chủ."
+      },
+      "SourceHash": "3c9708feb880dff87e87a31f983e92198b3debded90fb17f620dd045a35665c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ace0cb1202",
+      "Fields": {
+        "Meaning": "Tuyệt đẹp, xuất sắc",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ",
+        "Explanation": "見事（みごと）có nghĩa là tuyệt đẹp, xuất sắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75797": "Cú vung gậy của anh ấy thật xuất sắc.",
+        "213328": "Cực quang đó thật ngoạn mục."
+      },
+      "SourceHash": "66b4a00662c38740d565336896f2196ede2860678cd50640d8c08918fc5f57d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "62682a6308",
+      "Fields": {
+        "Meaning": "Lỗi, sai sót",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ミス（ミス）có nghĩa là lỗi, sai sót.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "2941dc146302a9a7adbf6e0b8a564fda8eaa2c93d49cf881d2951b39ddadb5c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38321ff824",
+      "Fields": {
+        "Meaning": "Đầy, tràn đầy",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "満ちる（みちる）có nghĩa là đầy, tràn đầy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103538": "Cuộc đời ông ấy đầy kịch tính.",
+        "148749": "Người trẻ thường tràn đầy sinh lực."
+      },
+      "SourceHash": "c4457324404eab0e5369f8f56d019365cf09556b433b853a318bfdb51361fade"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0d0c754a74",
+      "Fields": {
+        "Meaning": "Dày, sít, kín",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "密（みつ）có nghĩa là dày, sít, kín.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "226179": "Toàn thân phủ lông dày."
+      },
+      "SourceHash": "59779dd11dee16b3cac2ae9cc18002c15d2540b7cf3e80c75618bd561d5184fd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e086a9e024",
+      "Fields": {
+        "Meaning": "Công nhận, thừa nhận, chấp thuận",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "認める（みとめる）có nghĩa là công nhận, thừa nhận, chấp thuận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107845": "Anh ấy sẽ không bao giờ thừa nhận thất bại.",
+        "223954": "Tôi rất mong anh chị chấp thuận lời thỉnh cầu này."
+      },
+      "SourceHash": "1512a520d60bb93842377d4947e2dd6b94b2f4dc8f476a13b0b95e7e5cefc82a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "89acdd2f72",
+      "Fields": {
+        "Meaning": "Thăm hỏi, thăm bệnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "見舞い（みまい）có nghĩa là thăm hỏi, thăm bệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140077": "Tôi đến thăm con trai tôi.",
+        "233937": "Nếu biết bạn bị ốm, tôi đã đến bệnh viện thăm bạn."
+      },
+      "SourceHash": "054221d22cf025649493f65ab084c8e8550e9034c5d05e309e0fa8d5e97d7388"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fb52e4502",
+      "Fields": {
+        "Meaning": "Quà mang về, quà lưu niệm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "土産（みやげ）có nghĩa là quà mang về, quà lưu niệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78190": "Hãy nghĩ xem sẽ mua quà gì khi đi du lịch về.",
+        "218069": "Đây là quà tôi mang về cho bạn."
+      },
+      "SourceHash": "82c9d7b48423d6fcfe799f6ab102f1c7c35a12d46b93a8c57361fb56f32da7aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c4956951f6",
+      "Fields": {
+        "Meaning": "Kinh đô, đô thị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "都（みやこ）có nghĩa là kinh đô, đô thị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148096": "Ở đâu quen đó, rồi cũng thấy nơi mình ở đáng sống.",
+        "192110": "London không còn là thành phố sương mù nữa."
+      },
+      "SourceHash": "8cd99652778430fdc71e03e2042bbb280be31b8dbd613e2dda259ebdf61097ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3b5d6e485c",
+      "Fields": {
+        "Meaning": "Lạ, kỳ lạ, tài khéo",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "妙（みょう）có nghĩa là lạ, kỳ lạ, tài khéo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103194": "Ông ấy nắm được cái hay của việc dạy học.",
+        "233493": "Chuyện lạ anh kể là lần đầu tôi nghe."
+      },
+      "SourceHash": "77ceb5516c7a06f3346fbfc0fe16f4fee8eb856371e3732dbe3c52a292a31ec4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1938fb6bcb",
+      "Fields": {
+        "Meaning": "Ngày kia",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "明後日（みょうごにち）có nghĩa là ngày kia.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80690": "Nếu ngày kia trời mưa, tôi sẽ ở nhà.",
+        "234491": "Tôi định nhờ anh ấy đến đây vào ngày kia."
+      },
+      "SourceHash": "ff09e1c6c3148fe442fabab8f1fcd4d5743007ae5a3a2706cb23ecb2d9667254"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "246fc4acb8",
+      "Fields": {
+        "Meaning": "Tương lai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "未来（みらい）có nghĩa là tương lai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114454": "Anh ấy luôn hướng về tương lai.",
+        "233007": "Nâng ly chúc tương lai của bạn!"
+      },
+      "SourceHash": "b88e305b66e0447ad733d079b262755a908f0f678128668784c1bab9465404a3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dcdfb791b5",
+      "Fields": {
+        "Meaning": "Sức hấp dẫn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "魅力（みりょく）có nghĩa là sức hấp dẫn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93933": "Khó diễn tả hết sức cuốn hút của cô ấy.",
+        "201977": "Truyền hình rất hấp dẫn đối với anh ấy."
+      },
+      "SourceHash": "2390860c5c814f1a15559446af99577378511d1cf01e3dda0545038ce17dc045"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f3143300d0",
+      "Fields": {
+        "Meaning": "Sữa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ミルク（ミルク）có nghĩa là sữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159523": "Tôi mua một ít phô mai và sữa.",
+        "223794": "Tôi đã rót đầy sữa vào chiếc cốc này."
+      },
+      "SourceHash": "9aed20c5e3e356728d171cb42bfbcbd118233a68b0c34d20456a6ef6274a96ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd67aff522",
+      "Fields": {
+        "Meaning": "Không, hư vô",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "無（む）có nghĩa là không, hư vô.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80947": "Không thể có cái gì sinh ra từ hư vô.",
+        "192877": "Tóm lại, mọi nỗ lực của chúng tôi đều đổ sông đổ biển."
+      },
+      "SourceHash": "ba0d58e2995db0d5093f5d42568160f07bc7195808ac16c075a9555e74addc1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea28b7880a",
+      "Fields": {
+        "Meaning": "Đối diện, phía đối diện",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "向かい（むかい）có nghĩa là đối diện, phía đối diện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78025": "Bố mẹ sống đối diện nhà tôi.",
+        "207612": "Cửa hàng đó ở bên kia đường."
+      },
+      "SourceHash": "09d8be1260b624429b7f7a330b61cc8aeeefbd62d5afba89b5c0657f83799284"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "934da0daf8",
+      "Fields": {
+        "Meaning": "Việc đón, đi đón",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "迎え（むかえ）có nghĩa là việc đón, đi đón.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174372": "Tôi đến đón anh chị vào buổi sáng nhé?",
+        "213698": "Hãy ở đó nhé, tôi sẽ đến đón."
+      },
+      "SourceHash": "a22a0b7180ab15d848906f865b65974b5937bbb1c9d8398ee30f46cf9a2daa04"
+    }
+  ]
+}

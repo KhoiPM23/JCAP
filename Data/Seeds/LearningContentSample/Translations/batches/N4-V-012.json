@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "038f67b635",
+      "Fields": {
+        "Meaning": "Việc, chuyện, điều",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "こと（こと）có nghĩa là việc, chuyện, điều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79848": "Vấn đề là chúng ta không có tiền.",
+        "123723": "Điều tương tự cũng có thể thấy ở sân thể thao."
+      },
+      "SourceHash": "2516e8b663d17a485329880e27b68da64ecc3b7c128b1938f6093ed1d60bb287"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ae014e274",
+      "Fields": {
+        "Meaning": "Chim nhỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "小鳥（ことり）có nghĩa là chim nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146915": "Những con chim nhỏ đang hót líu lo, nghe rất vui.",
+        "146916": "Những con chim nhỏ đang hót trên cây."
+      },
+      "SourceHash": "291d94b4fd756350ca4bbcdc912d3f51f8e8097ffb53b994c152c4d8238d56c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd7dd383c9",
+      "Fields": {
+        "Meaning": "Hôm nọ, dạo trước",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "このあいだ（このあいだ）có nghĩa là hôm nọ, dạo trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222567": "Trong trận bão hôm nọ, gió thổi với tốc độ 200 km/h.",
+        "222569": "Hôm nọ tôi xem một chương trình truyền hình về người dân nước bạn."
+      },
+      "SourceHash": "babc5ee0685220bf48b9a7c0cd16df68fbe2bd973efbcfb5047e77c8e648252a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22f8fe69bf",
+      "Fields": {
+        "Meaning": "Dạo này, gần đây",
+        "PartOfSpeech": "Phó từ, Danh từ",
+        "Explanation": "このごろ（このごろ）có nghĩa là dạo này, gần đây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223741": "Dạo này tôi chẳng thấy nữa.",
+        "223744": "Dạo này tôi cũng có chút thời gian đọc sách."
+      },
+      "SourceHash": "ae14bb91c05a4508061a4b74389b6c3969cbba75c4074845ef7ca745b56b26b8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "286e978a7d",
+      "Fields": {
+        "Meaning": "Nhỏ, chi tiết, kỹ tính",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "金に細かい chỉ người rất chi li về tiền. 細かい点 là chi tiết nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191853": "Tôi đã kiểm tra đến từng chi tiết nhỏ.",
+        "8954482": "Anh ấy rất chi li về tiền bạc."
+      },
+      "SourceHash": "5888ad248d65c36d5adb4cf7050062aa50c8cbee8d7c830d7f268bb25ccfcdee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bdab237e0d",
+      "Fields": {
+        "Meaning": "Rác",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ごみ（ごみ）có nghĩa là rác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81356": "Họ đến thu gom rác vào mỗi thứ Hai.",
+        "213105": "Chỗ rác đó bốc mùi rất khó chịu."
+      },
+      "SourceHash": "dce4722fb88b4c6b673cab90f9268a017245a2070a543087aec29d6d2a7898a5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0470fc929f",
+      "Fields": {
+        "Meaning": "Đông, chật, ùn tắc",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "込む（こむ）có nghĩa là đông, chật, ùn tắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171222": "Tối nay tàu rất đông.",
+        "221626": "Giờ này đường rất đông xe mà."
+      },
+      "SourceHash": "81d9967fe484f33997b530f340b730188f198bcc999773be2e1ff4a2f472ff42"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19a8ef6b7a",
+      "Fields": {
+        "Meaning": "Gạo, lúa gạo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Chỉ gạo hoặc lúa gạo. Trong câu về chế độ ăn, có thể dịch tự nhiên là cơm hoặc gạo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122230": "Người Nhật sống nhờ ăn gạo.",
+        "122232": "Người Nhật lấy gạo và cá làm thức ăn chính."
+      },
+      "SourceHash": "712fef0cd8d083afe8681fe71d1788d01ca07d93a3c638b017a8edd23c01b76f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "17fb3976d2",
+      "Fields": {
+        "Meaning": "Xem, nhìn (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "ごらんになる（ごらんになる）có nghĩa là xem, nhìn (kính ngữ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166927": "Anh/chị có muốn đến xem nhà mới của chúng tôi không ạ?",
+        "192241": "Nếu từng đến Rome, hẳn anh/chị đã xem đấu trường Colosseum."
+      },
+      "SourceHash": "40d1d31e174808661f9641b28fb272f69b0340faefc4c37b789c11d388cd93f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b71d50ee32",
+      "Fields": {
+        "Meaning": "Từ bây giờ, từ nay",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "これから（これから）có nghĩa là từ bây giờ, từ nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "218963": "Mong anh/chị tiếp tục tận hưởng cuộc sống.",
+        "218973": "Từ nay tôi sẽ học nhiều hơn."
+      },
+      "SourceHash": "a469dbc7e4e7626f0b4371c3eaab9100d938759d0e13a631861093e75912c521"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a769e4c0da",
+      "Fields": {
+        "Meaning": "Đáng sợ, sợ, đáng lo",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "怖い（こわい）có nghĩa là đáng sợ, sợ, đáng lo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153050": "Tôi ngạc nhiên hơn là sợ.",
+        "234669": "Chê bai cậu ta thì đáng lo chuyện xảy ra sau đó."
+      },
+      "SourceHash": "893790519ce8b9bdbd34458b7cf930e2bab7cf7c36065d80a5d1a26a2213ec0d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b089107f6",
+      "Fields": {
+        "Meaning": "Làm hỏng, phá hủy",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "壊す（こわす）có nghĩa là làm hỏng, phá hủy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210011": "Chuyện đó phá tan mọi ước mơ của anh ấy.",
+        "226267": "Khá nhiều nhà bị bão phá hỏng."
+      },
+      "SourceHash": "40f07b49952ef2b902d902049d37238ea3381567f8403da717e09f468a4c884f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "63290aef69",
+      "Fields": {
+        "Meaning": "Hỏng, vỡ, đổ sập",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "壊れる（こわれる）có nghĩa là hỏng, vỡ, đổ sập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211040": "Tòa nhà đó có thể đổ sập bất cứ lúc nào.",
+        "223988": "Tai nghe này bị hỏng rồi."
+      },
+      "SourceHash": "93e52544b8b2e1bb91336148d96f664baf7dfd465f86b3e038e708c5ff159c93"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d11b994212",
+      "Fields": {
+        "Meaning": "Buổi hòa nhạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コンサート（コンサート）có nghĩa là buổi hòa nhạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172848": "Buổi hòa nhạc sắp bắt đầu rồi.",
+        "217514": "Buổi hòa nhạc thế nào?"
+      },
+      "SourceHash": "36fb7557d1a107fb8539f7501eb4ae00b8f23634d56d42a2649e798ba236c397"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cbb63150b8",
+      "Fields": {
+        "Meaning": "Lần này, lần tới, sắp tới",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "今度（こんど）có nghĩa là lần này, lần tới, sắp tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151080": "Kỳ thi bắt đầu vào thứ Hai tới.",
+        "172146": "Thứ Bảy tới mình chơi quần vợt nhé?"
+      },
+      "SourceHash": "71b60b65c2c4fb0e68961e82df7678449e67b4baa99e810a9c105f9fb6a7d836"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "918e096f88",
+      "Fields": {
+        "Meaning": "Máy tính",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コンピュータ（コンピュータ）có nghĩa là máy tính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213069": "Chiếc máy tính đó còn mới.",
+        "217271": "Nhập dữ liệu vào máy tính."
+      },
+      "SourceHash": "5ffb22d40bd0da9042750fb40c029dde60255a3e4eb7a29fc50fa888b9ee304e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bdad768057",
+      "Fields": {
+        "Meaning": "Tối nay, đêm nay",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "今夜（こんや）có nghĩa là tối nay, đêm nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156901": "Tôi định tắm bồn tối nay.",
+        "171184": "Tối nay chúng tôi tổ chức tiệc."
+      },
+      "SourceHash": "b1e07430a9d9f148c71a210f39c8bc0c3a130999bea7e2d80bbd5eda7761982b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df21df827a",
+      "Fields": {
+        "Meaning": "Gần đây, dạo gần đây",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, phó từ",
+        "Explanation": "最近（さいきん）có nghĩa là gần đây, dạo gần đây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82998": "Mẹ tôi mới nằm viện đến gần đây.",
+        "170658": "Dạo này tôi hầu như không có thời gian đọc sách."
+      },
+      "SourceHash": "548d009c95e6be1e3a291ca92ce411a0b649304c5713174d994c3ff7388fe507"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c54201ce25",
+      "Fields": {
+        "Meaning": "Cuối cùng, phần cuối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "最後（さいご）có nghĩa là cuối cùng, phần cuối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170560": "Kỳ thi cuối chắc sẽ kéo sang tháng sau.",
+        "172408": "Tôi đang làm nốt bước hoàn thiện cuối cùng."
+      },
+      "SourceHash": "71d2ee555fd6faa585068d0e66cba474f0b47123eafe9077d77005aa06134da7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f5c169269f",
+      "Fields": {
+        "Meaning": "Đầu tiên, ban đầu",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ, phó từ",
+        "Explanation": "最初（さいしょ）có nghĩa là đầu tiên, ban đầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156860": "Tôi biết chuyện đó ngay từ đầu.",
+        "170491": "Người đến đầu tiên là anh/chị Gray."
+      },
+      "SourceHash": "76ff7b727b5a7f0291543bf235a316fa32b9d97be47934f68d0474f4f1d8de02"
+    }
+  ]
+}

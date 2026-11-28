@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật.",
+    "Câu 201736 là câu trần thuật trong bản Nhật. Mục 手 giải thích nghĩa quai và cách làm trong hai câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a21ba677f2",
+      "Fields": {
+        "Meaning": "Gần, sắp đến",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "近い（ちかい）nói về khoảng cách gần hoặc thời điểm sắp đến. 近くなってきた diễn tả việc đang đến gần.",
+        "UsageNotes": "Câu 201736 kết thúc bằng のです và dấu chấm, nên được dịch như một lời giải thích."
+      },
+      "Examples": {
+        "201736": "Nhà vệ sinh ở gần đây đấy.",
+        "225480": "Giáng sinh đang đến gần rồi."
+      },
+      "SourceHash": "1bebddec3ffe919bfb0fd2333573acd5e926f4c122696ec31688d99cd2574549"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "35e9881c22",
+      "Fields": {
+        "Meaning": "Khác, không đúng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "違う（ちがう）chỉ sự khác biệt hoặc dùng để nói điều gì đó không đúng. 違い là danh từ chỉ sự khác biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192689": "Sư tử và báo hoa mai khác nhau thế nào?",
+        "213899": "Có thể là vậy, nhưng chắc không phải đâu."
+      },
+      "SourceHash": "e455a286fc2f79c504ce054087e2e6c917f11adb97660f258e9e52677b2b740e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d7293f7cf",
+      "Fields": {
+        "Meaning": "Gần, vùng lân cận, gần đến",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "近く（ちかく）chỉ khu vực gần hoặc mốc gần tới. すぐ近くに nghĩa là ở ngay gần đây, còn ７時近く là gần bảy giờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214296": "Anh/chị Smith ở ngay gần đây.",
+        "234967": "Gần bảy giờ rồi. Phải đi học thôi."
+      },
+      "SourceHash": "3529b3b91db9a6bd236ff255426fce6c85c6b27639c6ffad3f8dbcdbcce03432"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3134199c25",
+      "Fields": {
+        "Meaning": "Tàu điện ngầm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地下鉄（ちかてつ）chỉ tàu hoặc hệ thống tàu điện ngầm. 地下鉄で行く là đi bằng tàu điện ngầm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127016": "Tôi muốn đi bằng tàu điện ngầm.",
+        "127017": "Tôi chật vật tìm cách ra khỏi tàu điện ngầm."
+      },
+      "SourceHash": "04d223ad1693c80c36713dcd04636e3f2db2dbf847283e8e6bc29c5a53dcf715"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ffa3dda331",
+      "Fields": {
+        "Meaning": "Bản đồ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地図（ちず）chỉ bản đồ. 地図を見る nghĩa là xem bản đồ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202836": "Xem tấm bản đồ này một chút đi.",
+        "220672": "Hãy nhìn tấm bản đồ nước Mỹ lớn này."
+      },
+      "SourceHash": "03da5bacc6cfafff0ae4ec28b681eb28057fcdca48f19711e283014f45ea5dad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f9b377e253",
+      "Fields": {
+        "Meaning": "Màu nâu",
+        "PartOfSpeech": "Danh từ chỉ màu sắc",
+        "Explanation": "茶色（ちゃいろ）là màu nâu. 茶色のネクタイ là cà vạt màu nâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210959": "Con chó đó có màu nâu, nhỏ và gầy.",
+        "220566": "Tôi muốn lấy chiếc cà vạt màu nâu này ạ."
+      },
+      "SourceHash": "295ddd134b8632f9cc300a63e04cf2a0e9eff2cde7caa3e7ed703d2c526b0434"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b08365493",
+      "Fields": {
+        "Meaning": "Đúng, vừa đúng, đúng lúc",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ちょうど nhấn mạnh sự trùng khớp về thời điểm, lượng hoặc thứ mong muốn. ちょうど〜するところ diễn tả đúng lúc sắp làm gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202896": "Đúng món tôi muốn ăn.",
+        "202931": "Tôi sắp làm thủ tục nhận phòng đây."
+      },
+      "SourceHash": "862f712a012a86d179dd30495fa64e52c2d01a67cda8f42473b61329d75b530b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "602fdffbf2",
+      "Fields": {
+        "Meaning": "Một chút, hơi, này",
+        "PartOfSpeech": "Phó từ, thán từ",
+        "Explanation": "ちょっと chỉ lượng nhỏ hoặc dùng để gọi người khác. ほんのちょっと nhấn mạnh là chỉ một chút.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74695": "Này, bạn ở đằng kia!",
+        "194363": "Phải cẩn thận hơn một chút nữa."
+      },
+      "SourceHash": "38fd31760557e213044bb92133e7b5676b0be2c36dbdb3582d982b66c15747cd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c88e0ba104",
+      "Fields": {
+        "Meaning": "Dùng, sử dụng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "使う（つかう）chỉ việc sử dụng đồ vật, thiết bị hoặc phương tiện. Thứ được dùng đi với を.",
+        "UsageNotes": "お使いください là cách lịch sự để mời hoặc yêu cầu sử dụng."
+      },
+      "Examples": {
+        "197026": "Tôi dùng đèn flash được không ạ?",
+        "201311": "Xin mời dùng tai nghe."
+      },
+      "SourceHash": "545c6be0529402de114ac142a28d09def895774fdb985f90ae79920adcee63c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "156f17113e",
+      "Fields": {
+        "Meaning": "Mệt, trở nên mệt",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "疲れる（つかれる）chỉ việc trở nên mệt. 疲れている diễn tả trạng thái đang mệt. 〜ように見える nghĩa là trông có vẻ như vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "177623": "Trông bạn có vẻ rất mệt.",
+        "231609": "Trông bạn có vẻ mệt."
+      },
+      "SourceHash": "adec2ac322e08c3cd3bf284e10180e1cb0025e3542da094a4e4ff75a236e5216"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d00ef0a9d5",
+      "Fields": {
+        "Meaning": "Tiếp theo, lần sau",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "次（つぎ）chỉ thứ hoặc lần tiếp theo. 次は có thể mở đầu câu nói về lần sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150204": "Lần sau hãy gọi điện trước nhé.",
+        "150216": "Lần sau tôi nên đến khi nào ạ?"
+      },
+      "SourceHash": "dadadcb7ed159acc7ca65128f7bb1b40f4ce0941f76bc2b0cad1a0a506ab69d9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d4a68ce12",
+      "Fields": {
+        "Meaning": "Đến, tới nơi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "着く（つく）chỉ việc đến nơi. Đích đến thường đi với に. 着いたら nghĩa là khi đã đến nơi.",
+        "UsageNotes": "Thể て là 着いて."
+      },
+      "Examples": {
+        "192138": "Bạn đến London khi nào?",
+        "216366": "Tôi sẽ gọi ngay khi đến Chicago."
+      },
+      "SourceHash": "3e91a3d4d58a4e1e30a4e1ca1970e4052989a879026baab64942b5cad0e2efa7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "672321bac9",
+      "Fields": {
+        "Meaning": "Bàn học, bàn làm việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "机（つくえ）chỉ bàn dùng để học hoặc làm việc. 机の上 là trên mặt bàn.",
+        "UsageNotes": "一本も kết hợp với phủ định để nói không có lấy một vật thuộc loại đếm bằng 本."
+      },
+      "Examples": {
+        "183446": "Trên bàn không có lấy một cây bút.",
+        "183454": "Bụi đã tích tụ trên mặt bàn."
+      },
+      "SourceHash": "f626d699a8e6eb056295e2a826c5421b748e6ed9563ff011f2aff74e6a7e9273"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6e922a750e",
+      "Fields": {
+        "Meaning": "Làm, tạo ra, chế biến",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "作る（つくる）dùng khi làm đồ vật, nấu món ăn hoặc tạo ra thứ gì. 木で作る nghĩa là làm bằng gỗ.",
+        "UsageNotes": "作られている là dạng bị động, dùng để nói một thứ được làm ra bằng cách nào hoặc từ vật liệu gì."
+      },
+      "Examples": {
+        "203324": "Không thể làm trứng ốp-lết mà không đập trứng.",
+        "223530": "Chiếc bàn này được làm bằng gỗ."
+      },
+      "SourceHash": "43b8a2313ad68081333a2438c0276421225e9bc30b68c0cf2e2622cc124c067f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "edc22b8d98",
+      "Fields": {
+        "Meaning": "Bật (thiết bị, đèn)",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "つける trong hai câu nguồn nghĩa là bật thiết bị, như テレビをつける (bật ti vi).",
+        "UsageNotes": "消す thường dùng khi tắt thiết bị hoặc đèn."
+      },
+      "Examples": {
+        "192597": "Tôi bật radio được không ạ?",
+        "201970": "Bật ti vi giúp tôi với."
+      },
+      "SourceHash": "1eba07b440de06577299b2dc171933f85447d703f12db97e13ebd21cecf25ca5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba6c46f68c",
+      "Fields": {
+        "Meaning": "Làm việc tại, làm cho",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "勤める（つとめる）diễn tả việc làm cho một cơ quan hoặc tổ chức. Nơi làm việc thường đi với に, như 銀行に勤める.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84602": "Bố tôi làm việc tại một ngân hàng.",
+        "110635": "Anh ấy không còn làm việc ở đây nữa."
+      },
+      "SourceHash": "e084e1709344f4ec264350494c8922f1ca977acd7252f1c1dc9550bb54850d99"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a94b5e981",
+      "Fields": {
+        "Meaning": "Chán, tẻ nhạt",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "つまらない dùng để nhận xét một việc hoặc tác phẩm thiếu thú vị. つまらなかった là dạng quá khứ.",
+        "UsageNotes": "つまらんかった trong câu nguồn là cách nói khẩu ngữ tương ứng với つまらなかった."
+      },
+      "Examples": {
+        "223276": "Video này chán lắm.",
+        "230825": "Bộ phim mới kia chán thật."
+      },
+      "SourceHash": "0c0ec477f314d7f510e4f8f6f6ddead44d3649c5e0e15aca6101111670a76136"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a23d308800",
+      "Fields": {
+        "Meaning": "Lạnh, lạnh khi chạm vào",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "冷たい（つめたい）chỉ thứ lạnh khi chạm, ăn hoặc uống. 冷たいポテトサラダ là món salad khoai tây ăn lạnh.",
+        "UsageNotes": "Khi tả thời tiết hoặc không khí lạnh, thường dùng 寒い."
+      },
+      "Examples": {
+        "187197": "Mùa hè tôi thích ăn salad khoai tây lạnh.",
+        "194174": "Tay tôi lạnh quá rồi."
+      },
+      "SourceHash": "bb190e3c132f9e316d14b265ca463a8fc0b044cd2deb683e95f1f42c0e6eb7b8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d99745fbb6",
+      "Fields": {
+        "Meaning": "Mạnh, khỏe, giỏi",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "強い（つよい）chỉ sức mạnh hoặc năng lực nổi trội. サッカーが強い có thể nói đội bóng của một trường chơi mạnh hoặc thi đấu giỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199736": "Hổ và sư tử, con nào mạnh hơn?",
+        "230859": "Trường tiểu học đó có đội bóng đá mạnh."
+      },
+      "SourceHash": "73ae94044016ddfe65665035cb3888fed839afc165d6366ae92f491559af54c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b9670420a",
+      "Fields": {
+        "Meaning": "Tay, tay cầm, cách làm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手（て）chỉ bàn tay, bộ phận để cầm nắm hoặc một cách xử lý. 手を思いつく trong câu nguồn nghĩa là nghĩ ra một cách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224417": "Ở đây có một cái nồi không có quai.",
+        "229349": "Tôi vừa nghĩ ra một cách hay."
+      },
+      "SourceHash": "d77f9cfc8d620a4bc18179bbd619f2cb389d984967fb307ee595ca3a1d6fe5eb"
+    }
+  ]
+}

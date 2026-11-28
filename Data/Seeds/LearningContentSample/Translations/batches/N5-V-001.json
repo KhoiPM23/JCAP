@@ -1,0 +1,314 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu trực tiếp 40 câu Nhật của nguồn. Bản dịch do AI biên soạn và tự rà soát, chưa được chuyên gia độc lập duyệt.",
+    "上げる: nghĩa tiếng Anh của nguồn chỉ có 'to give', nhưng hai ví dụ diễn đạt giơ lên và tăng lên. Bổ sung các nghĩa này, không đổi câu nguồn. Đối chiếu https://kotobank.jp/word/上げる-423839 .",
+    "あそこ: câu 2733322 dùng cách nói tránh chỉ vùng kín khi nói với bác sĩ. Dịch theo ngữ cảnh và ghi chú cách dùng; không dịch máy móc thành địa điểm ở xa.",
+    "会われました trong câu 194412 được hiểu là cách nói kính trọng; 青い trong câu 226939 mang nghĩa non nớt. Không dịch theo nghĩa màu sắc.",
+    "Đối chiếu nghĩa bóng 青い: https://www.kanjipedia.jp/kotoba/0003866600 ; nghĩa địa điểm あそこ: https://www.kanjipedia.jp/kotoba/0005803100 ."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ada066edfd",
+      "Fields": {
+        "Meaning": "Gặp; gặp gỡ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "Dùng khi gặp một người, tình cờ hoặc theo cuộc hẹn. Người mình gặp thường đi với に; dùng と khi nhấn mạnh việc hai bên gặp nhau. Ví dụ 友だちに会う là gặp bạn.",
+        "UsageNotes": "会われる có thể là dạng kính ngữ của 会う tùy ngữ cảnh; không phải lúc nào cũng mang nghĩa bị động."
+      },
+      "Examples": {
+        "194412": "Anh/chị đã gặp Smith rồi nhỉ.",
+        "215904": "Vậy hẹn gặp nhau ở bữa tiệc nhé."
+      },
+      "SourceHash": "77a03cd3324d551b7a0e985b85bae28c94cb682eb18d22aea6da16f680540074"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ebec658463",
+      "Fields": {
+        "Meaning": "Màu xanh lam; đèn xanh trong tín hiệu giao thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "青 là tên gọi màu xanh lam. Trong cách nói về đèn giao thông, 青 chỉ đèn xanh cho phép đi. Có thể dùng 青のシャツ để nói chiếc áo màu xanh.",
+        "UsageNotes": "Phân biệt danh từ 青 với tính từ 青い. 青 trong đèn giao thông không cần dịch thành xanh lam."
+      },
+      "Examples": {
+        "145720": "Đèn tín hiệu chuyển sang xanh rồi kìa.",
+        "187219": "Đồng phục đi học mùa hè có họa tiết ca rô trắng và xanh lam."
+      },
+      "SourceHash": "d46e6696af288605882837ab25c71a4649d3392d91aca75d2ed83d398bf99045"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "51a671ec17",
+      "Fields": {
+        "Meaning": "Xanh lam; non nớt, thiếu kinh nghiệm (nghĩa bóng)",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "青い thường tả màu xanh của bầu trời hoặc biển. Khi nói về một người hay cách suy nghĩ, từ này còn diễn tả sự non nớt, chưa từng trải.",
+        "UsageNotes": "Trong một số cách nói cố định, 青い có thể chỉ sắc xanh của lá cây hoặc vẻ tái của khuôn mặt. Cần chọn nghĩa theo ngữ cảnh."
+      },
+      "Examples": {
+        "199202": "Bạn có biết vì sao bầu trời màu xanh không?",
+        "226939": "Cậu vẫn còn non nớt lắm."
+      },
+      "SourceHash": "54fa4bf0069d0ece48bd6c976f5f947ffdaa3518e8d6f483d69699129279eff0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2dacb910b2",
+      "Fields": {
+        "Meaning": "Màu đỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "赤 là tên gọi màu đỏ. Từ này có thể đứng trong các từ ghép như 赤インク (mực đỏ), 赤レンガ (gạch đỏ), hoặc dùng với の để bổ nghĩa cho danh từ.",
+        "UsageNotes": "Khi dùng tính từ để tả trực tiếp một vật có màu đỏ, dùng 赤い, như 赤い花 (hoa màu đỏ)."
+      },
+      "Examples": {
+        "142280": "Không được viết bằng mực đỏ.",
+        "212071": "Ngôi nhà đó được xây bằng gạch đỏ."
+      },
+      "SourceHash": "4d4f99a5048762b3b6e90a3e213add868978d83295e0d4280feec0df06839a22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44ba38cf8b",
+      "Fields": {
+        "Meaning": "Đỏ; có màu đỏ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "赤い dùng để miêu tả vật có màu đỏ và đứng trực tiếp trước danh từ, chẳng hạn 赤いスカート là chân váy đỏ. Khi làm vị ngữ có thể nói 花が赤いです (hoa có màu đỏ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88306": "Cô ấy mặc một chiếc chân váy đỏ.",
+        "142281": "Có cái màu đỏ, cũng có cái màu trắng."
+      },
+      "SourceHash": "41d59bc3be943b84ac575a5780a89be9c8638c49349b6b76535322da9390a3d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91987ae840",
+      "Fields": {
+        "Meaning": "Sáng; tươi sáng; vui vẻ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "明るい tả nơi có nhiều ánh sáng hoặc ánh sáng rực rỡ. Khi nói về tính cách hay bầu không khí, có thể mang nghĩa vui vẻ; khi nói về tương lai, có thể mang nghĩa tươi sáng.",
+        "UsageNotes": "Dạng 明るく dùng trước động từ, như 明るく光る (tỏa sáng rực rỡ)."
+      },
+      "Examples": {
+        "184877": "Bên ngoài trời đang sáng dần lên.",
+        "203874": "Viên kim cương tỏa sáng rực rỡ."
+      },
+      "SourceHash": "729b4b51dd3bd851cf1d85bbf2d98f4ad1af9013c0ae3b4ff701626de7336b36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8dc7006bda",
+      "Fields": {
+        "Meaning": "Mùa thu",
+        "PartOfSpeech": "Danh từ, có thể dùng chỉ thời gian",
+        "Explanation": "秋 chỉ mùa thu, mùa sau mùa hè và trước mùa đông. Có thể dùng 秋になる để nói sang thu, hoặc 秋に để chỉ một việc xảy ra vào mùa thu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148194": "Mùa thu đã sắp đến rồi.",
+        "216632": "Mùa thu mát mẻ, dễ chịu đã đến."
+      },
+      "SourceHash": "47d0d9b6a2a1f75ceae211a317348e74def25119bfa1ec7a27c534ca621480e7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fc3bc1e6f1",
+      "Fields": {
+        "Meaning": "Mở; trở nên mở",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "開く với cách đọc あく diễn tả cửa, cửa sổ hoặc vật tương tự mở ra. Vật mở ra thường đi với が, như ドアが開く (cửa mở ra).",
+        "UsageNotes": "Phân biệt 開く（あく）với 開ける（あける）: ドアが開く nói cửa mở ra; ドアを開ける nói ai đó mở cửa. Chữ 開く còn có cách đọc ひらく trong những cách dùng khác."
+      },
+      "Examples": {
+        "201844": "Dù làm cách nào thì cửa cũng không mở.",
+        "225720": "Đẩy mạnh một cái thì cửa mở ra."
+      },
+      "SourceHash": "09bcb9319b06b938b4476f6df69e0fe2a026bd2639b2d68c5984eaa9c30c1e61"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "321963ed35",
+      "Fields": {
+        "Meaning": "Mở một vật",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "開ける diễn tả việc một người mở cửa, cửa sổ, hộp hoặc vật đang đóng. Vật được mở đi với を, như 窓を開ける (mở cửa sổ).",
+        "UsageNotes": "Dạng bị động 開けられる diễn tả một vật được mở, như ドアが開けられる. Phân biệt với tự động từ 開く（あく）."
+      },
+      "Examples": {
+        "201846": "Cửa được Jim mở.",
+        "203221": "Ai đó mở giúp cánh cửa này với."
+      },
+      "SourceHash": "f264f0e8f4f5dac6df51c40766ff5e3afe45e62ce607eb0bb2ada1021a572880"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9661cbac61",
+      "Fields": {
+        "Meaning": "Nâng lên; giơ lên; tăng lên; cho, tặng",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "上げる diễn tả việc đưa một vật lên cao hoặc làm một mức độ tăng lên, như 手を上げる (giơ tay) và スピードを上げる (tăng tốc). Với nghĩa cho, tặng một vật cho người khác, thường viết bằng hiragana là あげる.",
+        "UsageNotes": "Hai câu ví dụ của mục này minh họa nghĩa giơ lên và tăng lên. Không dùng nghĩa cho, tặng để dịch mọi trường hợp 上げる."
+      },
+      "Examples": {
+        "113352": "Anh ấy tăng tốc.",
+        "170915": "Hãy giơ tay trái lên."
+      },
+      "SourceHash": "13ab47a78ed73cfcc0f86875b174070033d18de76e0b6632a369cb9a0e312931"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d46ae79a26",
+      "Fields": {
+        "Meaning": "Buổi sáng",
+        "PartOfSpeech": "Danh từ, có thể dùng chỉ thời gian",
+        "Explanation": "朝 chỉ buổi sáng. Có thể dùng 朝に để chỉ thời điểm hoặc 朝の đứng trước danh từ, như 朝のラッシュ (giờ cao điểm buổi sáng).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126237": "Lúc này đang là cao điểm của đợt đông đúc buổi sáng.",
+        "215640": "George đã ăn nhiều phô mai vào buổi sáng."
+      },
+      "SourceHash": "b7f03cee509d4cf13ce124deac2885f38e682bc340de238560ea7983fec5eba1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98bc6f72ae",
+      "Fields": {
+        "Meaning": "Bữa sáng; cơm sáng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "朝ごはん là cách gọi thông dụng của bữa sáng, bất kể bữa đó có cơm hay không. 朝ごはんを食べる nghĩa là ăn sáng. Có thể viết là 朝ご飯.",
+        "UsageNotes": "朝食（ちょうしょく）cũng chỉ bữa sáng và thường dùng trong văn viết hoặc cách nói trang trọng hơn."
+      },
+      "Examples": {
+        "126246": "Bạn ăn gì vào bữa sáng?",
+        "126248": "Anh/chị muốn dùng gì cho bữa sáng ạ?"
+      },
+      "SourceHash": "d9c38e0b848d0bd9a8d2479a00ebb3d3fba9d42abbc992deb6d7ff1c31704034"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3b4041c52",
+      "Fields": {
+        "Meaning": "Ngày kia; ngày mốt",
+        "PartOfSpeech": "Danh từ, có thể dùng chỉ thời gian",
+        "Explanation": "あさって chỉ ngày sau ngày mai, tức hai ngày sau hôm nay. Thường đặt ở đầu câu hoặc trước hành động mà không cần trợ từ に.",
+        "UsageNotes": "Phân biệt 明日（あした）là ngày mai với あさって là ngày kia."
+      },
+      "Examples": {
+        "234491": "Tôi định nhờ anh ấy đến đây vào ngày kia.",
+        "234494": "Ngày kia bạn có thời gian rảnh không?"
+      },
+      "SourceHash": "5009b2bca84021bc7a3c3a46b75dbe5ef6625b64b90d2ffe17073623d0f1b51d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27df3d5802",
+      "Fields": {
+        "Meaning": "Chân; bàn chân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "足 có thể chỉ bàn chân hoặc chân nói chung, tùy ngữ cảnh. 足がしびれる nghĩa là chân bị tê; 足がすくむ diễn tả chân cứng đờ, không bước nổi vì sợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195414": "Chân tôi lại bị tê rồi.",
+        "196726": "Nhìn thấy con rắn, tôi sợ đến cứng cả chân."
+      },
+      "SourceHash": "fa1437fccd0fcfd54b86be9433615d18251891bc2142ee0154a3d69ca39e528b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "115ec83476",
+      "Fields": {
+        "Meaning": "Ngày mai",
+        "PartOfSpeech": "Danh từ, có thể dùng chỉ thời gian",
+        "Explanation": "明日 chỉ ngày sau hôm nay. あした là cách đọc thông dụng trong hội thoại. Thường dùng trực tiếp để chỉ thời gian, như 明日行きます (ngày mai tôi đi).",
+        "UsageNotes": "明日 còn có cách đọc あす; みょうにち thường dùng trong lời nói trang trọng. Mục này dùng cách đọc あした."
+      },
+      "Examples": {
+        "80466": "Ngày mai tôi định đi dã ngoại.",
+        "234469": "Ngày mai tôi rảnh cả ngày."
+      },
+      "SourceHash": "c889c670d016aedfef941ed036e3ab52996bc29a22bb5b3a11735773e5edd541"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bee501faf0",
+      "Fields": {
+        "Meaning": "Chỗ kia; đằng kia",
+        "PartOfSpeech": "Đại từ chỉ nơi chốn",
+        "Explanation": "あそこ chỉ nơi ở xa cả người nói lẫn người nghe. Khi đứng trước danh từ có thể dùng あそこの, như あそこの店 (cửa hàng đằng kia).",
+        "UsageNotes": "Trong một số hội thoại, あそこ／アソコ còn là cách nói tránh để chỉ vùng kín. Câu nói với bác sĩ trong ví dụ dùng nghĩa này."
+      },
+      "Examples": {
+        "234395": "Hãy nhìn chiếc xe thể thao đằng kia.",
+        "2733322": "Bác sĩ ơi, tôi bị ngứa ở vùng kín."
+      },
+      "SourceHash": "ae669c61c4ccb42a19b241762f4ff4c542bc2a6fc7c2ae718f58c0c6322ed5a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d55571300",
+      "Fields": {
+        "Meaning": "Chơi; vui chơi; đến chơi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "遊ぶ diễn tả việc chơi hoặc dành thời gian vui vẻ. Có thể nói おもちゃで遊ぶ (chơi đồ chơi), 友だちと遊ぶ (chơi với bạn), hoặc 遊びに行く (đi chơi, đến chơi).",
+        "UsageNotes": "Dùng で để chỉ nơi hoặc phương tiện chơi, と để chỉ người cùng chơi."
+      },
+      "Examples": {
+        "197343": "Bill thường chơi đồ chơi một mình.",
+        "225249": "Tuyệt đối không được chơi ở đây."
+      },
+      "SourceHash": "b8e54597ff8415fe589d64d94028b72ee4b5c060629bd073aeaf90312cd51395"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f665c2128a",
+      "Fields": {
+        "Meaning": "Ấm; ấm áp",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "暖かい thường tả thời tiết, không khí hoặc không gian có nhiệt độ ấm và dễ chịu. 暖かくなる nghĩa là trở nên ấm hơn.",
+        "UsageNotes": "Phân biệt 暖かい với 温かい, cũng đọc あたたかい nhưng thường dùng cho đồ vật, thức ăn, đồ uống hoặc sự ấm áp trong tình cảm."
+      },
+      "Examples": {
+        "122194": "Trời đang ấm dần lên từng ngày.",
+        "203062": "Trời sẽ ấm dần lên."
+      },
+      "SourceHash": "bf9c7628f574f6910404227a288c44a7144bdf6fd4247d66582f92d0c85096a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b62cb9ce4c",
+      "Fields": {
+        "Meaning": "Đầu; trí óc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "頭 chỉ bộ phận đầu của cơ thể. Trong cách nói 頭がいい, từ này liên quan đến trí óc và cả cụm có nghĩa là thông minh.",
+        "UsageNotes": "Dịch 頭がいい là thông minh, không dịch từng chữ thành đầu tốt."
+      },
+      "Examples": {
+        "215196": "Jill không chỉ dễ thương mà còn thông minh.",
+        "229971": "Alice cài một bông hoa trên đầu."
+      },
+      "SourceHash": "3d589e3d46721a015803adfa5b39b26a7e5e8f52053076721cb4994a75a7e63b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ae27e3b51",
+      "Fields": {
+        "Meaning": "Mới",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "新しい tả một thứ mới có, mới được làm ra hoặc mới xuất hiện. Đứng trực tiếp trước danh từ, như 新しい車 (xe mới) và 新しい店 (cửa hàng mới).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141560": "Thầy/cô rất thích chiếc xe mới.",
+        "145459": "Nghe nói có một nhà hàng mới mở."
+      },
+      "SourceHash": "13f62a686d7368bfc5b747f4450465044a2d58409d9887594bd532985f4fda05"
+    }
+  ]
+}

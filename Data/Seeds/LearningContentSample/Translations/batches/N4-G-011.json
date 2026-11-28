@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto",
+      "Fields": {
+        "Meaning": "Việc làm gì",
+        "Formation": "Động từ thể thông thường ＋ こと",
+        "Explanation": "Biến hành động thành danh từ để nói về sở thích, chủ đề hoặc nội dung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto:example:1": "Sở thích của tôi là chụp ảnh.",
+        "koto:example:2": "Tập thể dục mỗi ngày tốt cho sức khỏe."
+      },
+      "SourceHash": "bfe447d63b2d31a14bc2e6bf91a233e5daf4b93d0de4af7e1c58119a1ab0ca15"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ga-dekiru",
+      "Fields": {
+        "Meaning": "Có thể làm gì",
+        "Formation": "Động từ thể từ điển ＋ ことができる",
+        "Explanation": "Diễn tả năng lực hoặc điều kiện cho phép thực hiện hành động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-ga-dekiru:example:1": "Anh Tanaka biết chơi piano.",
+        "koto-ga-dekiru:example:2": "Ở đây có được chụp ảnh không ạ?"
+      },
+      "SourceHash": "c31b56c4321d81967d27571f3db7b281c45771b1b0fb2c4f0c5ea29c0bca4c06"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "goto-ni",
+      "Fields": {
+        "Meaning": "Cứ mỗi, mỗi lần",
+        "Formation": "Khoảng thời gian hoặc động từ thể từ điển ＋ ごとに",
+        "Explanation": "Nêu chu kỳ lặp lại hoặc sự thay đổi qua từng lần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "goto-ni:example:1": "Thế vận hội được tổ chức bốn năm một lần.",
+        "goto-ni:example:2": "Mỗi lần gặp, tôi thấy anh ấy khỏe hơn."
+      },
+      "SourceHash": "fd3d78aca12eadb05b89920f13139710741b4eb526e3de62704cfb02b7807365"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ni-suru",
+      "Fields": {
+        "Meaning": "Quyết định làm hoặc không làm",
+        "Formation": "Động từ thể từ điển hoặc thể ない ＋ ことにする",
+        "Explanation": "Nêu quyết định do chủ thể chủ động đưa ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-ni-suru:example:1": "Tôi quyết định từ tháng sau sẽ chạy bộ mỗi sáng.",
+        "koto-ni-suru:example:2": "Hôm nay tôi quyết định không uống rượu."
+      },
+      "SourceHash": "63802b945a31c26d59c27e9950ab746395775264dd61c2f433b952af0ffa859a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ni-naru",
+      "Fields": {
+        "Meaning": "Được quyết định là, đi đến việc",
+        "Formation": "Động từ thể từ điển hoặc thể ない ＋ ことになる",
+        "Explanation": "Nêu kết quả của sự sắp xếp hoặc quyết định đã hình thành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-ni-naru:example:1": "Tôi sẽ được chuyển công tác đến Osaka vào tháng sau.",
+        "koto-ni-naru:example:2": "Cuộc họp đã được quyết định dời sang tuần sau."
+      },
+      "SourceHash": "636a603552b9150992c4f9e20e8f2cdc4bbe56bb4393daa499fe7c3cd0f66946"
+    }
+  ]
+}

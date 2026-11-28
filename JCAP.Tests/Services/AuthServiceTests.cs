@@ -2,6 +2,7 @@ using JCAP.DTOs.Auth;
 using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -546,5 +547,72 @@ public class AuthServiceTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task AuthUrls_WithDynamicPublicRequestHost_OverrideLocalhostDefaults()
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            ["Jwt:Key"] = "This_Is_A_Test_Jwt_Key_At_Least_32_Characters_Long",
+            ["Jwt:Issuer"] = "JCAP_TEST",
+            ["Jwt:Audience"] = "JCAP_TEST_CLIENT",
+            ["BackendUrl"] = "http://localhost:5254",
+            ["FrontendUrl"] = "http://localhost:5173",
+            ["Authentication:Google:ClientId"] = "test-google-client-id",
+            ["Authentication:Google:RedirectUri"] = "http://localhost:5254/api/auth/google/callback"
+        };
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("jcap-live.ddns.net");
+        var httpContextAccessor = new HttpContextAccessor { HttpContext = httpContext };
+
+        var user = new ApplicationUser
+        {
+            Id = "user-dyn",
+            Email = "dyn@example.com",
+            FullName = "Dynamic User",
+            IsActive = true,
+            EmailConfirmed = false
+        };
+
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
+        userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("confirm-tok");
+        userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-tok");
+
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            configuration,
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object,
+            httpContextAccessor);
+
+        var googleAuthUrl = authService.GetGoogleAuthUrl();
+        Assert.Contains(
+            Uri.EscapeDataString("https://jcap-live.ddns.net/api/auth/google/callback"),
+            googleAuthUrl);
+
+        await authService.ResendConfirmationEmailAsync(new ResendConfirmationEmailDto { Email = user.Email });
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                user.Email,
+                "Xác minh email tài khoản JCAP",
+                It.Is<string>(body => body.Contains("https://jcap-live.ddns.net/api/auth/confirm-email")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        await authService.ForgotPasswordAsync(new ForgotPasswordDto { Email = user.Email });
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                user.Email,
+                "Đặt lại mật khẩu tài khoản JCAP",
+                It.Is<string>(body => body.Contains("https://jcap-live.ddns.net/reset-password")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

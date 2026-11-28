@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Icon } from '../../../components/jcap/Icon';
 import { adminLearningImportService } from '../../../services/adminLearningImportService';
 import type { LearningImportReport } from '../../../types/adminLearning';
-import { ErrorBox, inputClass, LearningModal, primaryClass, secondaryClass } from './LearningUi';
+import { ErrorBox, LearningModal, primaryClass, secondaryClass } from './LearningUi';
 
 const actions = { create: 'Thêm mới', reuse: 'Dùng mục có sẵn', skip: 'Bỏ qua' };
 export function LearningImportModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
@@ -42,28 +43,42 @@ export function LearningImportModal({ onClose, onSaved }: { onClose: () => void;
   const errorCount = report?.issues.filter(i => i.severity === 'error').length ?? 0;
   const warningCount = report?.issues.filter(i => i.severity === 'warning').length ?? 0;
   const issues = report ? [...report.issues.filter(i => i.severity === 'error'), ...report.issues.filter(i => i.severity === 'warning')] : [];
+  const step = report?.canImport || report?.imported ? 3 : file ? 2 : 1;
   return <LearningModal title="Nhập học liệu từ Excel" busy={busy || downloading} onClose={report?.imported ? onSaved : onClose} footer={report?.imported
     ? <button className={primaryClass} onClick={onSaved}>Hoàn tất</button>
     : <><button className={secondaryClass} disabled={busy || downloading} onClick={onClose}>Đóng</button>
-      {report?.canImport ? <button className={primaryClass} disabled={busy || !acknowledged} onClick={() => upload(true)}>{busy ? 'Đang nhập…' : 'Xác nhận nhập'}</button>
+      {report?.canImport ? <button className={primaryClass} disabled={busy || downloading || !acknowledged} onClick={() => upload(true)}>{busy ? 'Đang nhập…' : 'Xác nhận nhập'}</button>
         : <button className={primaryClass} disabled={!file || busy || downloading} onClick={() => upload()}>{busy ? 'Đang kiểm tra…' : 'Kiểm tra dữ liệu'}</button>}</>}>
-    <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4 rounded-lg border border-blue-100 bg-blue-50/60 p-4">
-        <div><p className="text-sm font-semibold">1. Chuẩn bị theo mẫu · 2. Kiểm tra · 3. Xác nhận nhập</p><p className="mt-1 text-xs leading-relaxed text-slate-500">Một file có thể chứa chủ đề, từ vựng, ngữ pháp, ví dụ và nguồn. Xóa dòng minh họa trước khi dùng. Hướng dẫn chi tiết nằm trong sheet Guide.</p></div>
-        <button className={`${secondaryClass} shrink-0`} disabled={downloading || busy} onClick={template}>{downloading ? 'Đang tải…' : 'Tải mẫu Excel'}</button>
-      </div>
+    <div className="al-import space-y-5">
+      <ol className="al-import-steps" aria-label="Các bước nhập Excel">
+        {['Chọn file', 'Kiểm tra', 'Xác nhận'].map((label, index) => <li key={label} aria-current={step === index + 1 && !report?.imported ? 'step' : undefined} className={index + 1 < step || report?.imported ? 'is-complete' : undefined}>
+          <span className="al-import-step-number" aria-hidden="true">{index + 1 < step || report?.imported ? <Icon name="check" size={16} /> : index + 1}</span><span>{label}</span>
+        </li>)}
+      </ol>
+      {!report?.imported && <>
+        <div className="al-import-template">
+          <p>Dùng file mẫu để nhập chủ đề, từ vựng, ngữ pháp và ví dụ.</p>
+          <button className={`${secondaryClass} shrink-0`} disabled={downloading || busy} onClick={template}><Icon name="download" size={17} />{downloading ? 'Đang tải…' : 'Tải mẫu Excel'}</button>
+        </div>
+        <label className="al-import-file">
+          <input type="file" accept=".xlsx" className="sr-only" aria-label="Chọn file Excel (.xlsx)" disabled={busy || downloading} onChange={event => { selectFile(event.target.files?.[0] ?? null); event.target.value = ''; }} />
+          <span className="al-import-file-icon"><Icon name={file ? 'description' : 'upload_file'} size={28} /></span>
+          <span className="al-import-file-info"><strong>{file ? file.name : 'Chọn file Excel để bắt đầu'}</strong><span>{file ? `${Math.max(1, Math.ceil(file.size / 1024)).toLocaleString('vi-VN')} KB · .xlsx` : 'Định dạng .xlsx · Tối đa 5 MB'}</span></span>
+          <span className="al-import-file-action">{file ? 'Đổi file' : 'Chọn file'}</span>
+        </label>
+        <details className="al-import-guide"><summary>Quy định và hướng dẫn nhập</summary><p>Xóa dòng minh họa trước khi dùng. Tối đa 500 mục mỗi loại và 3.000 dòng toàn file. Chủ đề và nội dung phải cùng trình độ. Hướng dẫn chi tiết nằm trong sheet Guide của file mẫu.</p></details>
+      </>}
       <ErrorBox message={error} />
-      {!report?.imported && <label className="block space-y-2 text-sm font-medium"><span>Chọn file Excel (.xlsx)</span><input type="file" accept=".xlsx" className={inputClass} disabled={busy || downloading} onChange={e => selectFile(e.target.files?.[0] ?? null)} /><span className="block text-xs font-normal text-slate-400">Tối đa 5 MB · 500 mục mỗi loại · 3.000 dòng toàn file. Chủ đề và nội dung phải cùng level.</span></label>}
       {report && <>
         <div role="status" aria-live="polite" className={`rounded-lg border p-3 text-sm ${report.imported ? 'border-emerald-100 bg-emerald-50 text-emerald-700' : report.canImport ? 'border-blue-100 bg-blue-50 text-blue-800' : 'border-red-100 bg-red-50 text-red-700'}`}>
           <p className="font-semibold">{report.imported ? 'Đã nhập dữ liệu thành công.' : report.canImport ? 'File hợp lệ. Chưa lưu vào kho.' : `${errorCount} lỗi cần sửa. Chưa lưu dữ liệu.`}</p>
-          <p className="mt-1 text-xs">{warningCount > 0 ? `${warningCount} lưu ý · ` : ''}{report.imported ? 'Các mục đã có được giữ nguyên.' : 'Có lỗi sẽ không nhập bất kỳ dòng nào. Sửa file rồi chọn lại để kiểm tra.'}</p>
+          <p className="mt-1 text-xs">{warningCount > 0 ? `${warningCount} lưu ý · ` : ''}{report.imported ? 'Các mục đã có được giữ nguyên.' : report.canImport ? 'Kiểm tra các dòng bên dưới, sau đó xác nhận để lưu vào kho.' : 'Có lỗi sẽ không nhập bất kỳ dòng nào. Sửa file rồi chọn lại để kiểm tra.'}</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{[
+        <dl className="al-import-summary">{[
           ['Chủ đề mới', report.newTopics], ['Từ vựng mới', report.newVocabularies], ['Ngữ pháp mới', report.newGrammars], ['Ví dụ mới', report.newExamples],
           ['Nguồn mới', report.newSources], ['Liên kết mới', report.newLinks], ['Mục dùng lại', report.reusedContents],
-        ].map(([label, count]) => <div key={label} className="rounded-lg border border-[#E6EDF5] p-3"><p className="text-xs text-slate-400">{label}</p><p className="mt-1 text-xl font-bold">{count}</p></div>)}</div>
-        {!report.canImport && <p className="text-xs text-slate-400">Các số trên là dự kiến cho những dòng đã kiểm tra, chưa phải số đã nhập.</p>}
+        ].map(([label, count]) => <div key={label}><dt>{label}</dt><dd>{count}</dd></div>)}</dl>
+        {!report.canImport && !report.imported && <p className="text-xs text-slate-400">Các số trên là dự kiến cho những dòng đã kiểm tra, chưa phải số đã nhập.</p>}
         {issues.length > 0 && <section className="space-y-2"><h3 className="text-sm font-semibold">Lỗi và lưu ý ({issues.length})</h3>
           <div className="overflow-x-auto rounded-lg border border-[#E6EDF5]"><table className="w-full text-left text-xs"><thead className="bg-slate-50 text-slate-500"><tr><th className="p-2">Vị trí</th><th className="p-2">Cột</th><th className="p-2">Nội dung</th></tr></thead><tbody className="divide-y divide-slate-100">{issues.slice(issuePage * 20, (issuePage + 1) * 20).map((issue, index) => <tr key={index}><td className="whitespace-nowrap p-2">{issue.sheet}{issue.row > 0 ? ` · dòng ${issue.row}` : ''}</td><td className="p-2">{issue.column || '—'}</td><td className={`p-2 ${issue.severity === 'error' ? 'text-red-600' : 'text-amber-700'}`}>{issue.severity === 'error' ? 'Lỗi: ' : 'Lưu ý: '}{issue.message}</td></tr>)}</tbody></table></div>
           {issues.length > 20 && <div className="flex items-center justify-end gap-2 text-xs"><button className={secondaryClass} disabled={issuePage === 0} onClick={() => setIssuePage(p => p - 1)}>Trước</button><span>{issuePage + 1}/{Math.ceil(issues.length / 20)}</span><button className={secondaryClass} disabled={(issuePage + 1) * 20 >= issues.length} onClick={() => setIssuePage(p => p + 1)}>Sau</button></div>}

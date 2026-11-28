@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Toast, type ToastType } from '../components/ui/Toast';
 import { profileService } from '../services/profileService';
+import { resolveMediaUrl } from '../utils/apiBase';
 import type { JLPTLevel } from '../types/profile';
 
 interface ToastMessage {
@@ -136,7 +137,7 @@ export const UpdateProfileView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="jx-touch-page max-w-3xl mx-auto space-y-6">
       {/* Toast Notifications */}
       <div className="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none w-auto max-w-[calc(100vw-2rem)]">
         {toasts.map((t) => (
@@ -151,7 +152,7 @@ export const UpdateProfileView: React.FC = () => {
       </div>
 
       {/* Header & Back Action */}
-      <div className="flex items-center justify-between">
+      <div className="jx-mobile-wrap flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#071A44] tracking-tight">Chỉnh sửa hồ sơ</h1>
           <p className="text-sm text-[#71809A] mt-0.5">
@@ -169,14 +170,14 @@ export const UpdateProfileView: React.FC = () => {
       </div>
 
       {/* Edit Form Card */}
-      <div className="bg-white rounded-xl border border-[#E6EDF5] shadow-sm p-8">
+      <div className="jx-mobile-card-padding bg-white rounded-xl border border-[#E6EDF5] shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Avatar Preview & URL */}
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-[#E6EDF5]">
             <div className="relative">
               {profilePictureUrl ? (
                 <img
-                  src={profilePictureUrl}
+                  src={resolveMediaUrl(profilePictureUrl)}
                   alt="Avatar Preview"
                   className="w-20 h-20 rounded-full object-cover border-2 border-[#0878EE] shadow-sm"
                   onError={(e) => {
@@ -232,6 +233,7 @@ export const UpdateProfileView: React.FC = () => {
           <div>
             <Input
               label="Số điện thoại"
+              type="tel"
               placeholder="Ví dụ: 0905123456"
               value={phoneNumber}
               onChange={(e) => {
@@ -254,6 +256,7 @@ export const UpdateProfileView: React.FC = () => {
                   key={lvl}
                   type="button"
                   onClick={() => setJlptLevel(lvl)}
+                  aria-pressed={jlptLevel === lvl}
                   className={`
                     py-2.5 px-3 rounded-lg text-sm font-bold border transition-all text-center
                     ${jlptLevel === lvl
@@ -272,7 +275,7 @@ export const UpdateProfileView: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#E6EDF5]">
+          <div className="jx-mobile-wrap flex items-center justify-end gap-3 pt-6 border-t border-[#E6EDF5]">
             <Button
               type="button"
               variant="secondary"

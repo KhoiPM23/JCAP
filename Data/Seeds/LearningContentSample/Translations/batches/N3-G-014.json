@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "shibaraku",
+      "Fields": {
+        "Meaning": "Một lát, một thời gian",
+        "Formation": "しばらく ＋ động từ",
+        "Explanation": "Chỉ một khoảng thời gian không nêu rõ độ dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "shibaraku:example:1": "Xin chờ một lát. Tôi sẽ quay lại ngay.",
+        "shibaraku:example:2": "Từ khi chuyển nhà, đã một thời gian tôi chưa gặp bạn bè."
+      },
+      "SourceHash": "6abe493ec64d769bc1f4a57e4a82ab136787ba79055d6dd02419db2fc9f43cde"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "joshi-no",
+      "Fields": {
+        "Meaning": "Trợ từ đi với の trước danh từ",
+        "Formation": "Danh từ ＋ からの／での／との… ＋ danh từ",
+        "Explanation": "Giữ quan hệ như nguồn gửi, nơi diễn ra hoặc người liên quan khi bổ nghĩa cho danh từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "joshi-no:example:1": "Đọc email của bạn gửi, tôi thấy vui.",
+        "joshi-no:example:2": "Đây là lời hứa với mẹ nên tôi nhất định sẽ giữ."
+      },
+      "SourceHash": "1dfa9155aa6932ea9e89386c58f787789dacfa213e3b75d70f28490e04c2b53a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sugata",
+      "Fields": {
+        "Meaning": "Dáng vẻ, hình ảnh khi làm hoặc mặc gì",
+        "Formation": "Danh từ ＋ の姿／mệnh đề bổ nghĩa ＋ 姿／tên trang phục ＋ 姿",
+        "Explanation": "Nêu hình ảnh có thể nhìn thấy của một người hoặc nhóm người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sugata:example:1": "Tôi thấy vui khi nhìn lũ trẻ chơi đùa đầy sức sống.",
+        "sugata:example:2": "Cô ấy mặc kimono trông rất đẹp."
+      },
+      "SourceHash": "2ab6b746fdb38fb17a755059ad323cff19e262e3ed544ed8bbb5d8673988e787"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zutsu",
+      "Fields": {
+        "Meaning": "Mỗi, từng, mỗi lần một ít",
+        "Formation": "Số lượng hoặc 少し ＋ ずつ",
+        "Explanation": "Chỉ phần phân đều hoặc lượng tăng thêm qua từng lần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zutsu:example:1": "Tôi phát cho mỗi đứa trẻ hai cái bánh.",
+        "zutsu:example:2": "Mỗi ngày tôi học thêm một ít kanji."
+      },
+      "SourceHash": "65051920f54eb8e3be046d0b412820bf335cb82badf126bd91d4f0c4262db249"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zutto-comparison",
+      "Fields": {
+        "Meaning": "Hơn hẳn, hơn nhiều",
+        "Formation": "Mốc so sánh ＋ より ＋ ずっと ＋ đặc điểm",
+        "Explanation": "Nhấn mạnh khoảng cách lớn giữa hai đối tượng được so sánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zutto-comparison:example:1": "Máy tính mới nhanh hơn máy cũ nhiều.",
+        "zutto-comparison:example:2": "Đi bộ dễ chịu hơn đi tàu điện nhiều."
+      },
+      "SourceHash": "85268eedba2a6461e1170d90293c4ff26798911430d291f57f72ee3db89c3531"
+    }
+  ]
+}

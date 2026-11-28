@@ -38,6 +38,8 @@ namespace JCAP.Services.Implementations
 
         private readonly IPersonaMemoryService? _personaMemory;
 
+        private readonly IAdaptiveProfileService? _adaptiveProfileService;
+
         public RoleplayResultService(
 
             AppDbContext dbContext,
@@ -50,7 +52,9 @@ namespace JCAP.Services.Implementations
 
             ITelemetryEvaluatorService? telemetryEvaluator = null,
 
-            IPersonaMemoryService? personaMemory = null)
+            IPersonaMemoryService? personaMemory = null,
+
+            IAdaptiveProfileService? adaptiveProfileService = null)
 
         {
 
@@ -66,6 +70,8 @@ namespace JCAP.Services.Implementations
 
             _personaMemory = personaMemory;
 
+            _adaptiveProfileService = adaptiveProfileService;
+
         }
 
         private async Task<(string Persona, int Score, string Title)> LoadNpcInfoAsync(string userId, int sessionId)
@@ -76,7 +82,7 @@ namespace JCAP.Services.Implementations
             .Select(s => new { AiPersona = s.ScenarioLevelConfiguration != null ? s.ScenarioLevelConfiguration.AiPersona : null, ScenarioId = s.ScenarioLevelConfiguration != null ? (int?)s.ScenarioLevelConfiguration.ScenarioId : null, s.ScenarioLevelConfigurationId, Code = s.ScenarioLevelConfiguration != null && s.ScenarioLevelConfiguration.Scenario != null ? s.ScenarioLevelConfiguration.Scenario.ScenarioCode : null })
             .FirstOrDefaultAsync();
         var persona = string.IsNullOrWhiteSpace(cfg?.AiPersona) ? "Nhân vật AI" : cfg!.AiPersona;
-        var npcCode = !string.IsNullOrWhiteSpace(cfg?.Code) ? cfg!.Code : $"NPC_{cfg?.ScenarioLevelConfigurationId}";
+        var npcCode = RoleplaySessionService.ResolveNpcCode(cfg?.Code, cfg?.ScenarioId ?? 0, cfg?.ScenarioLevelConfigurationId);
         var score = await _dbContext.UserNpcRelationships
             .AsNoTracking()
             .Where(r => r.UserId == userId && r.NpcCode == npcCode)
@@ -177,23 +183,20 @@ namespace JCAP.Services.Implementations
 
                 .ToList();
 
-            if (userMessages.Count == 0)
-            {
-                return ApiResponse<CompleteRoleplaySessionResponseDto>.Fail(
-                    "Bạn cần gửi ít nhất một câu hội thoại trước khi hoàn tất phiên luyện tập.");
-            }
+            var completedMissionCount = session.SessionMissions.Count(mission => mission.IsCompleted);
+            var totalMissionCount = session.SessionMissions.Count;
 
-            var evaluation = _evaluationService.Evaluate(
-                userMessages.Select(message => message.LinguisticFeedbackJson),
-                session.SessionMissions.Count(mission => mission.IsCompleted),
-                session.SessionMissions.Count,
-                session.IsNaturallyConcluded);
-
-            if (evaluation == null)
-            {
-                return ApiResponse<CompleteRoleplaySessionResponseDto>.Fail(
-                    "Chưa đủ dữ liệu đánh giá từ Gemini. Vui lòng tiếp tục hội thoại và thử hoàn tất lại.");
-            }
+            var evaluation = (userMessages.Count > 0
+                ? _evaluationService.Evaluate(
+                    userMessages.Select(message => message.LinguisticFeedbackJson),
+                    completedMissionCount,
+                    totalMissionCount,
+                    session.IsNaturallyConcluded)
+                : null)
+                ?? _evaluationService.BuildEarlyTerminationResult(
+                    completedMissionCount,
+                    totalMissionCount,
+                    session.IsNaturallyConcluded);
 
             var completedAt = DateTime.UtcNow;
 
@@ -223,7 +226,9 @@ namespace JCAP.Services.Implementations
 
                 ImpressionScore = evaluation.ImpressionScore,
 
-                PassStatus = evaluation.AllMissionsCompleted
+                PassStatus = evaluation.EvaluatedTurnCount > 0
+
+                    && evaluation.AllMissionsCompleted
 
                     && evaluation.OverallScore >= PassThreshold,
 
@@ -244,7 +249,29 @@ namespace JCAP.Services.Implementations
 
                 await _dbContext.SaveChangesAsync();
 
-                // Hoàn tất Telemetry ngầm và Hồ sơ năng lực (FSRS + IRT Theta + TikTok-style profile)
+                // Ghi nhận NPC Affinity và số buổi luyện tập hoàn thành
+                if (_personaMemory != null)
+                {
+                    try
+                    {
+                        var cfgInfo = session.ScenarioLevelConfigurationId.HasValue
+                            ? await _dbContext.ScenarioLevelConfigurations
+                                .AsNoTracking()
+                                .Where(c => c.Id == session.ScenarioLevelConfigurationId.Value)
+                                .Select(c => new { c.ScenarioId, Code = c.Scenario!.ScenarioCode })
+                                .FirstOrDefaultAsync()
+                            : null;
+                        string npcCode = RoleplaySessionService.ResolveNpcCode(
+                            cfgInfo?.Code, cfgInfo?.ScenarioId ?? 0, session.ScenarioLevelConfigurationId);
+                        await _personaMemory.RecordSessionAffinityAsync(userId, npcCode, result.PassStatus);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Lỗi khi ghi nhận PersonaMemory cho session {SessionId}", sessionId);
+                    }
+                }
+
+                // Hub-and-Spoke: Đồng bộ điểm số RoleplayResult mới lưu vào LearnerIntelligenceProfile
                 if (_telemetryEvaluator != null)
                 {
                     try
@@ -253,23 +280,24 @@ namespace JCAP.Services.Implementations
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Lỗi khi tổng hợp FinalizeSessionTelemetry cho session {SessionId}", sessionId);
+                        _logger.LogWarning(ex, "Lỗi cập nhật Telemetry khi hoàn tất session {SessionId}", sessionId);
                     }
                 }
 
-                // Ghi nhận NPC Affinity và số buổi luyện tập hoàn thành
-                if (_personaMemory != null)
+                // Tổng hợp AI Coaching Snapshot một lần lúc hoàn tất phiên (strict timeout, fallback an toàn)
+                if (_adaptiveProfileService != null)
                 {
                     try
                     {
-                        string npcCode = !string.IsNullOrWhiteSpace(snapshot.ScenarioTitle)
-                            ? $"SCN_{session.ScenarioLevelConfigurationId}"
-                            : $"NPC_{session.ScenarioLevelConfigurationId}";
-                        await _personaMemory.RecordSessionAffinityAsync(userId, npcCode, result.PassStatus);
+                        using var coachingCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(4500));
+                        await _adaptiveProfileService.GenerateAndPersistCoachingSnapshotAsync(
+                            userId,
+                            sessionId,
+                            coachingCts.Token);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Lỗi khi ghi nhận PersonaMemory cho session {SessionId}", sessionId);
+                        _logger.LogWarning(ex, "Bỏ qua hoặc timeout khi tổng hợp AI Adaptive Coaching cho session {SessionId}", sessionId);
                     }
                 }
 
@@ -687,17 +715,33 @@ namespace JCAP.Services.Implementations
 
                 : null;
 
-            bool hasVoiceTurns = userFeedbacks.Any(f => f.SpeechDelivery != null && !f.SpeechDelivery.IsTextInput && (!string.IsNullOrEmpty(f.SpeechDelivery.AudioUrl) || (f.SpeechDelivery.SpeechConfidence.HasValue && f.SpeechDelivery.SpeechConfidence.Value > 0.4)));
+            if (evalResult == null && !result.PassStatus)
+            {
+                evalResult = _evaluationService.BuildEarlyTerminationResult(
+                    completedMissions.Count,
+                    allMissions.Count,
+                    false);
+            }
 
-            var fluencyScore = hasVoiceTurns ? (evalResult?.FluencyScore ?? 85) : 0;
+            bool hasVoiceTurns = userFeedbacks.Any(f =>
 
-            var confidenceScore = hasVoiceTurns ? (evalResult?.SpeechConfidenceScore ?? 90) : 0;
+                f.SpeechDelivery != null &&
+
+                !f.SpeechDelivery.IsTextInput &&
+
+                f.SpeechDelivery.SpeechConfidence.HasValue &&
+
+                f.SpeechDelivery.SpeechConfidence.Value > 0);
+
+            var fluencyScore = hasVoiceTurns ? (evalResult?.FluencyScore ?? 0) : 0;
+
+            var confidenceScore = hasVoiceTurns ? (evalResult?.SpeechConfidenceScore ?? 0) : 0;
 
             var avgLatency = hasVoiceTurns ? (evalResult?.AverageResponseLatencySeconds ?? 0) : 0;
 
             var avgPace = hasVoiceTurns ? (evalResult?.AverageSpeechPace ?? 0) : 0;
 
-            var pronScore = hasVoiceTurns ? (evalResult?.PronunciationScore ?? 85) : 0;
+            var pronScore = hasVoiceTurns ? (evalResult?.PronunciationScore ?? 0) : 0;
 
             // Tính toán so sánh tiến độ giữa các lần luyện tập (Attempt Progression Analytics)
 
@@ -916,13 +960,73 @@ namespace JCAP.Services.Implementations
                 }
             }
 
-            // Gợi ý kịch bản tiếp theo (Next Best Challenge Recommendation)
+            // Hub-and-Spoke: Đọc Hồ sơ Năng lực Trung tâm & Điểm yếu FSRS lịch sử của học viên
+            LearnerIntelligenceProfile? intelligenceProfile = !string.IsNullOrWhiteSpace(userId)
+                ? await _dbContext.LearnerIntelligenceProfiles
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.UserId == userId)
+                : null;
+
+            List<LearnerSkillMastery> userMasteries = !string.IsNullOrWhiteSpace(userId)
+                ? await _dbContext.LearnerSkillMasteries
+                    .AsNoTracking()
+                    .Where(m => m.UserId == userId)
+                    .ToListAsync()
+                : [];
+
+            // Gợi ý kịch bản tiếp theo (Next Best Challenge Recommendation từ LearnerIntelligenceProfile)
             int? nextScenarioId = null;
             string? nextScenarioTitle = null;
             string? nextReason = null;
             double? predictedSuccessRate = null;
+            string? dominantWeaknessCategory = null;
+            int? profileNextScenarioId = null;
+            string? profileNextTitle = null;
+            string? profileNextReason = null;
+            double? profilePredictedSuccess = null;
 
-            if (scenarioId > 0)
+            if (!string.IsNullOrWhiteSpace(intelligenceProfile?.InferredTraitsJson))
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(intelligenceProfile.InferredTraitsJson);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("dominantWeaknessCategory", out var dwc) && dwc.ValueKind == JsonValueKind.String)
+                        dominantWeaknessCategory = dwc.GetString();
+                    if (root.TryGetProperty("nextRecommendedScenarioId", out var nsi) && nsi.ValueKind == JsonValueKind.Number)
+                        profileNextScenarioId = nsi.GetInt32();
+                    if (root.TryGetProperty("nextRecommendedScenarioTitle", out var nst) && nst.ValueKind == JsonValueKind.String)
+                        profileNextTitle = nst.GetString();
+                    if (root.TryGetProperty("nextRecommendedReason", out var nrr) && nrr.ValueKind == JsonValueKind.String)
+                        profileNextReason = nrr.GetString();
+                    if (root.TryGetProperty("predictedSuccessRateNextScenario", out var psr) && psr.ValueKind == JsonValueKind.Number)
+                    {
+                        var rawPsr = psr.GetDouble();
+                        profilePredictedSuccess = rawPsr > 1.0 ? Math.Round(rawPsr / 100.0, 2) : Math.Round(rawPsr, 2);
+                    }
+                }
+                catch { }
+            }
+
+            if (profileNextScenarioId.HasValue && profileNextScenarioId.Value > 0 && profileNextScenarioId.Value != scenarioId)
+            {
+                var verifiedProfileNext = await _dbContext.Scenarios
+                    .AsNoTracking()
+                    .Where(s => s.Id == profileNextScenarioId.Value && s.IsActive)
+                    .Select(s => new { s.Id, s.Title })
+                    .FirstOrDefaultAsync();
+                if (verifiedProfileNext != null)
+                {
+                    nextScenarioId = verifiedProfileNext.Id;
+                    nextScenarioTitle = !string.IsNullOrWhiteSpace(profileNextTitle) ? profileNextTitle : verifiedProfileNext.Title;
+                    nextReason = !string.IsNullOrWhiteSpace(profileNextReason)
+                        ? profileNextReason
+                        : $"Hồ sơ năng lực gợi ý '{verifiedProfileNext.Title}' để rèn luyện trọng tâm kỹ năng {dominantWeaknessCategory ?? "giao tiếp"}.";
+                    predictedSuccessRate = profilePredictedSuccess ?? (result.PassStatus ? 0.85 : 0.65);
+                }
+            }
+
+            if (!nextScenarioId.HasValue && scenarioId > 0)
             {
                 var nextScenario = await _dbContext.Scenarios
                     .AsNoTracking()
@@ -935,10 +1039,13 @@ namespace JCAP.Services.Implementations
                 {
                     nextScenarioId = nextScenario.Id;
                     nextScenarioTitle = nextScenario.Title;
-                    predictedSuccessRate = result.PassStatus ? 0.85 : 0.65;
-                    nextReason = result.PassStatus
+                    predictedSuccessRate = profilePredictedSuccess ?? (result.PassStatus ? 0.85 : 0.65);
+                    string focusHint = !string.IsNullOrWhiteSpace(dominantWeaknessCategory) && dominantWeaknessCategory != "Balanced"
+                        ? $" Trực tiếp cải thiện nhóm kỹ năng {dominantWeaknessCategory} từ hồ sơ của bạn."
+                        : string.Empty;
+                    nextReason = (result.PassStatus
                         ? $"Bạn đã làm chủ kịch bản '{result.ScenarioTitle}' ({result.OverallScore}đ)! Thử thách tiếp theo phù hợp nhất cho bạn là '{nextScenario.Title}'."
-                        : $"Để củng cố thêm kỹ năng giao tiếp, bạn có thể thử sức với kịch bản '{nextScenario.Title}' hoặc luyện lại tình huống hiện tại.";
+                        : $"Để củng cố thêm kỹ năng giao tiếp, bạn có thể thử sức với kịch bản '{nextScenario.Title}' hoặc luyện lại tình huống hiện tại.") + focusHint;
                 }
             }
 
@@ -988,14 +1095,15 @@ namespace JCAP.Services.Implementations
             if (result.GrammarScore >= 85) badges.Add("Ngữ pháp Chuẩn xác");
             if (result.VocabularyScore >= 85) badges.Add("Vốn từ Phong phú");
 
-            var weakVocabularies = DetectWeakVocabularies(targetVocabularies, messages, signals);
-            var weakGrammars = DetectWeakGrammars(targetGrammars, messages, signals);
+            var weakVocabularies = DetectWeakVocabularies(targetVocabularies, messages, signals, userMasteries);
+            var weakGrammars = DetectWeakGrammars(targetGrammars, messages, signals, userMasteries);
             var recommendedShadowingDialogues = await RecommendShadowingDialoguesAsync(
                 scenarioId,
                 result.ScenarioTitle,
                 result.JLPTLevel,
                 weakVocabularies,
-                weakGrammars);
+                weakGrammars,
+                userMasteries);
 
             // Đề xuất từ vựng & ngữ pháp mở rộng theo chủ đề (Adaptive Topic Reinforcement)
             var topicCode = "DAILY_LIFE";
@@ -1265,7 +1373,8 @@ namespace JCAP.Services.Implementations
         private static List<WeakVocabularyDto> DetectWeakVocabularies(
             IReadOnlyList<TargetVocabularyDto> targetVocabularies,
             IReadOnlyList<RoleplayMessageDto> messages,
-            IReadOnlyList<LearnerBehaviorSignal> signals)
+            IReadOnlyList<LearnerBehaviorSignal> signals,
+            IReadOnlyList<LearnerSkillMastery>? masteries = null)
         {
             if (targetVocabularies == null || targetVocabularies.Count == 0)
             {
@@ -1276,7 +1385,20 @@ namespace JCAP.Services.Implementations
                 .Where(m => string.Equals(m.Sender, "User", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            var weakVocabularies = new List<WeakVocabularyDto>();
+            var pairedSignals = new Dictionary<RoleplayMessageDto, LearnerBehaviorSignal>();
+            if (signals != null && signals.Count > 0)
+            {
+                for (int i = 0; i < userMessages.Count; i++)
+                {
+                    var sig = signals.FirstOrDefault(s => s.TurnIndex == i + 1) ?? (i < signals.Count ? signals[i] : null);
+                    if (sig != null)
+                    {
+                        pairedSignals[userMessages[i]] = sig;
+                    }
+                }
+            }
+
+            var weakEntries = new List<(WeakVocabularyDto Item, int Priority)>();
 
             foreach (var vocab in targetVocabularies)
             {
@@ -1285,14 +1407,40 @@ namespace JCAP.Services.Implementations
                     continue;
                 }
 
+                var chronicMastery = masteries?.FirstOrDefault(m =>
+                    (!string.IsNullOrWhiteSpace(m.SkillName) && m.SkillName.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrWhiteSpace(m.SkillCode) && m.SkillCode.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase)));
+                bool hasHistoricalLapse = chronicMastery != null && (chronicMastery.Lapses > 0 || chronicMastery.Stability < 2.0);
+                string historySuffix = hasHistoricalLapse ? " (Hồ sơ ghi nhận từng nhầm hoặc cần ôn lại)" : string.Empty;
+
+                var cleanWord = System.Text.RegularExpressions.Regex.Replace(vocab.Word, @"[\(（].*?[\)）]", "").Trim();
+                static string ToHira(string s)
+                {
+                    if (string.IsNullOrEmpty(s)) return string.Empty;
+                    var sb = new System.Text.StringBuilder(s.Length);
+                    foreach (var c in s)
+                    {
+                        sb.Append(c >= '\u30A1' && c <= '\u30F6' ? (char)(c - 0x60) : c);
+                    }
+                    return sb.ToString();
+                }
+                var hiraWord = ToHira(cleanWord);
+                var hiraReading = ToHira(vocab.Reading ?? string.Empty);
+
                 var matchedMessages = userMessages.Where(m =>
-                    (!string.IsNullOrWhiteSpace(vocab.Word) && m.JapaneseText.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrWhiteSpace(vocab.Reading) && m.JapaneseText.Contains(vocab.Reading, StringComparison.OrdinalIgnoreCase))
-                ).ToList();
+                {
+                    var msgText = m.JapaneseText ?? string.Empty;
+                    var msgHira = ToHira(msgText);
+                    return (!string.IsNullOrWhiteSpace(vocab.Word) && msgText.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase)) ||
+                           (!string.IsNullOrWhiteSpace(cleanWord) && msgText.Contains(cleanWord, StringComparison.OrdinalIgnoreCase)) ||
+                           (!string.IsNullOrWhiteSpace(vocab.Reading) && msgText.Contains(vocab.Reading, StringComparison.OrdinalIgnoreCase)) ||
+                           (!string.IsNullOrWhiteSpace(hiraWord) && hiraWord.Length >= 2 && msgHira.Contains(hiraWord, StringComparison.Ordinal)) ||
+                           (!string.IsNullOrWhiteSpace(hiraReading) && hiraReading.Length >= 2 && msgHira.Contains(hiraReading, StringComparison.Ordinal));
+                }).ToList();
 
                 if (matchedMessages.Count == 0)
                 {
-                    weakVocabularies.Add(new WeakVocabularyDto
+                    weakEntries.Add((new WeakVocabularyDto
                     {
                         Id = vocab.Id,
                         Word = vocab.Word,
@@ -1300,32 +1448,44 @@ namespace JCAP.Services.Implementations
                         Meaning = vocab.Meaning,
                         MasteryScore = 30,
                         Status = "NotAttempted",
-                        Reason = "Chưa chủ động vận dụng từ vựng này trong tình huống hội thoại."
-                    });
+                        Reason = "Chưa chủ động vận dụng từ vựng này trong tình huống hội thoại." + historySuffix
+                    }, hasHistoricalLapse ? 2 : 1));
                 }
                 else
                 {
                     bool hasFeedbackIssue = matchedMessages.Any(m =>
-                        m.LinguisticFeedback != null && (
-                            string.Equals(m.LinguisticFeedback.Status, "Error", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(m.LinguisticFeedback.Status, "Warning", StringComparison.OrdinalIgnoreCase) ||
-                            (m.LinguisticFeedback.Details != null && m.LinguisticFeedback.Details.Any(d =>
-                                (string.Equals(d.Type, "error", StringComparison.OrdinalIgnoreCase) ||
-                                 string.Equals(d.Type, "warning", StringComparison.OrdinalIgnoreCase)) &&
-                                (d.Aspect.Contains("từ", StringComparison.OrdinalIgnoreCase) ||
-                                 d.Aspect.Contains("Từ", StringComparison.OrdinalIgnoreCase) ||
-                                 d.Comment.Contains("từ", StringComparison.OrdinalIgnoreCase))
-                            ))
-                        )
-                    );
+                    {
+                        if (m.LinguisticFeedback == null) return false;
+                        if (string.Equals(m.LinguisticFeedback.Status, "Error", StringComparison.OrdinalIgnoreCase))
+                            return true;
 
-                    bool hasHintDependency = (signals != null && signals.Any(s => s.HintLevelUsed >= 2)) ||
-                        matchedMessages.Any(m => m.LinguisticFeedback?.SpeechDelivery?.TurnAutonomyScore != null &&
-                                                 m.LinguisticFeedback.SpeechDelivery.TurnAutonomyScore < 70);
+                        var details = m.LinguisticFeedback.Details;
+                        bool hasLexicalDetail = details != null && details.Any(d =>
+                            (string.Equals(d.Type, "error", StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(d.Type, "warning", StringComparison.OrdinalIgnoreCase)) &&
+                            (d.Aspect.Contains("từ", StringComparison.OrdinalIgnoreCase) ||
+                             d.Aspect.Contains("Từ", StringComparison.OrdinalIgnoreCase) ||
+                             d.Aspect.Contains("ngữ cảnh", StringComparison.OrdinalIgnoreCase) ||
+                             d.Comment.Contains("từ vựng", StringComparison.OrdinalIgnoreCase) ||
+                             d.Comment.Contains("cách dùng", StringComparison.OrdinalIgnoreCase) ||
+                             (!string.IsNullOrWhiteSpace(cleanWord) && d.Comment.Contains(cleanWord, StringComparison.OrdinalIgnoreCase)))
+                        );
+                        if (hasLexicalDetail) return true;
+
+                        // Chỉ coi Warning chung là lỗi từ vựng nếu không có chi tiết phân rã nào khác
+                        return string.Equals(m.LinguisticFeedback.Status, "Warning", StringComparison.OrdinalIgnoreCase) &&
+                               (details == null || details.Count == 0);
+                    });
+
+                    bool hasHintDependency = matchedMessages.Any(m =>
+                        (m.LinguisticFeedback?.SpeechDelivery?.HintLevelUsed >= 2) ||
+                        (m.LinguisticFeedback?.SpeechDelivery?.TurnAutonomyScore != null &&
+                         m.LinguisticFeedback.SpeechDelivery.TurnAutonomyScore < 70) ||
+                        (pairedSignals.TryGetValue(m, out var sig) && sig.HintLevelUsed >= 2));
 
                     if (hasFeedbackIssue || hasHintDependency)
                     {
-                        weakVocabularies.Add(new WeakVocabularyDto
+                        weakEntries.Add((new WeakVocabularyDto
                         {
                             Id = vocab.Id,
                             Word = vocab.Word,
@@ -1333,19 +1493,23 @@ namespace JCAP.Services.Implementations
                             Meaning = vocab.Meaning,
                             MasteryScore = 50,
                             Status = "NeedsPractice",
-                            Reason = "Đã sử dụng nhưng còn gặp lỗi dùng từ/ngữ cảnh hoặc phụ thuộc gợi ý."
-                        });
+                            Reason = "Đã sử dụng nhưng còn gặp lỗi dùng từ/ngữ cảnh hoặc phụ thuộc gợi ý." + historySuffix
+                        }, hasHistoricalLapse ? 3 : 2));
                     }
                 }
             }
 
-            return weakVocabularies;
+            return weakEntries
+                .OrderByDescending(x => x.Priority)
+                .Select(x => x.Item)
+                .ToList();
         }
 
         private static List<WeakGrammarDto> DetectWeakGrammars(
             IReadOnlyList<TargetGrammarDto> targetGrammars,
             IReadOnlyList<RoleplayMessageDto> messages,
-            IReadOnlyList<LearnerBehaviorSignal> signals)
+            IReadOnlyList<LearnerBehaviorSignal> signals,
+            IReadOnlyList<LearnerSkillMastery>? masteries = null)
         {
             if (targetGrammars == null || targetGrammars.Count == 0)
             {
@@ -1356,7 +1520,20 @@ namespace JCAP.Services.Implementations
                 .Where(m => string.Equals(m.Sender, "User", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            var weakGrammars = new List<WeakGrammarDto>();
+            var pairedSignals = new Dictionary<RoleplayMessageDto, LearnerBehaviorSignal>();
+            if (signals != null && signals.Count > 0)
+            {
+                for (int i = 0; i < userMessages.Count; i++)
+                {
+                    var sig = signals.FirstOrDefault(s => s.TurnIndex == i + 1) ?? (i < signals.Count ? signals[i] : null);
+                    if (sig != null)
+                    {
+                        pairedSignals[userMessages[i]] = sig;
+                    }
+                }
+            }
+
+            var weakEntries = new List<(WeakGrammarDto Item, int Priority)>();
 
             foreach (var grammar in targetGrammars)
             {
@@ -1366,15 +1543,37 @@ namespace JCAP.Services.Implementations
                 }
 
                 var corePattern = NormalizeGrammarPattern(grammar.Pattern);
+                var chronicMastery = masteries?.FirstOrDefault(m =>
+                    (!string.IsNullOrWhiteSpace(m.SkillName) &&
+                        (m.SkillName.Contains(grammar.Pattern, StringComparison.OrdinalIgnoreCase) ||
+                         (!string.IsNullOrWhiteSpace(corePattern) && m.SkillName.Contains(corePattern, StringComparison.OrdinalIgnoreCase)))) ||
+                    (!string.IsNullOrWhiteSpace(m.SkillCode) && m.SkillCode.Contains(grammar.Pattern, StringComparison.OrdinalIgnoreCase)));
+                bool hasHistoricalLapse = chronicMastery != null && (chronicMastery.Lapses > 0 || chronicMastery.Stability < 2.0);
+                string historySuffix = hasHistoricalLapse ? " (Hồ sơ ghi nhận từng nhầm hoặc cần ôn lại)" : string.Empty;
 
                 var matchedMessages = userMessages.Where(m =>
-                    (!string.IsNullOrWhiteSpace(corePattern) && m.JapaneseText.Contains(corePattern, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrWhiteSpace(grammar.Pattern) && m.JapaneseText.Contains(grammar.Pattern, StringComparison.OrdinalIgnoreCase))
-                ).ToList();
+                {
+                    var msgText = m.JapaneseText ?? string.Empty;
+                    if ((!string.IsNullOrWhiteSpace(corePattern) && msgText.Contains(corePattern, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrWhiteSpace(grammar.Pattern) && msgText.Contains(grammar.Pattern, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return true;
+                    }
+                    // Hỗ trợ tương đương ngữ dụng lịch sự: 〜をください <-> 〜をお願いします / 〜ていただけますか
+                    if (corePattern == "をください" && (msgText.Contains("をお願いします") || msgText.Contains("をひとつお願いします") || msgText.Contains("を一つお願いします") || msgText.Contains("おねがいします") || msgText.Contains("ていただけますか") || msgText.Contains("てもらえますか")))
+                    {
+                        return true;
+                    }
+                    if (corePattern == "をお願いします" && (msgText.Contains("をください") || msgText.Contains("おねがいします") || msgText.Contains("ていただけますか")))
+                    {
+                        return true;
+                    }
+                    return false;
+                }).ToList();
 
                 if (matchedMessages.Count == 0)
                 {
-                    weakGrammars.Add(new WeakGrammarDto
+                    weakEntries.Add((new WeakGrammarDto
                     {
                         Id = grammar.Id,
                         Pattern = grammar.Pattern,
@@ -1382,8 +1581,8 @@ namespace JCAP.Services.Implementations
                         ExampleSentence = grammar.ExampleSentence,
                         MasteryScore = 30,
                         Status = "NotAttempted",
-                        Reason = "Chưa vận dụng mẫu câu ngữ pháp này trong phiên đối thoại."
-                    });
+                        Reason = "Chưa vận dụng mẫu câu ngữ pháp này trong phiên đối thoại." + historySuffix
+                    }, hasHistoricalLapse ? 2 : 1));
                 }
                 else
                 {
@@ -1401,14 +1600,17 @@ namespace JCAP.Services.Implementations
                         )
                     );
 
-                    bool hasRuleError = signals != null && signals.Any(s => !string.IsNullOrWhiteSpace(s.DetectedRuleErrorCodes));
-                    bool hasHintDependency = (signals != null && signals.Any(s => s.HintLevelUsed >= 2)) ||
-                        matchedMessages.Any(m => m.LinguisticFeedback?.SpeechDelivery?.TurnAutonomyScore != null &&
-                                                 m.LinguisticFeedback.SpeechDelivery.TurnAutonomyScore < 70);
+                    bool hasRuleError = matchedMessages.Any(m =>
+                        pairedSignals.TryGetValue(m, out var sig) && !string.IsNullOrWhiteSpace(sig.DetectedRuleErrorCodes));
+                    bool hasHintDependency = matchedMessages.Any(m =>
+                        (m.LinguisticFeedback?.SpeechDelivery?.HintLevelUsed >= 2) ||
+                        (m.LinguisticFeedback?.SpeechDelivery?.TurnAutonomyScore != null &&
+                         m.LinguisticFeedback.SpeechDelivery.TurnAutonomyScore < 70) ||
+                        (pairedSignals.TryGetValue(m, out var sig) && sig.HintLevelUsed >= 2));
 
                     if (hasGrammarIssue || hasRuleError || hasHintDependency)
                     {
-                        weakGrammars.Add(new WeakGrammarDto
+                        weakEntries.Add((new WeakGrammarDto
                         {
                             Id = grammar.Id,
                             Pattern = grammar.Pattern,
@@ -1416,13 +1618,16 @@ namespace JCAP.Services.Implementations
                             ExampleSentence = grammar.ExampleSentence,
                             MasteryScore = 50,
                             Status = "NeedsPractice",
-                            Reason = "Đã vận dụng nhưng còn sai sót về trợ từ/chia thể hoặc phụ thuộc gợi ý."
-                        });
+                            Reason = "Đã vận dụng nhưng còn sai sót về trợ từ/chia thể hoặc phụ thuộc gợi ý." + historySuffix
+                        }, hasHistoricalLapse ? 3 : 2));
                     }
                 }
             }
 
-            return weakGrammars;
+            return weakEntries
+                .OrderByDescending(x => x.Priority)
+                .Select(x => x.Item)
+                .ToList();
         }
 
         private async Task<List<RecommendedShadowingDialogueDto>> RecommendShadowingDialoguesAsync(
@@ -1430,13 +1635,24 @@ namespace JCAP.Services.Implementations
             string scenarioTitle,
             string jlptLevel,
             IReadOnlyList<WeakVocabularyDto> weakVocabs,
-            IReadOnlyList<WeakGrammarDto> weakGrammars)
+            IReadOnlyList<WeakGrammarDto> weakGrammars,
+            IReadOnlyList<LearnerSkillMastery>? masteries = null)
         {
             var activeDialogues = await _dbContext.ShadowingDialogues
                 .AsNoTracking()
                 .Include(d => d.Sentences)
                 .Where(d => d.IsActive)
                 .ToListAsync();
+
+            var cleanDialogues = activeDialogues
+                .Where(d => d.Title == null ||
+                            (!d.Title.Contains("Master Data", StringComparison.OrdinalIgnoreCase) &&
+                             !d.Title.Contains("Shared Test", StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            if (cleanDialogues.Count > 0)
+            {
+                activeDialogues = cleanDialogues;
+            }
 
             if (activeDialogues.Count == 0)
             {
@@ -1504,8 +1720,27 @@ namespace JCAP.Services.Implementations
                     }
                 }
 
+                int historyPoints = 0;
+                if (masteries != null && masteries.Count > 0)
+                {
+                    foreach (var m in masteries.Where(m => m.Lapses > 0 || m.Stability < 2.0))
+                    {
+                        var skillCore = NormalizeGrammarPattern(m.SkillName ?? string.Empty);
+                        var candidate = !string.IsNullOrWhiteSpace(skillCore) ? skillCore : (m.SkillName ?? string.Empty);
+                        if (!string.IsNullOrWhiteSpace(candidate) && candidate.Length >= 2 && corpus.Contains(candidate, StringComparison.OrdinalIgnoreCase))
+                        {
+                            historyPoints = 5;
+                            if (!matchedItems.Contains(m.SkillName ?? candidate))
+                            {
+                                matchedItems.Add(m.SkillName ?? candidate);
+                            }
+                            break;
+                        }
+                    }
+                }
+
                 int weakScore = Math.Min(vocabPoints + grammarPoints, 30);
-                int totalScore = Math.Min(scenarioScore + levelScore + weakScore, 100);
+                int totalScore = Math.Min(scenarioScore + levelScore + weakScore + historyPoints, 100);
 
                 string matchReason;
                 var itemsText = matchedItems.Count > 0 ? string.Join(", ", matchedItems) : string.Empty;

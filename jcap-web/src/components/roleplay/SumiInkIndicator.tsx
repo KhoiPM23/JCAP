@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { SumiInkFeedbackDto } from '../../types/roleplay';
-import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 
 export interface RedoTurnButtonProps {
   onRedo?: () => void;
@@ -22,11 +21,6 @@ export const RedoTurnButton: React.FC<RedoTurnButtonProps> = ({
       type="button"
       onClick={(e) => {
         e.stopPropagation();
-        try {
-          ukiyoSound.playWoodblockSnap();
-        } catch {
-          // ignore sound error in test or headless env
-        }
         onRedo();
       }}
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium font-sans bg-rose-500/15 hover:bg-rose-500/25 text-rose-800 border border-rose-400/30 transition-all duration-200 cursor-pointer shadow-xs active:scale-95 ${className}`}
@@ -65,11 +59,6 @@ export const SumiInkPill: React.FC<SumiInkPillProps> = ({
       type="button"
       onClick={(e) => {
         e.stopPropagation();
-        try {
-          ukiyoSound.playSubtleTap();
-        } catch {
-          // ignore
-        }
         onToggle();
       }}
       className={`group inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-sans font-medium transition-all duration-200 cursor-pointer shadow-2xs active:scale-95 ${
@@ -80,7 +69,7 @@ export const SumiInkPill: React.FC<SumiInkPillProps> = ({
       title="Lưu ý về thể văn và độ lịch sự trong giao tiếp."
     >
       <span className="font-semibold">
-        {isSevere ? 'Lưu ý: Thể văn (Lệch vai vế)' : 'Gợi ý: Kính ngữ (Sắc thái)'}
+        {isSevere ? 'Lưu ý: Thể văn (Lệch vai vế)' : 'Gợi ý: Văn phong (Sắc thái)'}
       </span>
       <span className={`material-symbols-outlined text-[13px] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
         expand_more
@@ -184,9 +173,6 @@ export const SumiInkWhisperBubble: React.FC<SumiInkWhisperBubbleProps> = ({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    try {
-                      ukiyoSound.playWoodblockSnap();
-                    } catch {}
                     onRedo();
                   }}
                   className="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-bold hover:bg-amber-700 transition cursor-pointer shadow-2xs active:scale-95"

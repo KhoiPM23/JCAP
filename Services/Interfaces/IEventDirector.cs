@@ -27,7 +27,8 @@ public interface IEventDirector
         int totalEventsTriggeredSoFar,
         int remainingMissionsCount,
         string? compatibleEventsJson,
-        string? lastUserUtterance = null);
+        string? lastUserUtterance = null,
+        string? scenarioContext = null);
 
     BranchingEventDefinition? GetEventByCode(string eventCode);
     IReadOnlyList<BranchingEventDefinition> GetAllEvents();

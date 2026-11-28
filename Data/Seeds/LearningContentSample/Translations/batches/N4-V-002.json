@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1056f23586",
+      "Fields": {
+        "Meaning": "Xin lỗi, tạ lỗi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "謝る（あやまる）chỉ hành động xin lỗi. Người được xin lỗi thường đi với に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77695": "Dù không có lỗi, bạn vẫn nên xin lỗi.",
+        "153353": "Tôi phải xin lỗi cô ấy."
+      },
+      "SourceHash": "16d431585cbb685815eb70ac7ba94811712b02f65e322bf92597d11d338e66c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab0767b2f7",
+      "Fields": {
+        "Meaning": "Cồn, đồ uống có cồn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アルコール chỉ cồn. アルコール分 là hàm lượng cồn, còn アルコールの入っていない飲み物 là đồ uống không chứa cồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223288": "Bia này có nồng độ cồn 5%.",
+        "229946": "Có đồ uống không cồn không?"
+      },
+      "SourceHash": "fe2af80ed1d3b079d611a41f8559d8511ca2c34d39e259f9a29b3f0c55430513"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88d4196563",
+      "Fields": {
+        "Meaning": "Việc làm thêm, công việc bán thời gian",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "アルバイト thường chỉ công việc làm thêm. アルバイトをする nghĩa là đi làm thêm.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "76acc8e21ac01bda81f1f4c94f8237c6a789ede12bf1a9aa8e975d39ea2fac44"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d06643e4e1",
+      "Fields": {
+        "Meaning": "Yên tâm, an tâm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "安心（あんしん）chỉ trạng thái hết lo. 安心する nghĩa là cảm thấy yên tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160396": "Tôi yên tâm về chuyện đó.",
+        "234664": "Cứ giao việc cho cậu ta thì có thể yên tâm."
+      },
+      "SourceHash": "1000441be5238da74fae249313aa97c8695c874c30d3fbec1fdbf61b958878d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "160a8399af",
+      "Fields": {
+        "Meaning": "An toàn",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "安全（あんぜん）chỉ sự an toàn hoặc tình trạng ít nguy hiểm. 安全ですか dùng để hỏi có an toàn không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165729": "Chúng ta không an toàn như mình nghĩ.",
+        "220834": "Bơi ở con sông này có an toàn không?"
+      },
+      "SourceHash": "7168adb193b033c93b04a50d230a52301e41a0a405c0243f74a8fadad9ea3f10"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "367da027cb",
+      "Fields": {
+        "Meaning": "Như thế kia, kiểu như thế",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "あんな đứng trước danh từ để chỉ kiểu hoặc đặc điểm ở xa hay đã được nhắc đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75577": "Đàn ông tốt như thế đâu có dễ gặp!",
+        "75578": "Đàn ông bảnh như thế không dễ gặp đâu."
+      },
+      "SourceHash": "d0d97ffcadd294c814b684e8381383583155dde64886d662f5949edbe8309753"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "52a79a5d69",
+      "Fields": {
+        "Meaning": "Dẫn đường, hướng dẫn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "案内（あんない）chỉ việc dẫn người khác đến nơi hoặc giới thiệu khu vực. 案内いたします là cách nói khiêm nhường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152174": "Xin hãy dẫn tôi đi tham quan đây đó.",
+        "224013": "Để tôi dẫn anh/chị đi quanh khu này."
+      },
+      "SourceHash": "8282b98f75fe061a08cfa98ce4ddc798cb1e39209470a4857bc6cf2638ef5bfd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "629362dbfc",
+      "Fields": {
+        "Meaning": "Trở xuống, không quá, dưới đây",
+        "PartOfSpeech": "Danh từ, từ chỉ giới hạn",
+        "Explanation": "以下（いか）sau một số bao gồm cả mốc đó. 以下の通り nghĩa là như trình bày dưới đây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191220": "Tôi xin đặt hàng như sau.",
+        "205034": "Không thể mua thứ đó với giá 1.000 yên trở xuống."
+      },
+      "SourceHash": "b34a18a8d82475258791dbe576c16ddab87077eaa45011d273d90cd74bc94a8a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "da4198f39c",
+      "Fields": {
+        "Meaning": "Ngoài, ngoại trừ",
+        "PartOfSpeech": "Danh từ chỉ phạm vi",
+        "Explanation": "以外（いがい）đặt sau một mục để loại mục đó khỏi phạm vi đang nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142575": "Không nhìn thấy gì ngoài bầu trời xanh.",
+        "210309": "Trừ công việc đó ra thì tôi làm gì cũng được."
+      },
+      "SourceHash": "f8e4de0df032ba7bcbce726b2baaf1e418e98a3c2800a64a82c128d6cff8b196"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20044dd689",
+      "Fields": {
+        "Meaning": "Y học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "医学（いがく）là ngành y học. 医学を学ぶ nghĩa là học y.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123119": "Hai bác sĩ đang nói chuyện về y học.",
+        "161527": "Tôi vốn định học y ở Mỹ, nhưng…"
+      },
+      "SourceHash": "fd31208745d5011439512b412a4b681b6b5f1db12310742d6dbcaff70cf52be7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db01fd59d7",
+      "Fields": {
+        "Meaning": "Sống",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "生きる（いきる）chỉ việc sống hoặc tồn tại. 生きられない nghĩa là không thể sống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142836": "Mọi sinh vật rồi cũng sẽ chết.",
+        "144268": "Con người không thể sống nếu thiếu thức ăn."
+      },
+      "SourceHash": "051ec283af829f558833c894754bafe7640e4cc7e7a08b123f113a3dc4e6e7f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba5a03baf1",
+      "Fields": {
+        "Meaning": "Ý kiến, quan điểm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "意見（いけん）chỉ nhận định hoặc quan điểm. 意見を述べる nghĩa là trình bày ý kiến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159778": "Tôi nghĩ đó là một ý kiến hay.",
+        "224623": "Ở đây anh/chị cứ thoải mái nêu ý kiến."
+      },
+      "SourceHash": "bb4ebb0a3b5ee51e96f890a48f05cc89f8f1db8a981dfea9a894ef54497fbc16"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "372ce69caf",
+      "Fields": {
+        "Meaning": "Đá, hòn đá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "石（いし）chỉ đá hoặc một hòn đá. 石を持ち上げる nghĩa là nhấc hòn đá lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164717": "Tôi không nhấc nổi hòn đá này.",
+        "164718": "Tôi không đủ sức nhấc hòn đá này lên."
+      },
+      "SourceHash": "2051240842151fbb5494d8ce71b7347d1f06616aa536abe71bcd207806f2e960"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "770aa71095",
+      "Fields": {
+        "Meaning": "Bắt nạt, trêu chọc ác ý",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "いじめる chỉ việc đối xử tệ hoặc gây khổ sở cho người khác. Người bị bắt nạt đi với を.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110371": "Anh ấy trước đây hay bắt nạt bạn mình.",
+        "153660": "Tôi hối hận vì đã bắt nạt anh ấy."
+      },
+      "SourceHash": "2bc44398c916f2103817b80ff7c370d26403e542f8d1aa74c74c8f55fb7acf34"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13ab63d79a",
+      "Fields": {
+        "Meaning": "Trở lên, vượt mức, hết",
+        "PartOfSpeech": "Danh từ, từ chỉ giới hạn",
+        "Explanation": "以上（いじょう）sau một số thường bao gồm cả mốc đó. 必要以上 nghĩa là quá mức cần thiết. 以上です có thể báo đã trình bày hết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85431": "Đừng tiêu nhiều tiền hơn mức cần thiết.",
+        "191216": "Thế là hết rồi ạ?"
+      },
+      "SourceHash": "1745ce73702fe1000da1d5c6dab03a08a87e32dbe5874f14f6ae928a823705c3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05b5de61ab",
+      "Fields": {
+        "Meaning": "Vội, nhanh lên",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "急ぐ（いそぐ）chỉ việc làm nhanh vì không có nhiều thời gian. 急いで là thể て và có thể dùng để giục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143705": "Mang cho tôi một ít nước, nhanh lên.",
+        "198784": "Nick vội lên để kịp xe buýt."
+      },
+      "SourceHash": "c4c8ad7ffa044b0c3000d1188abdf6124a3d2c96c655d5f88d3985477e8c511f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6dbf756da1",
+      "Fields": {
+        "Meaning": "Làm, thực hiện (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "致す（いたす）là cách nói khiêm nhường của する. Dạng いたします thường dùng trong dịch vụ hoặc thư từ trang trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83397": "Tôi xin đặt hàng theo đơn đính kèm.",
+        "227085": "Để tôi đặt hàng về cho anh/chị nhé?"
+      },
+      "SourceHash": "faeeb1819491a268c898784af3539c347642925bb7b484bf234b5d647eb5c4df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "47cc7185d5",
+      "Fields": {
+        "Meaning": "Nhận, được ai làm giúp (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "いただく là cách nói khiêm nhường khi nhận. Động từ thể て ＋ いただく diễn tả được người khác làm việc gì cho mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179544": "Tôi muốn nhờ anh/chị đến lúc chín giờ ạ.",
+        "200584": "Anh/chị đã đối xử với tôi rất tử tế."
+      },
+      "SourceHash": "0bcb8ea98859b280ad29d82c2028f7c5bcf5bb6e231780802426289a1d27fe6e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bf82bb12d2",
+      "Fields": {
+        "Meaning": "Một lần",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "一度（いちど）chỉ một lần. 一度しか đi với phủ định để nhấn mạnh chỉ một lần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144317": "Con người chỉ sống một lần trên đời.",
+        "148148": "Hãy tập thể dục, dù chỉ một lần mỗi tuần."
+      },
+      "SourceHash": "b8dc1a6c130bc1bfa7985dfd94d4f9782ea3d8d3d4c63d43a9473efe3a74e62e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cf69ef2274",
+      "Fields": {
+        "Meaning": "Hết sức, chăm chỉ",
+        "PartOfSpeech": "Phó từ, danh từ",
+        "Explanation": "一生懸命（いっしょうけんめい）chỉ việc dồn sức cố gắng. Có thể dùng trước động từ để tả mức nỗ lực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172426": "Từ nay hãy học chăm hơn nữa.",
+        "193301": "Lẽ ra tôi nên học chăm hơn."
+      },
+      "SourceHash": "4d53407c15c11e21f2b04a4caa29804ef62e7876c196fbab576ce67263557189"
+    }
+  ]
+}

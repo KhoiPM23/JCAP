@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tatte",
+      "Fields": {
+        "Meaning": "Dù có… cũng (thân mật)",
+        "Formation": "Động từ thể た ＋ って／tính từ い dạng くたって",
+        "Explanation": "Dạng nhượng bộ trong lời nói thân mật, gần nghĩa với ても hoặc くても.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tatte:example:1": "Bây giờ có chạy cũng không kịp đâu.",
+        "tatte:example:2": "Dù đắt đến đâu, tôi vẫn rất muốn có cái này."
+      },
+      "SourceHash": "00ce98a789b4cb26ffebb94dd90c281848b2a8aea43657325eb6f2719393f942"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "datte",
+      "Fields": {
+        "Meaning": "Vì, nhưng mà, ngay cả",
+        "Formation": "だって ＋ lý do／danh từ ＋ だって",
+        "Explanation": "Đứng đầu câu để giải thích, biện hộ. Sau danh từ có thể mang nghĩa ngay cả hoặc cũng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "datte:example:1": "“Sao không ăn?” “Vì mình đau bụng mà.”",
+        "datte:example:2": "Chuyện đó ngay cả trẻ con cũng biết."
+      },
+      "SourceHash": "4fb6150b7b39f44f84844f98416d0654792db0712aa3e5def0b1442a7fab75e2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tate",
+      "Fields": {
+        "Meaning": "Vừa làm xong, mới ra lò",
+        "Formation": "Gốc ます ＋ たて／たての ＋ danh từ",
+        "Explanation": "Nhấn mạnh sản phẩm hoặc kết quả còn mới sau khi vừa làm xong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tate:example:1": "Bánh mì mới nướng thơm lắm.",
+        "tate:example:2": "Cơm này vừa nấu xong nên rất ngon."
+      },
+      "SourceHash": "755cf6856792a37c5f5f4ccfa4e0d8d250638fef021914f24f2a89afd81dc0d8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tatoe-temo",
+      "Fields": {
+        "Meaning": "Cho dù… vẫn",
+        "Formation": "たとえ ＋ điều kiện dạng ても／でも",
+        "Explanation": "Đặt giả định mà kết quả hoặc lập trường vẫn giữ nguyên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tatoe-temo:example:1": "Cho dù trời mưa, trận đấu vẫn diễn ra.",
+        "tatoe-temo:example:2": "Cho dù thất bại, việc dám thử sức vẫn có ý nghĩa."
+      },
+      "SourceHash": "5f659db61178497abe04be92982a3baeefc234245bc3379c0968b70c65e4385a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ta-totan",
+      "Fields": {
+        "Meaning": "Vừa… thì, ngay lúc",
+        "Formation": "Động từ thể た ＋ とたん（に）",
+        "Explanation": "Chỉ sự việc xảy ra ngay sau một hành động, thường bất ngờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ta-totan:example:1": "Tôi vừa ra khỏi nhà thì trời đổ mưa.",
+        "ta-totan:example:2": "Vừa đứng dậy thì tôi thấy chóng mặt."
+      },
+      "SourceHash": "b4d22e269e3c384060ef220b01704e4be5af66c34ed5d0b060a40ca183cbf47a"
+    }
+  ]
+}

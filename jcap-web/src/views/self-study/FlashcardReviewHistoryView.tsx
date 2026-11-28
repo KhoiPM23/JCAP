@@ -18,6 +18,23 @@ const formatVnDateTime = (dateStr?: string | null): string => {
   });
 };
 
+const buildResumeSessionUrl = (item: FlashcardSessionHistoryItem): string => {
+  const ct = item.contentType?.toLowerCase() || 'vocabulary';
+  if (item.sourceType === 'DueReview') {
+    if (item.topicId) {
+      return `/flashcards/study/${item.topicId}/${ct}?studyMode=due`;
+    }
+    return `/flashcards/study/due/${item.contentType?.toLowerCase() || 'mixed'}`;
+  }
+  if (item.sourceType === 'Bookmark') {
+    return `/flashcards/study/0/${item.contentType?.toLowerCase() || 'mixed'}?source=bookmark${item.isExtraPractice ? '&extraPractice=true' : ''}`;
+  }
+  if (item.topicId) {
+    return `/flashcards/study/${item.topicId}/${ct}${item.isExtraPractice ? '?extraPractice=true' : '?studyMode=new'}`;
+  }
+  return '/flashcards';
+};
+
 export const FlashcardReviewHistoryView: React.FC = () => {
   const [historyItems, setHistoryItems] = useState<FlashcardSessionHistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -165,16 +182,13 @@ export const FlashcardReviewHistoryView: React.FC = () => {
   }, [sessionDetail]);
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
+    <div className="jx-flash-library mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== 1. PAGE HEADER ==================== */}
         <div>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🗂️</span>
-            <h1 className="text-2xl sm:text-3xl font-black text-sumi tracking-tight">
-              Flashcard
-            </h1>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-sumi tracking-tight">
+            Flashcard
+          </h1>
           <p className="text-sm text-sumi-muted mt-1">
             Theo dõi lịch sử ôn tập, thời gian luyện tập và tỷ lệ ghi nhớ của bạn
           </p>
@@ -187,7 +201,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
         )}
 
         {/* ==================== 2. SUB-NAVIGATION TABS ==================== */}
-        <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
+        <div className="jx-flash-tabs flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
           <Link
             to="/flashcards"
             className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-muted hover:bg-paper-100 hover:text-sumi border border-line transition-all flex items-center gap-2"
@@ -470,13 +484,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                   <div className="flex items-center gap-2 w-full lg:w-auto">
                     {item.isIncomplete && (
                       <Link
-                        to={
-                          item.sourceType === 'DueReview'
-                            ? `/flashcards/study/due/${item.contentType?.toLowerCase() || 'mixed'}${item.isExtraPractice ? '?extraPractice=true' : ''}`
-                            : item.topicId
-                            ? `/flashcards/study/${item.topicId}/${item.contentType?.toLowerCase() || 'vocabulary'}${item.isExtraPractice ? '?extraPractice=true' : ''}`
-                            : '/flashcards'
-                        }
+                        to={buildResumeSessionUrl(item)}
                         className="px-3.5 py-2 bg-ai hover:bg-ai-hover text-on-ai rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
                         title="Tiếp tục phiên ôn tập chưa hoàn thành"
                       >
@@ -505,11 +513,11 @@ export const FlashcardReviewHistoryView: React.FC = () => {
               onClick={(e) => {
                 if (e.target === e.currentTarget) handleCloseDetail();
               }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+            className="jx-flash-history-overlay fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-paper-50 rounded-3xl border border-line max-w-2xl w-full shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col my-auto text-sumi"
+                className="jx-flash-history-dialog bg-paper-50 rounded-3xl border border-line max-w-2xl w-full shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col my-auto text-sumi"
               >
               <div className="flex items-center justify-between border-b border-line pb-3">
                 <h3 className="text-base font-black text-sumi flex items-center gap-2">
@@ -518,6 +526,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                 </h3>
                 <button
                   onClick={handleCloseDetail}
+                  aria-label="Đóng chi tiết phiên ôn tập"
                   className="w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 text-sumi-muted hover:text-sumi font-bold flex items-center justify-center transition-colors cursor-pointer"
                 >
                   ✕
@@ -614,13 +623,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
               <div className="pt-2 border-t border-line flex items-center justify-between">
                 {sessionDetail && sessionDetail.session.isIncomplete ? (
                   <Link
-                    to={
-                      sessionDetail.session.sourceType === 'DueReview'
-                        ? `/flashcards/study/due/${sessionDetail.session.contentType?.toLowerCase() || 'mixed'}${sessionDetail.session.isExtraPractice ? '?extraPractice=true' : ''}`
-                        : sessionDetail.session.topicId
-                        ? `/flashcards/study/${sessionDetail.session.topicId}/${sessionDetail.session.contentType?.toLowerCase() || 'vocabulary'}${sessionDetail.session.isExtraPractice ? '?extraPractice=true' : ''}`
-                        : '/flashcards'
-                    }
+                    to={buildResumeSessionUrl(sessionDetail.session)}
                     className="px-4 py-2 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-xs"
                   >
                     <span>▶</span>

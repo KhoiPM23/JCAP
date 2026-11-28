@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 mục và 40 câu ví dụ theo nguyên bản Nhật.",
+    "Hai câu dưới mục 伯母さん dùng chữ 叔母さん. Ghi chú cách dùng từng chữ dựa trên Digital Daijisen: https://kotobank.jp/word/%E4%BC%AF%E6%AF%8D-453869"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12d9487797",
+      "Fields": {
+        "Meaning": "Bà, cụ bà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "おばあさん dùng để gọi bà nội, bà ngoại hoặc nói về một phụ nữ cao tuổi. Với nghĩa người thân, có thể viết お祖母さん.",
+        "UsageNotes": "Phân biệt おばあさん (bà) với おばさん (cô, dì, bác gái)."
+      },
+      "Examples": {
+        "158459": "Tôi đã gặp một cụ bà.",
+        "200160": "Bà của Tom trông khỏe mạnh đấy."
+      },
+      "SourceHash": "966d4ca66bdc977481a299ee187e0a3c578dd61b5db0c30bdbd0c71ad5f0e013"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "03d7b15720",
+      "Fields": {
+        "Meaning": "Bác gái",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "伯母さん（おばさん）chỉ chị của bố hoặc mẹ, hoặc vợ của anh trai của bố hoặc mẹ. Cách gọi tiếng Việt tùy quan hệ trong gia đình.",
+        "UsageNotes": "Hai câu nguồn viết 叔母さん, cùng đọc おばさん. Chữ 叔 dùng khi chỉ em gái của bố hoặc mẹ, hoặc vợ của em trai của bố hoặc mẹ."
+      },
+      "Examples": {
+        "218824": "Đây chẳng phải là chiếc vòng cổ giống của dì Clara sao?",
+        "227572": "Lúc đến thăm cô, cô đã đãi mình một bữa thịnh soạn nhỉ."
+      },
+      "SourceHash": "374f6a510ec9afa2048ba12391316bc037d95d80ad03719b9177581399ddfdc3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "36bff8d879",
+      "Fields": {
+        "Meaning": "Chào buổi sáng",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "おはよう là lời chào buổi sáng thân mật, thường dùng với bạn bè và người thân.",
+        "UsageNotes": "Dạng lịch sự là おはようございます."
+      },
+      "Examples": {
+        "76824": "Chào buổi sáng. Tôi xới cơm cho bạn nhé?",
+        "193149": "Chào Tom, buổi sáng tốt lành!"
+      },
+      "SourceHash": "89a42adfd95ca9b05cfc3484e735070ec1f04a3dc0a4c36bfe71281cc104e647"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f347485004",
+      "Fields": {
+        "Meaning": "Bồn tắm, việc tắm bồn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お風呂 có thể chỉ bồn tắm, chỗ tắm hoặc việc tắm, tùy ngữ cảnh. お風呂に入る nghĩa là đi tắm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158918": "Tôi tắm gần như mỗi ngày.",
+        "226696": "Ở đó không có bồn tắm."
+      },
+      "SourceHash": "3257ad85a3b61abb4cff0f781c1a86f0dbf86cde8e0d0e0028c27050d7f4d130"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a073616e5",
+      "Fields": {
+        "Meaning": "Cơm hộp, bữa ăn đóng hộp mang theo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お弁当 chỉ phần ăn chuẩn bị trong hộp để mang đi hoặc mua sẵn. 弁当（べんとう）là dạng bỏ tiền tố お.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107100": "Hôm nay anh ấy mang cơm hộp đến.",
+        "226652": "Bạn ăn cơm hộp rồi, đúng không?"
+      },
+      "SourceHash": "ac5082fdc4b319d82a3fa1c100dc97932f898e48cd998ea54bb929d37fdf267e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dad2d16220",
+      "Fields": {
+        "Meaning": "Ghi nhớ, học được",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "覚える diễn tả việc ghi nhớ thông tin hoặc học được một điều. Nội dung được ghi nhớ đi với を.",
+        "UsageNotes": "覚えにくい nghĩa là khó học hoặc khó ghi nhớ."
+      },
+      "Examples": {
+        "122337": "Đối với người nước ngoài, tiếng Nhật khó học.",
+        "200989": "Cậu học cái đó ở đâu vậy?"
+      },
+      "SourceHash": "89462b3facb3c0225fd84cc3aa394229f3edebe196551444441630844f3bee6f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae5d1778d1",
+      "Fields": {
+        "Meaning": "Chú cảnh sát, anh cảnh sát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "おまわりさん là cách gọi thân thiện và thông dụng đối với cảnh sát. Có thể dùng để gọi trực tiếp khi cần hỏi đường.",
+        "UsageNotes": "警察官（けいさつかん）là từ trung tính để chỉ nghề nghiệp."
+      },
+      "Examples": {
+        "214211": "Xin lỗi anh cảnh sát, đây là đâu ạ?",
+        "227504": "Hãy hỏi chú cảnh sát đường đi."
+      },
+      "SourceHash": "9eda37e1c6e7c28d78338ebd1168427c8cee088a21de26ce9fd59e7f68b561a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cdfb776826",
+      "Fields": {
+        "Meaning": "Nặng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "重い tả trọng lượng lớn. AはBより重い nghĩa là A nặng hơn B. AはBほど重くない nghĩa là A không nặng bằng B.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200082": "Tom nặng hơn Jack 10 pao.",
+        "219723": "Cuốn sách này không nặng bằng cuốn kia."
+      },
+      "SourceHash": "ff8f203e8cbe4a3eaf6eb9994af139b95eaebb7b6ee54fac8a5fe1b2de3d17de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2568873ebd",
+      "Fields": {
+        "Meaning": "Thú vị, hay, vui",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "おもしろい có thể viết là 面白い. Từ này tả điều hấp dẫn, thú vị hoặc đem lại niềm vui, tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214743": "Trượt băng rất vui.",
+        "218571": "Đây là một cuốn sách rất thú vị."
+      },
+      "SourceHash": "d5c5059d0f866ea00ad8cc2c9afba8d0b961df7b68badee4879d2047c492d59f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c5bb8f223",
+      "Fields": {
+        "Meaning": "Bơi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "泳ぐ chỉ việc bơi. 泳げる là dạng khả năng, nghĩa là biết bơi hoặc có thể bơi. 泳ぎきる diễn tả bơi hết quãng đường.",
+        "UsageNotes": "Thể て là 泳いで."
+      },
+      "Examples": {
+        "197870": "Harry đã xoay xở bơi qua được con sông đó.",
+        "200074": "Tom sẽ sớm biết bơi thôi."
+      },
+      "SourceHash": "cc8788cf72b73fd8a995b87af8b6dca0a5c019cad5e6b8da57b5a138806ab6a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae00442122",
+      "Fields": {
+        "Meaning": "Xuống, xuống khỏi xe",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "降りる chỉ việc đi xuống hoặc rời khỏi phương tiện. バスを降りる nghĩa là xuống xe buýt, còn ロビーに降りる nghĩa là đi xuống sảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214120": "Không được đi dép lê xuống sảnh đâu.",
+        "224559": "Chúng ta xuống ở đây nhé."
+      },
+      "SourceHash": "8efa24f14340001168da613bb143e6ac976a9a2805a1291379c278c9649eacd2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d7960dc78d",
+      "Fields": {
+        "Meaning": "Kết thúc, chấm dứt",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "終る（おわる）thường viết là 終わる. Sự kiện hoặc công việc kết thúc đi với が. 終わり là danh từ chỉ sự kết thúc.",
+        "UsageNotes": "終わりにする nghĩa là chủ động dừng hoặc kết thúc việc đang làm."
+      },
+      "Examples": {
+        "171599": "Hôm nay chúng ta dừng ở đây nhé.",
+        "213081": "Buổi hòa nhạc kết thúc lúc mười giờ."
+      },
+      "SourceHash": "fecde9020f0e62f8616ae5a2a4b4e211c799f46734217f9ff07220f7c3fdba22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cdea017272",
+      "Fields": {
+        "Meaning": "Âm nhạc, nhạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "音楽 chỉ âm nhạc nói chung. 音楽を聞く là nghe nhạc. レコードをかける nghĩa là bật đĩa nhạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203070": "Bạn bật đĩa nhạc khiêu vũ giúp tôi được không?",
+        "222881": "Hãy nghe bản nhạc này và thư giãn."
+      },
+      "SourceHash": "45c344672f46bcffad3a34b15d614b38cf397b8300d3729de636c192ee8fb494"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "980a922ad3",
+      "Fields": {
+        "Meaning": "Nữ, phụ nữ",
+        "PartOfSpeech": "Danh từ, tiền tố",
+        "Explanation": "女（おんな）chỉ nữ giới hoặc một người phụ nữ. Sắc thái khi dùng để gọi một người cụ thể phụ thuộc cách nói.",
+        "UsageNotes": "女の人 là cách nói thường gặp khi chỉ một người phụ nữ."
+      },
+      "Examples": {
+        "144456": "Một người hoặc là nam, hoặc là nữ.",
+        "230895": "Người đàn bà đó nói mãi không dứt."
+      },
+      "SourceHash": "4ea3295573f97a830342c21a73c93f9203dd3d5a84b089dedd3665df1d547ff5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e6afab391a",
+      "Fields": {
+        "Meaning": "Con gái, bé gái",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "女の子 chỉ một bé gái hoặc cô gái trẻ tùy ngữ cảnh. 女の子たち là cách nói về một nhóm các bé gái hoặc cô gái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147335": "Hầu như cô bé nào cũng dịu dàng.",
+        "196427": "Các bạn gái khác đang ở đâu vậy?"
+      },
+      "SourceHash": "2f2f7c6edef0d317702689b8cb18d98511535cd573d43970ec9ea08a00995230"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "31a803c7f5",
+      "Fields": {
+        "Meaning": "Nước ngoài, quốc gia khác",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "外国 chỉ nước ngoài xét từ góc nhìn của người nói. 外国へ行く là đi nước ngoài, còn 外国の本 là sách từ nước ngoài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197481": "Hãy thử tự mình đi nước ngoài xem.",
+        "232163": "Bạn có sách nào từ nước ngoài không?"
+      },
+      "SourceHash": "170b9799ae8c23a57b1e1cd8044d4b62e6e0a0c75ddd9be87d30f2a7e87c10f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "70f1678111",
+      "Fields": {
+        "Meaning": "Người nước ngoài",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "外国人 chỉ người mang quốc tịch nước khác hoặc người được xem là đến từ nước khác trong ngữ cảnh đang nói.",
+        "UsageNotes": "Hai câu ví dụ nói về khả năng sử dụng tiếng Nhật."
+      },
+      "Examples": {
+        "211696": "Người nước ngoài đó nói tiếng Nhật như thể đó là tiếng mẹ đẻ.",
+        "211699": "Người nước ngoài đó nói tiếng Nhật khá giỏi."
+      },
+      "SourceHash": "1dc0b253035e2e348fb741d153e89544917f3a7b909af4702ce10e60f7e86d29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2120ff505c",
+      "Fields": {
+        "Meaning": "Công ty",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "会社 chỉ công ty. 会社に入る trong ngữ cảnh việc làm nghĩa là vào làm tại công ty.",
+        "UsageNotes": "会社をクビになる là cách nói thân mật chỉ việc bị công ty sa thải."
+      },
+      "Examples": {
+        "185231": "Hy vọng sẽ không bị công ty sa thải.",
+        "197326": "Bill vào làm ở công ty này ba năm trước."
+      },
+      "SourceHash": "aeff0027f3efa11e39d40d70219344f869000254509d675bd83512db7b548717"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7cb27c411e",
+      "Fields": {
+        "Meaning": "Cầu thang, bậc thang",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "階段 chỉ cầu thang gồm nhiều bậc. 階段を上る nghĩa là đi lên cầu thang. かけ上がる diễn tả chạy lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141655": "Thầy cô chạy lên cầu thang.",
+        "211701": "Không được đi lên cầu thang đó."
+      },
+      "SourceHash": "8b814389b40e0b20141b5e14bf7ca1e32e6831b6e8a90880dbec8678d7b80d5d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a771d4f949",
+      "Fields": {
+        "Meaning": "Việc mua sắm, đi mua đồ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "買い物する nghĩa là mua sắm. 買い物に行く và 買い物に出かける đều nói về việc đi mua đồ.",
+        "UsageNotes": "１日おきに nghĩa là cách một ngày, tức hai ngày một lần."
+      },
+      "Examples": {
+        "216415": "Jane đã ra ngoài mua đồ.",
+        "235706": "Tôi đi mua đồ cách ngày."
+      },
+      "SourceHash": "a65d116572d8559ca3389da6011872d3b610671831300c490f9d90380063f7e4"
+    }
+  ]
+}

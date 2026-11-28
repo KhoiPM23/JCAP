@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 38 câu nguồn. Mục その không có câu nguồn.",
+    "Câu 213883 được dịch theo bản Nhật vì câu tiếng Anh nguồn khác nghĩa."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0eaa93c144",
+      "Fields": {
+        "Meaning": "Tháng trước",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "先月（せんげつ）chỉ tháng ngay trước tháng này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141880": "Tháng trước trời hầu như không mưa.",
+        "141890": "Tháng trước tôi bị cúm."
+      },
+      "SourceHash": "abb0fba1b7d1d116484a7baa0d93580e91aac00be90b2e4966a1e5b47c3494e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8c4cd80db",
+      "Fields": {
+        "Meaning": "Tuần trước",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "先週（せんしゅう）chỉ tuần ngay trước tuần này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230710": "Người kia chính là người đã ở đây tuần trước.",
+        "231791": "Tuần trước bạn có ở đây không?"
+      },
+      "SourceHash": "e6365bdc509f73fce39222fff14510329a9a14a933e9b89be36aeb2153c7160c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "814bdc2cec",
+      "Fields": {
+        "Meaning": "Thầy, cô, bác sĩ (cách gọi kính trọng)",
+        "PartOfSpeech": "Danh từ, danh xưng",
+        "Explanation": "先生（せんせい）dùng để gọi hoặc nhắc đến giáo viên, bác sĩ và một số người có chuyên môn với sắc thái kính trọng.",
+        "UsageNotes": "Hai câu nguồn dùng nghĩa giáo viên."
+      },
+      "Examples": {
+        "173570": "Hiệu trưởng bước vào từ phía sau giáo viên.",
+        "230655": "Nghe thầy đó nói tôi phát chán."
+      },
+      "SourceHash": "784fedb5a0f6355eeee0a5ab1427841c7b2061c2730da11721d86ef0ae2aa283"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d0ca7b320",
+      "Fields": {
+        "Meaning": "Giặt giũ, việc giặt quần áo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "洗濯（せんたく）chỉ việc giặt quần áo. 洗濯する và 洗濯をする đều có nghĩa là giặt giũ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141216": "Tôi giặt đồ lúc nào cũng được phải không ạ?",
+        "141217": "Ở đây có dịch vụ giặt ủi không ạ?"
+      },
+      "SourceHash": "fed3d7ebadedfa7fb727b25104d783dbd032d352895129404a95bc3e095f2ea8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "acba6e07ba",
+      "Fields": {
+        "Meaning": "Tất cả, toàn bộ",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "全部（ぜんぶ）chỉ toàn bộ những thứ đang nói đến. 全部で dùng để nêu tổng số hoặc tổng giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200680": "Cho tôi thêm tất cả các loại topping nhé.",
+        "205017": "Tổng cộng là 100 đô la."
+      },
+      "SourceHash": "3b73581b8c233720bba000b795f27319f03c3d5149052407af7a52d89845757a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "501df34d31",
+      "Fields": {
+        "Meaning": "Dọn dẹp, lau chùi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "掃除（そうじ）chỉ việc làm sạch hoặc dọn dẹp một nơi. 部屋を掃除する nghĩa là dọn phòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84738": "Bố tôi đang dọn ga-ra.",
+        "233037": "Bạn dọn phòng mình chưa?"
+      },
+      "SourceHash": "bad4e3399fbbaaf54054b5cc3e7df975fb71dd532a680b06d53173eeb830e392"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e75777d218",
+      "Fields": {
+        "Meaning": "Rồi, sau đó, làm như vậy",
+        "PartOfSpeech": "Liên từ, cụm từ",
+        "Explanation": "そうして có thể nối các việc theo trình tự. Trong hai câu nguồn, そうして là thể て của そうする, nghĩa là làm như vậy.",
+        "UsageNotes": "Câu 213883 bày tỏ niềm vui nếu người nghe làm như vậy."
+      },
+      "Examples": {
+        "213882": "Bạn thật tốt bụng khi làm như vậy.",
+        "213883": "Nếu anh/chị làm như vậy thì tôi sẽ rất vui."
+      },
+      "SourceHash": "d49726b31e69c995e599a5836e8d799d4afff6d79ba45d9d68d26c56202dc1c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ef867ff81",
+      "Fields": {
+        "Meaning": "Chỗ đó, ở đó",
+        "PartOfSpeech": "Đại từ chỉ nơi chốn",
+        "Explanation": "そこ chỉ nơi gần người nghe hoặc nơi vừa được nhắc đến. そこまで nghĩa là đến chỗ đó, còn そこに thường chỉ vị trí ở đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183289": "Lúc để ý thì tôi thấy nó ở đó.",
+        "198206": "Đi xe buýt đến đó mất hai tiếng."
+      },
+      "SourceHash": "3f4f01e818dc694ac1d5b068ee6777561b33ae6eb58d8246fbac53369348a032"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "105df79571",
+      "Fields": {
+        "Meaning": "Phía đó, chỗ đó, vị đó",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "そちら là cách nói lịch sự khi chỉ hướng, nơi, vật hoặc người về phía người nghe.",
+        "UsageNotes": "Câu thứ hai dùng そっち, dạng thân mật tương ứng với そちら."
+      },
+      "Examples": {
+        "213468": "Cuộc sống bên đó thế nào rồi?",
+        "218744": "Cái này khác cái bên bạn thế nào?"
+      },
+      "SourceHash": "71f731a34e76dd95503d63f3950fe454823d392a04a8cbd05c43a3d79128626b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "80981fa136",
+      "Fields": {
+        "Meaning": "Bên đó, phía đó, chỗ đó",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "そっち là cách nói thân mật tương ứng với そちら. そっちへ行く nghĩa là đi sang bên bạn hoặc đi về phía đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213467": "Thời tiết bên đó thế nào?",
+        "10499829": "Tôi sẽ gọi trước khi qua chỗ bạn nhé."
+      },
+      "SourceHash": "baca06f3c49e246fb36904e90742978dafebc3e129246dfb4d042def19e8e8ce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "68ad5f4363",
+      "Fields": {
+        "Meaning": "Ngoài, bên ngoài",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "外（そと）chỉ phía bên ngoài. 外に出す nghĩa là đưa hoặc cho ra ngoài, còn 外で食べる là ăn ở ngoài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184892": "Bạn cho ra ngoài giúp được không?",
+        "201917": "Mình ăn bên ngoài lều nhé."
+      },
+      "SourceHash": "9c831f886cea5e3c8cb62d0ee52ed68bf4d6db775fb30f1e575952739f1af21f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb1c02a574",
+      "Fields": {
+        "Meaning": "Đó, ấy (đứng trước danh từ)",
+        "PartOfSpeech": "Từ chỉ định",
+        "Explanation": "その đứng trước danh từ để chỉ thứ gần người nghe hoặc đã được nhắc đến, như その本 (cuốn sách đó).",
+        "UsageNotes": "Khi chỉ vật mà không nêu danh từ, dùng それ."
+      },
+      "Examples": {},
+      "SourceHash": "2bb020bfba9a1eb583d1d10dc991aff17606d9d76fbd180cec4869f7d00a7b78"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38c854e97f",
+      "Fields": {
+        "Meaning": "Gần, bên cạnh",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "そば chỉ nơi ở gần hoặc sát bên. Dùng danh từ ＋ のそば để nêu vật mốc.",
+        "UsageNotes": "そば với nghĩa này khác với tên món mì そば（蕎麦）."
+      },
+      "Examples": {
+        "191672": "Chúng tôi đứng đợi bên cửa.",
+        "226153": "Ga-ra ở cạnh nhà."
+      },
+      "SourceHash": "3465096bd67fabf4d0b67c7601c9bca792b932e6be8fe9feaac072047a5822a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6ff51bace3",
+      "Fields": {
+        "Meaning": "Bầu trời",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "空（そら）chỉ bầu trời. 空を飛ぶ nghĩa là bay trên trời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179433": "Cả bầu trời phủ đầy sương mù.",
+        "191980": "Một con đại bàng đang bay trên trời."
+      },
+      "SourceHash": "d8a333098fdcc7de8f7a58fbe4091ca25d39d4d7f12beeba683c9e736f781f04"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "79d922e359",
+      "Fields": {
+        "Meaning": "Cái đó, điều đó",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "それ chỉ vật gần người nghe hoặc điều vừa được nhắc đến. Có thể dùng độc lập, như それを見る (nhìn cái đó).",
+        "UsageNotes": "Trước danh từ dùng その, như その本."
+      },
+      "Examples": {
+        "191835": "Tôi giật mình khi nhìn thấy cảnh đó.",
+        "204628": "Xin hãy bỏ mục đó khỏi danh sách."
+      },
+      "SourceHash": "9f520fd3acd82eaa9549f31b8a95f2b1b1d63cda75923c59789d57f2ce891475"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "799b7cabe0",
+      "Fields": {
+        "Meaning": "Sau đó, rồi, ngoài ra",
+        "PartOfSpeech": "Liên từ, cụm từ",
+        "Explanation": "それから nối việc xảy ra sau hoặc bổ sung ý tiếp theo. それから先 chỉ phần kể từ thời điểm đó trở đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205916": "Tôi muốn nghe phần tiếp theo của câu chuyện.",
+        "205929": "Sau đó hãy lau dọn cho thật sạch nhé."
+      },
+      "SourceHash": "eac02b337286ceb5b83197fee22d88dbed68a93857ff6c6b6ee7cff921033047"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "46c1721526",
+      "Fields": {
+        "Meaning": "Vậy thì, nếu vậy",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "それでは mở đầu lời đáp, kết luận hoặc đề nghị dựa vào tình huống vừa nêu. Trong hội thoại thân mật có thể dùng それじゃ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205760": "Vậy thì mình mau đến trường thôi.",
+        "205771": "Vậy có nghĩa là bạn sẽ không đến à?"
+      },
+      "SourceHash": "feb2e86da33c1374db5505151128932df3ee8de7cac0e44f989c66b67e971f23"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b303264b9",
+      "Fields": {
+        "Meaning": "Đại học, trường đại học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大学（だいがく）chỉ trường đại học hoặc bậc đại học. 大学で nói về hoạt động tại trường, còn 大学に入る là vào đại học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137646": "Bạn định làm gì ở đại học?",
+        "137648": "Ở trường đại học, tôi tham gia câu lạc bộ quần vợt."
+      },
+      "SourceHash": "1e96e8632e3353b2685b9bf6126458292331f0411e0dfadf6ccd159f3f7341a0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "992fc07339",
+      "Fields": {
+        "Meaning": "Đại sứ quán",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大使館（たいしかん）chỉ đại sứ quán. 日本大使館 là đại sứ quán Nhật Bản. 出入りする chỉ việc ra vào một nơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114807": "Anh ấy thường ra vào đại sứ quán Mỹ.",
+        "122209": "Đại sứ quán Nhật Bản ở đâu?"
+      },
+      "SourceHash": "9d76187f5aea443b8311d9e23f5a6f84acb36482b102fa4946b0f6c998502cbe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f62b9db5e",
+      "Fields": {
+        "Meaning": "Ổn, không sao, được",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "大丈夫（だいじょうぶ）nói rằng tình hình ổn hoặc không có vấn đề. 大丈夫です cũng có thể dùng khi từ chối lời đề nghị vì không cần giúp thêm.",
+        "UsageNotes": "Dựa vào câu hỏi và ngữ cảnh để hiểu là đồng ý, trấn an hay từ chối."
+      },
+      "Examples": {
+        "90036": "Hiện giờ cô ấy vẫn ổn.",
+        "228498": "Không, không sao đâu."
+      },
+      "SourceHash": "a6f6e9b1fa70bc2e6a44d6040d387c78d700bbd36337d85057a2e4318c88ef4a"
+    }
+  ]
+}

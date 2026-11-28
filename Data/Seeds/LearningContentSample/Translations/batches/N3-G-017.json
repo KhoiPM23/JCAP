@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sou-mo-nai",
+      "Fields": {
+        "Meaning": "Có vẻ khó mà, không có dấu hiệu sẽ",
+        "Formation": "Gốc ます ＋ そうもない／そうにない",
+        "Explanation": "Dựa vào tình hình để đánh giá việc khó xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sou-mo-nai:example:1": "Nhiều việc quá, có vẻ hôm nay không làm xong được.",
+        "sou-mo-nai:example:2": "Đã đến giờ hẹn rồi mà có vẻ anh ấy sẽ không đến."
+      },
+      "SourceHash": "5b9593e7a7f778daa5c57e2bd3790354592a86afba2c6d1d0874a2d68f02fe47"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "soko-de",
+      "Fields": {
+        "Meaning": "Vì thế, nên đã",
+        "Formation": "Tình huống ＋ そこで ＋ hành động ứng phó",
+        "Explanation": "Nối tình huống với việc chủ thể chủ động làm để ứng phó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "soko-de:example:1": "Phòng tối dần, nên tôi bật đèn.",
+        "soko-de:example:2": "Tài liệu không đủ, nên tôi quyết định hỏi ý kiến trưởng phòng."
+      },
+      "SourceHash": "90aee793e5c137df3629e56265b5203ba4495bfcfc9cd3feb181cd9b69cb2174"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sono-kekka",
+      "Fields": {
+        "Meaning": "Kết quả là",
+        "Formation": "Câu nêu việc đã làm ＋ その結果 ＋ kết quả",
+        "Explanation": "Nêu kết quả thực tế của hành động hoặc quá trình trước đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sono-kekka:example:1": "Tôi tiếp tục luyện chạy mỗi ngày. Kết quả là tôi vô địch giải đấu.",
+        "sono-kekka:example:2": "Chúng tôi giảm giá. Kết quả là doanh số tăng gấp đôi."
+      },
+      "SourceHash": "661ff0ed1a0e067754fe2144295be3fce35945af1edd199b282b49655f52b65c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sono-tame-ni",
+      "Fields": {
+        "Meaning": "Vì thế, để đạt điều đó",
+        "Formation": "Nguyên nhân ＋ そのため ＋ kết quả／mục tiêu ＋ そのために ＋ hành động",
+        "Explanation": "Có thể chỉ hệ quả của tình huống trước hoặc hành động để đạt mục tiêu vừa nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sono-tame-ni:example:1": "Hôm qua tuyết rơi dày. Vì thế tàu ngừng chạy.",
+        "sono-tame-ni:example:2": "Tôi muốn làm bác sĩ. Để đạt mục tiêu đó, ngày nào tôi cũng học đến khuya."
+      },
+      "SourceHash": "4b04f3336f5167f03d2472792eebebcbac7178b876dac24a4c042075d01cd99d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "soretomo",
+      "Fields": {
+        "Meaning": "Hay là, hoặc là",
+        "Formation": "Câu hỏi A ＋ それとも ＋ lựa chọn B",
+        "Explanation": "Đưa ra phương án thứ hai để người nghe lựa chọn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "soretomo:example:1": "Anh chị dùng cà phê hay trà đen ạ?",
+        "soretomo:example:2": "Bạn đi hôm nay hay để mai?"
+      },
+      "SourceHash": "09557a163d6196821f180661eaccb520629598f4adce40e0b037e39fe3ceda5f"
+    }
+  ]
+}

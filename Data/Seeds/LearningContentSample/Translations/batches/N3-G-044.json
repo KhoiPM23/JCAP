@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mi",
+      "Fields": {
+        "Meaning": "Cảm giác, nét, độ",
+        "Formation": "Gốc một số tính từ ＋ み",
+        "Explanation": "Tạo danh từ chỉ cảm giác hoặc đặc điểm được cảm nhận, như 痛み và 深み. Chỉ dùng với những từ đã có cách kết hợp quen thuộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mi:example:1": "Cơn đau ở vết thương dịu dần.",
+        "mi:example:2": "Tiểu thuyết này có chiều sâu khiến tôi muốn đọc đi đọc lại."
+      },
+      "SourceHash": "9bf1f0339c6e80bc4182fc38e747040214e8ff539626e7e9ea3cabb323eda7da"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "muki",
+      "Fields": {
+        "Meaning": "Phù hợp với, thích hợp cho",
+        "Formation": "Danh từ chỉ đối tượng ＋ 向き",
+        "Explanation": "Đánh giá thứ gì phù hợp với đối tượng nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "muki:example:1": "Từ điển này hợp với người mới học và giải thích dễ hiểu.",
+        "muki:example:2": "Phim đó hợp với người lớn và hơi khó hiểu đối với trẻ em."
+      },
+      "SourceHash": "8a34d357acab72e3bb1f7ae90acaf51333b2318346bee5572f8702b7eaca8633"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "muke",
+      "Fields": {
+        "Meaning": "Dành cho, hướng đến",
+        "Formation": "Danh từ chỉ đối tượng ＋ 向け／向けの ＋ danh từ",
+        "Explanation": "Chỉ đối tượng hoặc thị trường mà sản phẩm hay nội dung chủ ý hướng tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "muke:example:1": "Tạp chí này được làm dành cho phụ nữ trẻ.",
+        "muke:example:2": "Công ty phát triển sản phẩm mới cho thị trường nước ngoài."
+      },
+      "SourceHash": "bdf4d33cae166925142b7e8eebd0edf4d4309883fbbab9bf6e952f7a18b3ba69"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mushiro",
+      "Fields": {
+        "Meaning": "Đúng hơn là, thà… hơn",
+        "Formation": "むしろ ＋ phương án hoặc nhận định",
+        "Explanation": "Đưa ra lựa chọn được ưu tiên hoặc cách mô tả sát hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mushiro:example:1": "Tôi muốn sống yên tĩnh ở nông thôn hơn là ở thành phố.",
+        "mushiro:example:2": "Anh ấy trông buồn hơn là giận."
+      },
+      "SourceHash": "c59f0fef5083e04b7ff0764f12df16d7168ef8fc18a5da416d6712b31ff48be4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "metta-ni-nai",
+      "Fields": {
+        "Meaning": "Hiếm khi, ít khi",
+        "Formation": "めったに ＋ vị ngữ phủ định",
+        "Explanation": "Nêu một hành động hoặc sự kiện xảy ra rất ít.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "metta-ni-nai:example:1": "Bố tôi hiếm khi uống rượu.",
+        "metta-ni-nai:example:2": "Anh ấy hiếm khi nói xấu người khác."
+      },
+      "SourceHash": "3a3c06236853aebf67d75f378d23a18b1b8f72164eb4922882310ecb2b8759c2"
+    }
+  ]
+}

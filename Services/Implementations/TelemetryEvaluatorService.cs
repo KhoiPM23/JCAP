@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using JCAP.Data;
+using JCAP.DTOs.Roleplay;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
 
@@ -89,8 +90,12 @@ namespace JCAP.Services.Implementations
                 TurnScore = input.TurnScore,
                 CreatedAtUtc = DateTime.UtcNow
             };
-            _context.LearnerBehaviorSignals.Add(signal);
-            await _context.SaveChangesAsync();
+            input.PendingSignal = signal;
+            if (!input.DeferPersistence)
+            {
+                _context.LearnerBehaviorSignals.Add(signal);
+                await _context.SaveChangesAsync();
+            }
 
             // 3. Tính toán điều chỉnh nhịp độ (DDA: Dynamic Scaffolding)
             var decision = new DynamicScaffoldingDecision();
@@ -104,7 +109,7 @@ namespace JCAP.Services.Implementations
                 decision.ShouldOfferEncouragement = true;
             }
             // Nếu phản xạ nhanh (<1.8s), không xem hint, điểm cao (>85):
-            else if (input.LatencyMs < 1800 && input.HintLevelUsed == 0 && input.TranslationPeekCount == 0 && input.TurnScore >= 85)
+            else if (input.LatencyMs > 0 && input.LatencyMs < 1800 && input.HintLevelUsed == 0 && input.TranslationPeekCount == 0 && (input.TurnScore >= 85 || (input.TurnScore == 0 && string.IsNullOrEmpty(detectedCodes))))
             {
                 decision.SpeedScale = 1.05; // Đẩy nhanh nhịp điệu tự nhiên như người bản xứ
                 decision.PromptModifier = "[DDA: Học viên phản xạ rất tốt và tự tin. Hãy đưa ra câu đối đáp tự nhiên, phong phú ngữ điệu, có thể mở rộng chủ đề nhẹ nhàng.]";
@@ -121,49 +126,138 @@ namespace JCAP.Services.Implementations
                 .Where(s => s.SessionId == sessionId)
                 .ToListAsync();
 
-            if (signals.Count == 0) return;
+            var userMsgEntities = await _context.RoleplayMessages
+                .AsNoTracking()
+                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
+                .OrderBy(m => m.CreatedAt)
+                .ToListAsync();
+
+            var roleplayResult = await _context.RoleplayResults
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.RoleplaySessionId == sessionId && r.UserId == userId);
+
+            if (signals.Count == 0 && userMsgEntities.Count == 0) return;
 
             var profile = await GetOrCreateProfileAsync(userId);
 
+            if (signals.Count == 0)
+            {
+                if (userMsgEntities.Count > 0)
+                {
+                    int idx = 1;
+                    foreach (var msg in userMsgEntities)
+                    {
+                        LinguisticFeedbackDto? fb = null;
+                        if (!string.IsNullOrWhiteSpace(msg.LinguisticFeedbackJson))
+                        {
+                            try
+                            {
+                                fb = JsonSerializer.Deserialize<LinguisticFeedbackDto>(
+                                    msg.LinguisticFeedbackJson,
+                                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            }
+                            catch { }
+                        }
+
+                        var detected = !string.IsNullOrWhiteSpace(msg.JapaneseText)
+                            ? _errorDetector.DetectErrors(msg.JapaneseText)
+                            : new System.Collections.Generic.List<DetectedGrammarIssue>();
+                        var statusScore = fb?.Status?.ToLowerInvariant() switch
+                        {
+                            "good" or "success" => 90.0,
+                            "error" => 35.0,
+                            "warning" => 65.0,
+                            _ => roleplayResult != null ? (double)roleplayResult.OverallScore : 75.0
+                        };
+
+                        signals.Add(new LearnerBehaviorSignal
+                        {
+                            SessionId = sessionId,
+                            TurnIndex = idx++,
+                            LatencyMs = fb?.SpeechDelivery?.ResponseLatencySeconds is double lat && lat > 0
+                                ? (int)Math.Round(lat * 1000)
+                                : 0,
+                            MoraRate = fb?.SpeechDelivery?.MoraRate ?? fb?.SpeechDelivery?.SpeechPace ?? 0,
+                            HintLevelUsed = fb?.SpeechDelivery?.HintLevelUsed ?? 0,
+                            FallbackToTextInput = fb?.SpeechDelivery?.IsTextInput ?? true,
+                            DetectedRuleErrorCodes = detected.Count > 0 ? string.Join(",", detected.Select(i => i.Code)) : null,
+                            TurnScore = fb?.SpeechDelivery?.TurnFluencyScore ?? statusScore
+                        });
+                    }
+                }
+            }
+
+            // Tải thông tin Session & Scenario trước để áp dụng đúng đường cong phản xạ theo JLPT và SocialRegister
+            var session = await _context.RoleplaySessions
+                .AsSplitQuery()
+                .Include(s => s.ScenarioLevelConfiguration)
+                    .ThenInclude(c => c!.Scenario)
+                .Include(s => s.ScenarioLevelConfiguration)
+                    .ThenInclude(c => c!.TargetVocabularies)
+                .Include(s => s.ScenarioLevelConfiguration)
+                    .ThenInclude(c => c!.TargetGrammars)
+                .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+            var sessionJlpt = session?.ScenarioLevelConfiguration?.JLPTLevel ?? roleplayResult?.JLPTLevel ?? "N5";
+
             // Cập nhật điểm tự tin (Communicative Confidence Score)
             // CCS giảm nếu độ trễ cao, phụ thuộc hint nhiều, hoặc lặp lại nhiều lần
-            double avgLatencySec = signals.Average(s => s.LatencyMs) / 1000.0;
+            var validLatencySignals = signals.Where(s => s.LatencyMs > 0).ToList();
+            double? avgLatencySec = validLatencySignals.Count > 0
+                ? validLatencySignals.Average(s => Math.Clamp(s.LatencyMs, 200, 30000)) / 1000.0
+                : null;
             double avgHintLevel = signals.Average(s => s.HintLevelUsed);
             double avgRetries = signals.Average(s => s.RetryCount);
 
-            double reflexScore = Math.Clamp(100.0 - (avgLatencySec * 15.0), 10.0, 100.0);
+            // Dùng Single Source of Truth AssistancePolicy cho điểm phản xạ theo cấp JLPT (chỉ tính khi có dữ liệu độ trễ thực)
+            double reflexScore = avgLatencySec.HasValue
+                ? AssistancePolicy.CalculateReflexScore(avgLatencySec.Value, sessionJlpt)
+                : profile.SpeakingReflexIndex;
             double hintPenalty = avgHintLevel * 12.0;
             double retryPenalty = avgRetries * 8.0;
 
-            double calculatedCcs = Math.Clamp(reflexScore - hintPenalty - retryPenalty + (signals.Average(s => s.TurnScore) * 0.3), 10.0, 99.0);
+            var scoredSignals = signals.Where(s => s.TurnScore > 0).ToList();
+            double rawAvgSignalScore = scoredSignals.Count > 0
+                ? scoredSignals.Average(s => s.TurnScore)
+                : (roleplayResult?.OverallScore ?? 70.0);
+            double avgScore = roleplayResult != null
+                ? Math.Round((rawAvgSignalScore * 0.30) + (roleplayResult.OverallScore * 0.70), 1)
+                : rawAvgSignalScore;
+
+            double calculatedCcs = Math.Clamp(reflexScore - hintPenalty - retryPenalty + (avgScore * 0.3), 10.0, 99.0);
 
             // Cập nhật EMA (Exponential Moving Average) 80% cũ, 20% mới
-            profile.SpeakingReflexIndex = Math.Round(profile.SpeakingReflexIndex * 0.8 + reflexScore * 0.2, 1);
+            if (avgLatencySec.HasValue)
+            {
+                profile.SpeakingReflexIndex = Math.Round(profile.SpeakingReflexIndex * 0.8 + reflexScore * 0.2, 1);
+            }
             profile.CommunicativeConfidenceScore = Math.Round(profile.CommunicativeConfidenceScore * 0.8 + calculatedCcs * 0.2, 1);
-
-            double avgScore = signals.Average(s => s.TurnScore);
             profile.CommunicativeProficiencyIndex = Math.Round(profile.CommunicativeProficiencyIndex * 0.8 + avgScore * 0.2, 1);
 
-            double avgMora = signals.Where(s => s.MoraRate > 0).Select(s => s.MoraRate).DefaultIfEmpty(3.5).Average();
-            profile.AverageMoraRate = Math.Round(profile.AverageMoraRate * 0.8 + avgMora * 0.2, 2);
+            var voiceMoraValues = signals
+                .Where(s => !s.FallbackToTextInput && s.MoraRate > 0)
+                .Select(s => s.MoraRate)
+                .ToList();
+            if (voiceMoraValues.Count > 0)
+            {
+                double avgMora = voiceMoraValues.Average();
+                profile.AverageMoraRate = Math.Round(profile.AverageMoraRate * 0.8 + avgMora * 0.2, 2);
+            }
 
-            // 1. Cập nhật ParticleAccuracyRate (Độ chuẩn trợ từ dựa trên quét lỗi E01)
+            // 1. Cập nhật ParticleAccuracyRate (Độ chuẩn trợ từ dựa trên quét lỗi E01 và GrammarScore thực tế)
             int particleErrors = signals.Count(s => !string.IsNullOrEmpty(s.DetectedRuleErrorCodes) && s.DetectedRuleErrorCodes.Contains("E01"));
             double sessionParticleAccuracy = Math.Clamp(100.0 - (particleErrors / (double)signals.Count * 50.0), 30.0, 100.0);
+            if (roleplayResult != null && roleplayResult.GrammarScore > 0)
+            {
+                sessionParticleAccuracy = Math.Clamp((sessionParticleAccuracy * 0.6) + (roleplayResult.GrammarScore * 0.4), 20.0, 100.0);
+            }
             profile.ParticleAccuracyRate = Math.Round(profile.ParticleAccuracyRate * 0.8 + sessionParticleAccuracy * 0.2, 1);
 
             // 2. Cập nhật HintDependencyRate
             double sessionHintDep = Math.Clamp(avgHintLevel * 33.3, 0.0, 100.0);
             profile.HintDependencyRate = Math.Round(profile.HintDependencyRate * 0.8 + sessionHintDep * 0.2, 1);
 
-            // 3. Tải thông tin Session & Scenario để suy luận SocialRegister phù hợp
-            var session = await _context.RoleplaySessions
-                .AsSplitQuery()
-                .Include(s => s.ScenarioLevelConfiguration)
-                    .ThenInclude(c => c!.TargetVocabularies)
-                .Include(s => s.ScenarioLevelConfiguration)
-                    .ThenInclude(c => c!.TargetGrammars)
-                .FirstOrDefaultAsync(s => s.Id == sessionId);
+            // 3. Suy luận SocialRegister phù hợp từ Session & Scenario đã tải
 
             var scenarioTitle = session?.ScenarioLevelConfiguration?.Scenario?.Title ?? string.Empty;
             if (string.IsNullOrEmpty(scenarioTitle) && session?.ScenarioLevelConfiguration?.ScenarioId > 0)
@@ -176,10 +270,7 @@ namespace JCAP.Services.Implementations
             var description = session?.ScenarioLevelConfiguration?.Description ?? string.Empty;
             var reg = RoleplaySocialRegister.Deduce(scenarioTitle, aiPersona, description);
             // 4. Cập nhật KeigoCommandScore (Kiểm tra thể lịch sự / kính ngữ thích ứng theo vai vế xã hội)
-            var userMsgs = await _context.RoleplayMessages
-                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
-                .Select(m => m.JapaneseText)
-                .ToListAsync();
+            var userMsgs = userMsgEntities.Select(m => m.JapaneseText).ToList();
             if (userMsgs.Count > 0)
             {
                 double sessionKeigoScore;
@@ -198,14 +289,26 @@ namespace JCAP.Services.Implementations
                     int politeCount = userMsgs.Count(t => t.Contains("です") || t.Contains("ます") || t.Contains("ございます") || t.Contains("でした") || t.Contains("ません") || t.Contains("ください"));
                     sessionKeigoScore = Math.Clamp(politeCount / (double)userMsgs.Count * 100.0, 20.0, 100.0);
                 }
+
+                if (roleplayResult != null && roleplayResult.ImpressionScore > 0)
+                {
+                    sessionKeigoScore = Math.Clamp((sessionKeigoScore * 0.6) + (roleplayResult.ImpressionScore * 0.4), 20.0, 100.0);
+                }
                 profile.KeigoCommandScore = Math.Round(profile.KeigoCommandScore * 0.8 + sessionKeigoScore * 0.2, 1);
             }
 
-            // 5. Ước lượng Theta (IRT Communicative Ability: -3.0 .. +3.0)
-            string jlpt = session?.ScenarioLevelConfiguration?.JLPTLevel ?? "N5";
+            // 5. Ước lượng Theta động (IRT Communicative Ability: -3.0 .. +3.0) phản ánh cả kết quả Đạt/Chưa đạt
+            string jlpt = session?.ScenarioLevelConfiguration?.JLPTLevel ?? roleplayResult?.JLPTLevel ?? "N5";
             double jlptWeight = jlpt == "N3" ? 2.5 : jlpt == "N4" ? 1.5 : 0.5;
-            double estimatedTheta = Math.Clamp((avgScore - 70.0) / 25.0 + (jlptWeight - 1.0), -2.5, 2.8);
-            profile.ThetaEstimate = Math.Round(profile.ThetaEstimate * 0.8 + estimatedTheta * 0.2, 2);
+            double passModifier = roleplayResult == null ? 0.0 : (roleplayResult.PassStatus ? 0.25 : -0.45);
+            double estimatedTheta = Math.Clamp((avgScore - 70.0) / 25.0 + (jlptWeight - 1.0) + passModifier, -2.5, 2.8);
+            profile.ThetaEstimate = Math.Round(profile.ThetaEstimate * 0.75 + estimatedTheta * 0.25, 2);
+
+            int totalCompletedSessions = await CountCompletedStandardSessionsAsync(_context, userId);
+            var recentResults = await GetRecentStandardResultsAsync(_context, userId, 6);
+            int consecutiveFailCount = recentResults.TakeWhile(r => !r.PassStatus).Count();
+            double alignedProficiency = ComputeEffectiveAlignedProficiency(profile, totalCompletedSessions);
+            string estimatedJlptLevel = DeriveDynamicJlptLevel(profile.ThetaEstimate, alignedProficiency, consecutiveFailCount);
 
             // 6. Cập nhật InferredTraitsJson (TikTok-style deep behavioral profile & trajectory)
             var strengths = new System.Collections.Generic.List<string>();
@@ -224,18 +327,22 @@ namespace JCAP.Services.Implementations
             if (profile.HintDependencyRate <= 20) strengths.Add("Tự tin đối thoại chủ động không lệ thuộc gợi ý");
 
             // Đo lường hành vi ngầm bổ sung (TikTok-Style Telemetry):
-            int hesitationTurns = signals.Count(s => s.LatencyMs > 4500);
-            double hesitationRate = signals.Count > 0 ? Math.Round((hesitationTurns / (double)signals.Count) * 100.0, 1) : 0.0;
-            double averageHesitationSeconds = Math.Round(avgLatencySec, 2);
+            int hesitationTurns = validLatencySignals.Count(s => s.LatencyMs > 4500);
+            double? hesitationRate = validLatencySignals.Count > 0
+                ? Math.Round((hesitationTurns / (double)validLatencySignals.Count) * 100.0, 1)
+                : null;
+            double? averageHesitationSeconds = avgLatencySec.HasValue
+                ? Math.Round(avgLatencySec.Value, 2)
+                : null;
 
             string scaffoldTierPreference = avgHintLevel <= 0.3 ? "Autonomous"
                 : avgHintLevel <= 1.2 ? "Tier1_Keywords"
                 : avgHintLevel <= 2.2 ? "Tier2_Cloze"
                 : "Tier3_FullSentence";
 
-            string dominantWeaknessCategory = particleErrors > 0 ? "Particles"
-                : profile.KeigoCommandScore < 60 ? "Keigo"
-                : profile.SpeakingReflexIndex < 50 ? "Reflex_Latency"
+            string dominantWeaknessCategory = (particleErrors > 0 || profile.ParticleAccuracyRate < 70) ? "Particles"
+                : profile.KeigoCommandScore < 65 ? "Keigo"
+                : profile.SpeakingReflexIndex < 55 ? "Reflex_Latency"
                 : "Vocabulary";
 
             string preferredTone = userMsgs.Any(t => t.Contains("存じます") || t.Contains("いたします") || t.Contains("参ります"))
@@ -278,8 +385,8 @@ namespace JCAP.Services.Implementations
             nextScenario ??= availableScenarios.OrderBy(sc => sc.Id).FirstOrDefault();
 
             int? nextScenarioId = nextScenario?.Id;
-            string nextScenarioCode = nextScenario?.ScenarioCode ?? "SCN_CAFE_01";
-            string nextScenarioTitle = nextScenario?.Title ?? "Gọi đồ uống tại Quán Cafe Shibuya";
+            string? nextScenarioCode = nextScenario?.ScenarioCode;
+            string? nextScenarioTitle = nextScenario?.Title;
 
             string nextReason = dominantWeaknessCategory switch
             {
@@ -291,7 +398,22 @@ namespace JCAP.Services.Implementations
 
             double predictedSuccessRate = Math.Round(Math.Clamp(profile.CommunicativeConfidenceScore * 0.85 + 15.0, 65.0, 96.0), 1);
 
-            profile.InferredTraitsJson = JsonSerializer.Serialize(new
+            string? existingAiCoachingRaw = null;
+            if (!string.IsNullOrWhiteSpace(profile.InferredTraitsJson))
+            {
+                try
+                {
+                    using var existingDoc = JsonDocument.Parse(profile.InferredTraitsJson);
+                    if (existingDoc.RootElement.ValueKind == JsonValueKind.Object
+                        && existingDoc.RootElement.TryGetProperty("aiCoaching", out var aiNode))
+                    {
+                        existingAiCoachingRaw = aiNode.GetRawText();
+                    }
+                }
+                catch { }
+            }
+
+            var serializedTraits = JsonSerializer.Serialize(new
             {
                 strengths,
                 weaknesses,
@@ -307,9 +429,28 @@ namespace JCAP.Services.Implementations
                 nextRecommendedReason = nextReason,
                 predictedSuccessRateNextScenario = predictedSuccessRate,
                 adaptiveLearningPathStatus = adaptivePathStatus,
+                estimatedJlptLevel,
+                consecutiveFailCount,
                 lastEvaluatedSessionId = sessionId,
                 evaluatedAtUtc = DateTime.UtcNow
             });
+
+            if (!string.IsNullOrWhiteSpace(existingAiCoachingRaw))
+            {
+                try
+                {
+                    var rootObj = System.Text.Json.Nodes.JsonNode.Parse(serializedTraits)?.AsObject();
+                    var coachingNode = System.Text.Json.Nodes.JsonNode.Parse(existingAiCoachingRaw);
+                    if (rootObj != null && coachingNode != null)
+                    {
+                        rootObj["aiCoaching"] = coachingNode;
+                        serializedTraits = rootObj.ToJsonString();
+                    }
+                }
+                catch { }
+            }
+
+            profile.InferredTraitsJson = serializedTraits;
 
             // 6. Kích hoạt cập nhật FSRS LearnerSkillMastery (Spaced Repetition Mastery Tracking)
             // Tải trước danh sách SkillMastery hiện có của user vào dictionary để tránh N+1 query và triệt tiêu lỗi duplicate key
@@ -374,13 +515,17 @@ namespace JCAP.Services.Implementations
 
                 foreach (var vocab in distinctVocabs)
                 {
+                    var cleanWord = System.Text.RegularExpressions.Regex.Replace(vocab.Word, @"[\(（].*?[\)）]", "").Trim();
                     bool userSpoke = combinedUserText.Contains(vocab.Word) ||
+                                     (!string.IsNullOrWhiteSpace(cleanWord) && combinedUserText.Contains(cleanWord)) ||
                                      (!string.IsNullOrWhiteSpace(vocab.Reading) && combinedUserText.Contains(vocab.Reading));
 
                     var vCode = "VOCAB_" + vocab.Word.Trim();
                     if (vCode.Length > 100) vCode = vCode[..100];
-                    var vName = $"Từ vựng: {vocab.Word} ({vocab.Meaning})";
-                    if (vName.Length > 200) vName = vName[..200];
+                    var cleanVMeaning = CleanSkillMeaning(vocab.Meaning);
+                    if (cleanVMeaning.Length > 120) cleanVMeaning = cleanVMeaning[..117].TrimEnd() + "...";
+                    var vName = $"Từ vựng: {vocab.Word} ({cleanVMeaning})";
+                    if (vName.Length > 200) vName = vName[..199] + ")";
 
                     if (!masteryMap.TryGetValue(vCode, out var vMastery))
                     {
@@ -390,31 +535,32 @@ namespace JCAP.Services.Implementations
                             SkillCode = vCode,
                             SkillName = vName,
                             Category = "Vocabulary",
-                            Stability = userSpoke ? 2.5 : 1.0,
-                            Difficulty = userSpoke ? 3.5 : 5.0,
+                            Stability = userSpoke ? 2.5 : 1.8,
+                            Difficulty = userSpoke ? 3.5 : 4.5,
                             Repetitions = 1,
-                            Lapses = userSpoke ? 0 : 1,
+                            Lapses = 0,
                             LastPracticedUtc = DateTime.UtcNow,
-                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddHours(4)
+                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddDays(1)
                         };
                         _context.LearnerSkillMasteries.Add(vMastery);
                         masteryMap[vCode] = vMastery;
                     }
                     else
                     {
+                        vMastery.SkillName = vName;
                         vMastery.Repetitions += 1;
                         if (userSpoke)
                         {
                             vMastery.Difficulty = Math.Max(1.0, Math.Round(vMastery.Difficulty - 0.2, 2));
-                            vMastery.Stability = Math.Min(100.0, Math.Round(vMastery.Stability * 1.5, 2));
+                            vMastery.Stability = Math.Max(2.5, Math.Min(100.0, Math.Round(vMastery.Stability * 1.5, 2)));
+                            vMastery.Lapses = Math.Max(0, vMastery.Lapses - 1);
                             vMastery.LastPracticedUtc = DateTime.UtcNow;
                             vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(Math.Max(1.0, Math.Round(vMastery.Stability, 1)));
                         }
                         else
                         {
-                            vMastery.Lapses += 1;
                             vMastery.LastPracticedUtc = DateTime.UtcNow;
-                            vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6);
+                            vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(12);
                         }
                     }
                 }
@@ -433,12 +579,16 @@ namespace JCAP.Services.Implementations
                 {
                     var key = string.Concat(grammar.Pattern.Where(c => c != '～' && c != '~')).Trim();
                     if (string.IsNullOrWhiteSpace(key)) continue;
-                    bool userSpoke = combinedUserText.Contains(key);
+                    bool userSpoke = combinedUserText.Contains(key) ||
+                                     (key == "をください" && (combinedUserText.Contains("をお願いします") || combinedUserText.Contains("ていただけますか"))) ||
+                                     (key == "をお願いします" && combinedUserText.Contains("をください"));
 
                     var gCode = grammar.Id > 0 ? $"GRAMMAR_{grammar.Id}" : $"GRAMMAR_{key}";
                     if (gCode.Length > 100) gCode = gCode[..100];
-                    var gName = $"Ngữ pháp: {grammar.Pattern} ({grammar.Meaning})";
-                    if (gName.Length > 200) gName = gName[..200];
+                    var cleanGMeaning = CleanSkillMeaning(grammar.Meaning);
+                    if (cleanGMeaning.Length > 120) cleanGMeaning = cleanGMeaning[..117].TrimEnd() + "...";
+                    var gName = $"Ngữ pháp: {grammar.Pattern} ({cleanGMeaning})";
+                    if (gName.Length > 200) gName = gName[..199] + ")";
 
                     if (!masteryMap.TryGetValue(gCode, out var gMastery))
                     {
@@ -448,31 +598,32 @@ namespace JCAP.Services.Implementations
                             SkillCode = gCode,
                             SkillName = gName,
                             Category = "Grammar",
-                            Stability = userSpoke ? 2.5 : 1.0,
-                            Difficulty = userSpoke ? 3.5 : 5.0,
+                            Stability = userSpoke ? 2.5 : 1.8,
+                            Difficulty = userSpoke ? 3.5 : 4.5,
                             Repetitions = 1,
-                            Lapses = userSpoke ? 0 : 1,
+                            Lapses = 0,
                             LastPracticedUtc = DateTime.UtcNow,
-                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddHours(4)
+                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddDays(1)
                         };
                         _context.LearnerSkillMasteries.Add(gMastery);
                         masteryMap[gCode] = gMastery;
                     }
                     else
                     {
+                        gMastery.SkillName = gName;
                         gMastery.Repetitions += 1;
                         if (userSpoke)
                         {
                             gMastery.Difficulty = Math.Max(1.0, Math.Round(gMastery.Difficulty - 0.2, 2));
-                            gMastery.Stability = Math.Min(100.0, Math.Round(gMastery.Stability * 1.4, 2));
+                            gMastery.Stability = Math.Max(2.5, Math.Min(100.0, Math.Round(gMastery.Stability * 1.4, 2)));
+                            gMastery.Lapses = Math.Max(0, gMastery.Lapses - 1);
                             gMastery.LastPracticedUtc = DateTime.UtcNow;
                             gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(Math.Max(1.0, Math.Round(gMastery.Stability, 1)));
                         }
                         else
                         {
-                            gMastery.Lapses += 1;
                             gMastery.LastPracticedUtc = DateTime.UtcNow;
-                            gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6);
+                            gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(12);
                         }
                     }
                 }
@@ -482,26 +633,123 @@ namespace JCAP.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        private static (string Code, string Name, string Category) ResolveSkillInfo(string rawCode)
+        internal static (string Code, string Name, string Category) ResolveSkillInfo(string rawCode)
         {
             return rawCode switch
             {
-                "E01_INTRANSITIVE_WO" or "E01" => ("E01_INTRANSITIVE_WO", "Trợ từ を với tự động từ (E01)", "Grammar"),
-                "E02_PLACE_DE_NI" or "E02" => ("E02_PLACE_DE_NI", "Trợ từ tồn tại で vs に (E02)", "Grammar"),
-                "E03_ANATA_OVERUSE" or "E03" => ("E03_ANATA_OVERUSE", "Đại từ xưng hô あなた (E03)", "Pragmatics"),
-                "E04_ANIMATE_ARU" => ("E04_ANIMATE_ARU", "Động từ tồn tại あります cho sinh vật (E04)", "Grammar"),
-                "E04_INANIMATE_IRU" => ("E04_INANIMATE_IRU", "Động từ tồn tại います cho đồ vật (E04)", "Grammar"),
-                "E04" => ("E04_ARU_IRU", "Động từ tồn tại あります vs います (E04)", "Grammar"),
-                "E05_SHITTEIRU_DEKIRU" or "E05" => ("E05_SHITTEIRU_DEKIRU", "Phân biệt 知っています vs できます (E05)", "Vocabulary"),
-                "E06_TA_DESHITA" or "E06" => ("E06_TA_DESHITA", "Hậu tố quá khứ たでした (E06)", "Grammar"),
-                "E07_WATASHI_NI_AGEMASU" or "E07" => ("E07_WATASHI_NI_AGEMASU", "Động từ cho nhận 私にあげます (E07)", "Grammar"),
-                "E08_SONKEIGO_SELF" => ("E08_SONKEIGO_SELF", "Lẫn lộn Tôn kính ngữ cho bản thân (E08)", "Pragmatics"),
-                "E08_KENJOUGO_OTHER" => ("E08_KENJOUGO_OTHER", "Lẫn lộn Khiêm nhường ngữ cho đối phương (E08)", "Pragmatics"),
-                "E08" => ("E08_KEIGO_CONFUSION", "Tôn kính ngữ & Khiêm nhường ngữ (E08)", "Pragmatics"),
-                "E09_MISSING_DA_KARA" or "E09" => ("E09_MISSING_DA_KARA", "Cấu trúc nguyên nhân だから / なので (E09)", "Grammar"),
-                "E10_TRANSPORT_NI_DE" or "E10" => ("E10_TRANSPORT_NI_DE", "Trợ từ phương tiện di chuyển に vs で (E10)", "Grammar"),
-                _ => (rawCode, $"Quy tắc giao tiếp ({rawCode})", "Grammar")
+                "E01_INTRANSITIVE_WO" or "E01" => ("E01_INTRANSITIVE_WO", "Trợ từ を với tự động từ", "Grammar"),
+                "E02_PLACE_DE_NI" or "E02" => ("E02_PLACE_DE_NI", "Trợ từ nơi chốn で vs に", "Grammar"),
+                "E03_ANATA_OVERUSE" or "E03" => ("E03_ANATA_OVERUSE", "Lạm dụng đại từ あなた", "Pragmatics"),
+                "E04_ANIMATE_ARU" => ("E04_ANIMATE_ARU", "Động từ tồn tại あります cho sinh vật", "Grammar"),
+                "E04_INANIMATE_IRU" => ("E04_INANIMATE_IRU", "Động từ tồn tại います cho đồ vật", "Grammar"),
+                "E04" => ("E04_ARU_IRU", "Động từ tồn tại あります vs います", "Grammar"),
+                "E05_SHITTEIRU_DEKIRU" or "E05" => ("E05_SHITTEIRU_DEKIRU", "Phân biệt 知っています vs できます", "Vocabulary"),
+                "E06_TA_DESHITA" or "E06" => ("E06_TA_DESHITA", "Chồng thì quá khứ たでした", "Grammar"),
+                "E07_WATASHI_NI_AGEMASU" or "E07" => ("E07_WATASHI_NI_AGEMASU", "Động từ cho nhận 私にあげます", "Grammar"),
+                "E08_SONKEIGO_SELF" => ("E08_SONKEIGO_SELF", "Tôn kính ngữ cho chính mình", "Pragmatics"),
+                "E08_KENJOUGO_OTHER" => ("E08_KENJOUGO_OTHER", "Khiêm nhường ngữ cho đối phương", "Pragmatics"),
+                "E08" => ("E08_KEIGO_CONFUSION", "Tôn kính ngữ & Khiêm nhường ngữ", "Pragmatics"),
+                "E09_MISSING_DA_KARA" or "E09" => ("E09_MISSING_DA_KARA", "Cấu trúc nguyên nhân だから / なので", "Grammar"),
+                "E10_TRANSPORT_NI_DE" or "E10" => ("E10_TRANSPORT_NI_DE", "Trợ từ phương tiện di chuyển に vs で", "Grammar"),
+                "E11_BARE_NOUN_ORDER" or "E11" => ("E11_BARE_NOUN_ORDER", "Diễn đạt gọi món cộc lốc", "Pragmatics"),
+                "E12_VERBLESS_ORDER" or "E12" => ("E12_VERBLESS_ORDER", "Đoản ngữ thiếu vị ngữ hoàn chỉnh", "Grammar"),
+                "E13_KOTO_DESU_KA_POTENTIAL" or "E13" => ("E13_KOTO_DESU_KA_POTENTIAL", "Hỏi khả năng bằng thể nguyên mẫu", "Grammar"),
+                "E14_OK_DESU_OVERUSE" or "E14" => ("E14_OK_DESU_OVERUSE", "Lạm dụng cụm 'OK / OKです'", "Pragmatics"),
+                _ => (rawCode, CleanTechnicalCodeName(rawCode), "Grammar")
             };
         }
+
+        private static string CleanTechnicalCodeName(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return "Quy tắc ngữ pháp";
+            var clean = System.Text.RegularExpressions.Regex.Replace(code, @"^E\d+_", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            clean = clean.Replace("_", " ").Trim();
+            return string.IsNullOrWhiteSpace(clean) ? "Quy tắc giao tiếp" : clean;
+        }
+
+        private static string CleanSkillMeaning(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+            var s = raw.Trim();
+            if (s.Contains('•')) s = s.Split('•')[0].Trim();
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\[.*?\]", "").Trim();
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"[\(（].*?[\)）]", "").Trim();
+            return string.IsNullOrWhiteSpace(s) ? raw.Trim() : s;
+        }
+
+        public static async Task<int> CountCompletedStandardSessionsAsync(
+            AppDbContext context,
+            string userId,
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            return await context.RoleplaySessions
+                .AsNoTracking()
+                .CountAsync(
+                    s => s.UserId == userId && s.SessionType != "PlacementTest" && s.Status == "Completed",
+                    cancellationToken);
+        }
+
+        public static async Task<System.Collections.Generic.List<(int OverallScore, bool PassStatus)>> GetRecentStandardResultsAsync(
+            AppDbContext context,
+            string userId,
+            int take = 6,
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            var rows = await (
+                from r in context.RoleplayResults.AsNoTracking()
+                join s in context.RoleplaySessions.AsNoTracking() on r.RoleplaySessionId equals s.Id into sj
+                from s in sj.DefaultIfEmpty()
+                where r.UserId == userId && (s == null || s.SessionType != "PlacementTest")
+                orderby r.CompletedAt descending, r.Id descending
+                select new { r.OverallScore, r.PassStatus })
+                .Take(take)
+                .ToListAsync(cancellationToken);
+
+            return rows.Select(x => (x.OverallScore, x.PassStatus)).ToList();
+        }
+
+        public static double ComputeEffectiveAlignedProficiency(
+            LearnerIntelligenceProfile profile,
+            int totalCompletedStandardSessions)
+        {
+            return totalCompletedStandardSessions > 0
+                ? ComputeAlignedProficiency(profile)
+                : profile.CommunicativeProficiencyIndex;
+        }
+
+        public static double ComputeAlignedProficiency(LearnerIntelligenceProfile profile)
+        {
+            double moraNorm = Math.Clamp((profile.AverageMoraRate / 6.0) * 100.0, 18.0, 100.0);
+            double autonomyScore = Math.Clamp(100.0 - profile.HintDependencyRate, 0.0, 100.0);
+            return Math.Round((
+                profile.SpeakingReflexIndex +
+                profile.KeigoCommandScore +
+                profile.ParticleAccuracyRate +
+                moraNorm +
+                profile.CommunicativeConfidenceScore +
+                autonomyScore) / 6.0, 1);
+        }
+
+        public static (string Level, string Label) DeriveDynamicJlptDetails(
+            double thetaEstimate,
+            double proficiencyIndex,
+            int consecutiveFailCount = 0)
+        {
+            if (proficiencyIndex >= 80.0 && thetaEstimate >= 1.2 && consecutiveFailCount < 2)
+                return ("N3", "N3 (Thành thạo)");
+            if (proficiencyIndex >= 72.0 && thetaEstimate >= 0.5 && consecutiveFailCount < 2)
+                return ("N4", "N4 (Vững)");
+            if (proficiencyIndex >= 62.0 && thetaEstimate >= 0.0 && consecutiveFailCount < 2)
+                return ("N4", "N4 (Cơ bản)");
+            if (proficiencyIndex >= 55.0 && consecutiveFailCount < 2)
+                return ("N5", "N5 (Vững)");
+            return ("N5", "N5 (Cơ bản)");
+        }
+
+        public static string DeriveDynamicJlptLevel(
+            double thetaEstimate,
+            double proficiencyIndex,
+            int consecutiveFailCount = 0)
+            => DeriveDynamicJlptDetails(thetaEstimate, proficiencyIndex, consecutiveFailCount).Level;
     }
 }

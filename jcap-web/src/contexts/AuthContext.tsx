@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { User, RegisterPayload, RegisterResponseDto } from '../types/auth';
 import { authService } from '../services/authService';
+import {
+  clearStoredAuthSession,
+  isValidStoredUser,
+  readStoredAuthSession,
+  shouldClearSessionOnAuthError,
+} from '../utils/authSession';
 
 export interface AuthContextType {
   user: User | null;
@@ -25,27 +31,21 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // 1. Khôi phục thông tin user đã lưu trong localStorage (nếu có) để F5 không bị mất phiên
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const savedUser = localStorage.getItem('jcap_user');
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('jcap_token'));
+  // 1. Khôi phục phiên hợp lệ (bắt buộc đủ cả token và user có id/email); tự dọn phiên "ma" nếu thiếu
+  const [initialSession] = useState(() => readStoredAuthSession());
+  const [user, setUser] = useState<User | null>(initialSession.user);
+  const [token, setToken] = useState<string | null>(initialSession.token);
   const [userLevel, setUserLevelState] = useState<string>(() => localStorage.getItem('jcap_level') || 'N5');
 
-  // Nếu đã có sẵn cả user và token từ localStorage thì không cần hiện màn hình loading xoay vòng
+  // Nếu đã có sẵn cả user hợp lệ và token từ localStorage thì không cần hiện màn hình loading xoay vòng
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isGoogleCallback = window.location.pathname === '/scenarios' && urlParams.has('token');
-    const hasGoogleError = window.location.pathname === '/login' && urlParams.has('error');
+    const hasGoogleError =
+      window.location.pathname === '/login' && urlParams.has('error') && !urlParams.has('confirmed');
     if (isGoogleCallback || hasGoogleError) return true;
-    if (localStorage.getItem('jcap_user') && localStorage.getItem('jcap_token')) return false;
-    return !!localStorage.getItem('jcap_token');
+    if (initialSession.user && initialSession.token) return false;
+    return !!initialSession.token;
   });
 
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -115,6 +115,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('jcap_user', JSON.stringify(refreshed));
           return refreshed;
         });
+      } else if (shouldClearSessionOnAuthError(res)) {
+        clearStoredAuthSession();
+        setToken(null);
+        setUser(null);
       }
     } catch (err) {
       console.error('Lỗi làm mới thông tin phiên đăng nhập:', err);
@@ -157,7 +161,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const urlParams = new URLSearchParams(window.location.search);
         const isGoogleCallback = window.location.pathname === '/scenarios' && urlParams.has('token');
         const googleToken = isGoogleCallback ? urlParams.get('token') : null;
-        const googleError = window.location.pathname === '/login' ? urlParams.get('error') : null;
+        const googleError =
+          window.location.pathname === '/login' && !urlParams.has('confirmed')
+            ? urlParams.get('error')
+            : null;
         const googleUserId = urlParams.get('userId');
         const googleEmail = urlParams.get('email');
         const googleFullName = urlParams.get('fullName');
@@ -212,11 +219,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               initialConfidenceTier: res.data.initialConfidenceTier ?? null,
             };
             saveSession(refreshedUser, activeToken, savedLevel);
-          } else if (!res.success && (res.message?.includes('401') || res.message?.includes('hết hạn') || res.message?.includes('không hợp lệ'))) {
-            // Chỉ xóa phiên khi server từ chối token rõ ràng
-            localStorage.removeItem('jcap_token');
-            localStorage.removeItem('jcap_user');
-            localStorage.removeItem('jcap_current_view');
+          } else if (shouldClearSessionOnAuthError(res)) {
+            // Xóa phiên khi server từ chối token hoặc user không còn tồn tại (401/403/404)
+            clearStoredAuthSession();
             setToken(null);
             setUser(null);
           }
@@ -295,8 +300,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Loi khi goi API logout:', err);
     } finally {
-      localStorage.removeItem('jcap_token');
-      localStorage.removeItem('jcap_user');
+      clearStoredAuthSession();
       setToken(null);
       setUser(null);
       setLoginError(null);
@@ -315,7 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         token,
-        isAuthenticated: !!user,
+        isAuthenticated: Boolean(isValidStoredUser(user) && token),
         isLoading,
         userLevel,
         loginError,

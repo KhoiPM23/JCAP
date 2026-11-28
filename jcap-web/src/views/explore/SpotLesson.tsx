@@ -31,6 +31,8 @@ export interface SpotLessonProps {
   furigana: boolean;
   isWide: boolean;
   onClose: () => void;
+  /** Mở khung luyện Shadowing ngay trên bản đồ (không có thì mở trang luyện riêng như trước) */
+  onShadowing?: () => void;
 }
 
 /**
@@ -38,7 +40,7 @@ export interface SpotLessonProps {
  * Shadowing và Hội thoại AI mở ở trang sẵn có của hai module đó; quay lại bản đồ thì tỉnh được đồng bộ và server tự
  * cấp con dấu nếu phiên đạt (không cần trang kia báo về). Không bắt học theo thứ tự.
  */
-export const SpotLesson: React.FC<SpotLessonProps> = ({ spot, spotIndex, pref, furigana, isWide, onClose }) => {
+export const SpotLesson: React.FC<SpotLessonProps> = ({ spot, spotIndex, pref, furigana, isWide, onClose, onShadowing }) => {
   const navigate = useNavigate();
   const headingId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -190,7 +192,7 @@ export const SpotLesson: React.FC<SpotLessonProps> = ({ spot, spotIndex, pref, f
                 title={shadowing.title}
                 note={`Đọc theo cả bài, đạt từ ${pass} điểm. Làm xong, quay lại bản đồ để nhận con dấu.`}
                 action={stamped ? 'Luyện lại' : 'Bắt đầu Shadowing'}
-                onClick={() => navigate(shadowingPracticeUrl(shadowing.referenceId!, pref.slug, spotIndex))}
+                onClick={() => (onShadowing ? onShadowing() : navigate(shadowingPracticeUrl(shadowing.referenceId!, pref.slug, spotIndex)))}
                 primary={!stamped}
               />
             ) : (

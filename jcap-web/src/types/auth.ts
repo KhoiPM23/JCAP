@@ -3,6 +3,7 @@ export interface ApiResponse<T> {
   message: string;
   data?: T;
   errors?: string[];
+  statusCode?: number;
 }
 
 export type PlacementTestStatusType =

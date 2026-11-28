@@ -19,6 +19,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
   const [searchParams] = useSearchParams();
   const confirmed = searchParams.get('confirmed');
   const confirmationError = searchParams.get('error');
+  const reset = searchParams.get('reset');
 
   const {
     login,
@@ -91,7 +92,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
     <div className="au-box">
       <AuthHeading title="Chào mừng quay lại" lead="Đăng nhập để đi tiếp hành trình của bạn." />
 
-      {confirmed === 'true' && <AuthMessage tone="ok">Email đã được xác minh. Bạn có thể đăng nhập.</AuthMessage>}
+      {confirmed === 'true' && <AuthMessage tone="ok">Xác minh tài khoản thành công! Bạn có thể đăng nhập ngay.</AuthMessage>}
+
+      {reset === 'true' && <AuthMessage tone="ok">Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.</AuthMessage>}
 
       {confirmed === 'false' && (
         <AuthMessage tone="err">
