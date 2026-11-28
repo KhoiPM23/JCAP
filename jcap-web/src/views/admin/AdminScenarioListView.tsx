@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { scenarioService } from '../../services/scenarioService';
 import type { KnowledgeSearchItem, ScenarioListItem } from '../../types/scenarioDetails';
-import { ScenarioKnowledgePicker, reorderKnowledgeList } from '../../components/admin/ScenarioKnowledgePicker';
+import {
+  ScenarioKnowledgePicker,
+  reorderKnowledgeList,
+  mergePickedVocabularies,
+  mergePickedGrammars,
+} from '../../components/admin/ScenarioKnowledgePicker';
 
 export interface MissionItem {
   id?: number;
@@ -556,46 +561,13 @@ export const AdminScenarioListView: React.FC = () => {
     setFormData((prev) => {
       const lvlState = prev.levels[lvl];
       if (type === 'vocab') {
-        const existingIds = new Set(
-          lvlState.targetVocabularies.map((v) => v.vocabularyId).filter((id): id is number => Boolean(id && id > 0))
-        );
-        const additions: VocabularyItem[] = picked
-          .filter((item) => !existingIds.has(item.id))
-          .map((item) => ({
-            vocabularyId: item.id,
-            word: item.primaryText,
-            reading: item.reading || '',
-            meaning: item.meaning,
-          }));
-        if (additions.length === 0) return prev;
-        return {
-          ...prev,
-          levels: {
-            ...prev.levels,
-            [lvl]: { ...lvlState, targetVocabularies: [...lvlState.targetVocabularies, ...additions] },
-          },
-        };
+        const next = mergePickedVocabularies(lvlState.targetVocabularies, picked);
+        if (next === lvlState.targetVocabularies) return prev;
+        return { ...prev, levels: { ...prev.levels, [lvl]: { ...lvlState, targetVocabularies: next } } };
       }
-
-      const existingIds = new Set(
-        lvlState.targetGrammars.map((g) => g.grammarId).filter((id): id is number => Boolean(id && id > 0))
-      );
-      const additions: GrammarItem[] = picked
-        .filter((item) => !existingIds.has(item.id))
-        .map((item) => ({
-          grammarId: item.id,
-          pattern: item.primaryText,
-          meaning: item.meaning,
-          exampleSentence: item.exampleSentence || '',
-        }));
-      if (additions.length === 0) return prev;
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...lvlState, targetGrammars: [...lvlState.targetGrammars, ...additions] },
-        },
-      };
+      const next = mergePickedGrammars(lvlState.targetGrammars, picked);
+      if (next === lvlState.targetGrammars) return prev;
+      return { ...prev, levels: { ...prev.levels, [lvl]: { ...lvlState, targetGrammars: next } } };
     });
   };
 
@@ -705,6 +677,19 @@ export const AdminScenarioListView: React.FC = () => {
     if (enabledLevels.length === 0) {
       setError('Vui lòng chọn cấu hình ít nhất 1 trình độ JLPT (N5, N4 hoặc N3).');
       return;
+    }
+
+    for (const lvl of enabledLevels) {
+      const hasValidVocab = lvl.targetVocabularies.some((v) => v.vocabularyId && v.vocabularyId > 0);
+      if (!hasValidVocab) {
+        setError(`Trình độ ${lvl.jlptLevel} cần chọn ít nhất 1 từ vựng trọng tâm từ Kho học liệu.`);
+        return;
+      }
+      const hasValidGrammar = lvl.targetGrammars.some((g) => g.grammarId && g.grammarId > 0);
+      if (!hasValidGrammar) {
+        setError(`Trình độ ${lvl.jlptLevel} cần chọn ít nhất 1 mẫu ngữ pháp trọng tâm từ Kho học liệu.`);
+        return;
+      }
     }
 
     setIsSubmitting(true);

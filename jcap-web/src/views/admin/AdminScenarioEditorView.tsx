@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { scenarioService } from '../../services/scenarioService';
 import type { KnowledgeSearchItem } from '../../types/scenarioDetails';
-import { ScenarioKnowledgePicker, reorderKnowledgeList } from '../../components/admin/ScenarioKnowledgePicker';
+import {
+  ScenarioKnowledgePicker,
+  reorderKnowledgeList,
+  mergePickedVocabularies,
+  mergePickedGrammars,
+} from '../../components/admin/ScenarioKnowledgePicker';
 import type {
   MissionItem,
   VocabularyItem,
@@ -719,46 +724,13 @@ export const AdminScenarioEditorView: React.FC = () => {
     setFormData((prev) => {
       const lvlState = prev.levels[lvl];
       if (type === 'vocab') {
-        const existingIds = new Set(
-          lvlState.targetVocabularies.map((v) => v.vocabularyId).filter((id): id is number => Boolean(id && id > 0))
-        );
-        const additions: VocabularyItem[] = picked
-          .filter((item) => !existingIds.has(item.id))
-          .map((item) => ({
-            vocabularyId: item.id,
-            word: item.primaryText,
-            reading: item.reading || '',
-            meaning: item.meaning,
-          }));
-        if (additions.length === 0) return prev;
-        return {
-          ...prev,
-          levels: {
-            ...prev.levels,
-            [lvl]: { ...lvlState, targetVocabularies: [...lvlState.targetVocabularies, ...additions] },
-          },
-        };
+        const next = mergePickedVocabularies(lvlState.targetVocabularies, picked);
+        if (next === lvlState.targetVocabularies) return prev;
+        return { ...prev, levels: { ...prev.levels, [lvl]: { ...lvlState, targetVocabularies: next } } };
       }
-
-      const existingIds = new Set(
-        lvlState.targetGrammars.map((g) => g.grammarId).filter((id): id is number => Boolean(id && id > 0))
-      );
-      const additions: GrammarItem[] = picked
-        .filter((item) => !existingIds.has(item.id))
-        .map((item) => ({
-          grammarId: item.id,
-          pattern: item.primaryText,
-          meaning: item.meaning,
-          exampleSentence: item.exampleSentence || '',
-        }));
-      if (additions.length === 0) return prev;
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...lvlState, targetGrammars: [...lvlState.targetGrammars, ...additions] },
-        },
-      };
+      const next = mergePickedGrammars(lvlState.targetGrammars, picked);
+      if (next === lvlState.targetGrammars) return prev;
+      return { ...prev, levels: { ...prev.levels, [lvl]: { ...lvlState, targetGrammars: next } } };
     });
   };
 

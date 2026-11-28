@@ -21,6 +21,48 @@ export function reorderKnowledgeList<T>(list: T[], fromIndex: number, toIndex: n
   return next;
 }
 
+export function mergePickedVocabularies<T extends { vocabularyId?: number; word: string; reading?: string; meaning: string }>(
+  existing: T[],
+  picked: KnowledgeSearchItem[]
+): T[] {
+  const existingIds = new Set(
+    existing.map((v) => v.vocabularyId).filter((id): id is number => Boolean(id && id > 0))
+  );
+  const additions = picked
+    .filter((item) => !existingIds.has(item.id))
+    .map(
+      (item) =>
+        ({
+          vocabularyId: item.id,
+          word: item.primaryText,
+          reading: item.reading || '',
+          meaning: item.meaning,
+        }) as T
+    );
+  return additions.length > 0 ? [...existing, ...additions] : existing;
+}
+
+export function mergePickedGrammars<T extends { grammarId?: number; pattern: string; meaning: string; exampleSentence?: string }>(
+  existing: T[],
+  picked: KnowledgeSearchItem[]
+): T[] {
+  const existingIds = new Set(
+    existing.map((g) => g.grammarId).filter((id): id is number => Boolean(id && id > 0))
+  );
+  const additions = picked
+    .filter((item) => !existingIds.has(item.id))
+    .map(
+      (item) =>
+        ({
+          grammarId: item.id,
+          pattern: item.primaryText,
+          meaning: item.meaning,
+          exampleSentence: item.exampleSentence || '',
+        }) as T
+    );
+  return additions.length > 0 ? [...existing, ...additions] : existing;
+}
+
 interface ScenarioKnowledgePickerProps {
   type: 'vocab' | 'grammar';
   jlptLevel: 'N5' | 'N4' | 'N3';
