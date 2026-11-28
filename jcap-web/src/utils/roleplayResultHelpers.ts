@@ -316,3 +316,47 @@ export function buildAdaptiveRecommendations(
 
   return { items, weaknessSummary };
 }
+
+export const cleanAdjustmentCategory = (cat?: string): string => {
+  if (!cat) return '';
+  return cat.replace(/\s*Mora/gi, '');
+};
+
+export const cleanAdjustmentDescription = (desc?: string): string => {
+  if (!desc) return '';
+  if (desc.includes('0.1 mora/s') || desc.includes('0.0 mora/s') || desc.includes('~0.3s')) {
+    const scoreMatch = desc.match(/\((\d+\/100)\)/);
+    const scoreStr = scoreMatch ? ` (${scoreMatch[1]})` : '';
+    return `Lưu loát và nhịp điệu phát âm tự nhiên${scoreStr}`;
+  }
+  return desc
+    .replace(/\s*\(chuẩn học viên[^)]*\)/gi, '')
+    .replace(/giàn giáo gợi ý ZPD/gi, 'gợi ý đối thoại')
+    .replace(/Sử dụng giàn giáo gợi ý/gi, 'Có dùng gợi ý đối thoại')
+    .replace(/Sử dụng gợi ý đối thoại\s*\(([^)]*)\s*-\s*đã miễn trừ[^)]*\)/gi, 'Có dùng trợ giúp gợi ý đối thoại ($1)')
+    .replace(/mora\/s/gi, 'âm/giây')
+    .replace(/\s*,\s*Phản xạ:/g, ' · Phản xạ:');
+};
+
+const TARGET_VI_MAP: Record<string, string> = {
+  'colleagues and supervisor': 'Đồng nghiệp & Cấp trên',
+  'name and assigned department': 'Họ tên & Phòng ban phân công',
+  'work commitment': 'Tinh thần học hỏi & Cầu tiến',
+  'noodle hardness and soup flavor': 'Độ cứng mì & Hương vị nước dùng',
+  'greeting and seat request': 'Chào hỏi & Vị trí ngồi',
+  'order tonkotsu ramen': 'Gọi món mì Tonkotsu Ramen',
+  'destination and train line': 'Điểm đến & Tuyến tàu',
+  'ticket purchase': 'Mua vé tàu',
+  'check-in and luggage': 'Nhận phòng & Gửi hành lý',
+  'room amenities inquiry': 'Hỏi tiện ích phòng nghỉ',
+  'warm bento and cutlery': 'Hâm nóng cơm & Xin thìa đũa',
+  'payment method': 'Phương thức thanh toán',
+  'symptoms explanation': 'Mô tả triệu chứng bệnh',
+  'medicine dosage': 'Hướng dẫn uống thuốc',
+};
+
+export const formatMissionTargetVi = (raw?: string | null): string => {
+  if (!raw) return '';
+  const lower = raw.trim().toLowerCase();
+  return TARGET_VI_MAP[lower] || raw;
+};

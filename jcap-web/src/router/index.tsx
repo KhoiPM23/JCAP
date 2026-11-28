@@ -164,10 +164,12 @@ const LearnerHomeRoute: React.FC = () => {
  */
 const RememberRoleplaySession: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
+  const { user } = useAuth();
+  const learnerId = user?.id || user?.email || null;
   React.useEffect(() => {
     const id = Number(sessionId);
-    if (id > 0) rememberRoleplaySession(id);
-  }, [sessionId]);
+    if (id > 0 && learnerId) rememberRoleplaySession(id, learnerId);
+  }, [sessionId, learnerId]);
   return null;
 };
 

@@ -168,7 +168,7 @@ namespace JCAP.Data.Seeds
                 await dbContext.SaveChangesAsync();
             }
 
-            // 3. Đồng bộ từ vựng và ngữ pháp của kịch bản vào kho học liệu.
+            // 3. Đồng bộ từ vựng và ngữ pháp của kịch bản với kho học liệu và gắn khóa ngoại chuẩn.
             var allSeedScenarios = ScenarioSeedData.GetInitialScenarios();
             await SynchronizeScenarioLearningContentAsync(dbContext, allSeedScenarios);
         }
@@ -321,6 +321,54 @@ namespace JCAP.Data.Seeds
             }
 
             await dbContext.SaveChangesAsync();
+
+            // Gắn VocabularyId và GrammarId cho toàn bộ TargetVocabularies/TargetGrammars trong DB (nếu còn dòng mới/chưa liên kết)
+            var normalizeGrammar = static (string p) => p
+                .Replace("～", string.Empty)
+                .Replace("〜", string.Empty)
+                .Replace("~", string.Empty)
+                .Replace(" ", string.Empty)
+                .Trim();
+
+            var unlinkedVocabs = await dbContext.TargetVocabularies
+                .Include(tv => tv.ScenarioLevelConfiguration)
+                .Where(tv => tv.VocabularyId == null)
+                .ToListAsync();
+
+            foreach (var tv in unlinkedVocabs)
+            {
+                var lvl = tv.ScenarioLevelConfiguration?.JLPTLevel ?? "N5";
+                var cleanWord = tv.Word.Trim();
+                var masterVocab = existingVocabs.FirstOrDefault(v => v.IsActive && v.Word.Trim().Equals(cleanWord, StringComparison.OrdinalIgnoreCase) && string.Equals(v.JLPTLevel, lvl, StringComparison.OrdinalIgnoreCase))
+                    ?? existingVocabs.FirstOrDefault(v => v.IsActive && v.Word.Trim().Equals(cleanWord, StringComparison.OrdinalIgnoreCase))
+                    ?? existingVocabs.FirstOrDefault(v => v.IsActive && (v.Word.Trim().Equals(cleanWord.TrimStart('お'), StringComparison.OrdinalIgnoreCase) || (cleanWord.EndsWith("する") && v.Word.Trim().Equals(cleanWord[..^2], StringComparison.OrdinalIgnoreCase))));
+                if (masterVocab != null)
+                {
+                    tv.VocabularyId = masterVocab.Id;
+                }
+            }
+
+            var unlinkedGrammars = await dbContext.TargetGrammars
+                .Include(tg => tg.ScenarioLevelConfiguration)
+                .Where(tg => tg.GrammarId == null)
+                .ToListAsync();
+
+            foreach (var tg in unlinkedGrammars)
+            {
+                var lvl = tg.ScenarioLevelConfiguration?.JLPTLevel ?? "N5";
+                var normPat = normalizeGrammar(tg.Pattern);
+                var masterGrammar = existingGrammars.FirstOrDefault(g => g.IsActive && normalizeGrammar(g.Pattern).Equals(normPat, StringComparison.OrdinalIgnoreCase) && string.Equals(g.JLPTLevel, lvl, StringComparison.OrdinalIgnoreCase))
+                    ?? existingGrammars.FirstOrDefault(g => g.IsActive && normalizeGrammar(g.Pattern).Equals(normPat, StringComparison.OrdinalIgnoreCase));
+                if (masterGrammar != null)
+                {
+                    tg.GrammarId = masterGrammar.Id;
+                }
+            }
+
+            if (unlinkedVocabs.Count > 0 || unlinkedGrammars.Count > 0)
+            {
+                await dbContext.SaveChangesAsync();
+            }
         }
 
         private static string ExtractPartOfSpeech(string meaning)

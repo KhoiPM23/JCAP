@@ -18,4 +18,6 @@ public interface IScenarioService
     Task<ApiResponse<ScenarioDetailsDto>> UpdateScenarioAsync(int id, UpdateScenarioDto dto, CancellationToken cancellationToken = default);
     Task<ApiResponse<bool>> DeleteScenarioAsync(int id, CancellationToken cancellationToken = default);
     Task<ApiResponse<GeneratedLevelContentDto>> GenerateLevelContentAsync(GenerateScenarioLevelContentRequest request, CancellationToken cancellationToken = default);
+    Task<ApiResponse<List<KnowledgeSearchItemDto>>> SearchKnowledgeAsync(string type, string? query = null, string? level = null, int limit = 20, CancellationToken cancellationToken = default);
+    Task<ApiResponse<SuggestScenarioKnowledgeResponse>> SuggestKnowledgeAsync(SuggestScenarioKnowledgeRequest request, CancellationToken cancellationToken = default);
 }

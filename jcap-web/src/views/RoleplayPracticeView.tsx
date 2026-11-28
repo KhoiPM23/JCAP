@@ -30,6 +30,11 @@ import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
 import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination, cleanFuriganaHtml, cleanPedagogicMeaning, generateClientFuriganaHtml, alignFuriganaWithOriginal, stripRubyToPlainJapanese } from '../utils/japaneseSanitizer';
 import { getPracticePrefs, setPracticePref } from '../utils/practicePrefs';
+import {
+  getScenarioThemePalette,
+  getFeedbackStatus,
+  buildDynamicStageProps,
+} from '../utils/roleplayPracticeHelpers';
 import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -65,63 +70,6 @@ import type {
 
 import { countJapaneseMora } from '../utils/moraPhonetics';
 export { countJapaneseMora };
-
-
-const getScenarioThemePalette = (scenarioCode?: string, title?: string, sceneType?: string) => {
-  const code = (scenarioCode || '').toLowerCase();
-  const scene = (sceneType || '').toLowerCase();
-  const titleLower = (title || '').toLowerCase();
-
-  // 1. Ẩm thực (Ramen, ăn uống, nhà hàng): 薄黄茶 (Usucha) - Ấm áp, nhẹ nhàng
-  if (
-    code.includes('ramen') || code.includes('food') ||
-    scene.includes('ramen') || scene.includes('food') || scene.includes('restaurant') ||
-    titleLower.includes('ramen') || titleLower.includes('ăn') || titleLower.includes('quán')
-  ) {
-    return {
-      bgStyle: { backgroundColor: '#FCF9F4' },
-      accentColor: '#b45309',
-    };
-  }
-  // 2. Di chuyển (Ga tàu, sân bay, vé): 浅葱 (Asagi) - Thoáng đãng, thanh tao
-  if (
-    code.includes('station') || code.includes('train') || code.includes('travel') ||
-    scene.includes('station') || scene.includes('airport') ||
-    titleLower.includes('ga') || titleLower.includes('tàu') || titleLower.includes('bay')
-  ) {
-    return {
-      bgStyle: { backgroundColor: '#F4F8FC' },
-      accentColor: '#0284c7',
-    };
-  }
-  // 3. Công sở (Phỏng vấn, công việc): 藍染 (Aizome) - Chuyên nghiệp, nghiêm túc
-  if (
-    code.includes('baito') || code.includes('work') || code.includes('interview') ||
-    scene.includes('interview') || scene.includes('office') ||
-    titleLower.includes('phỏng vấn') || titleLower.includes('công sở') || titleLower.includes('baito')
-  ) {
-    return {
-      bgStyle: { backgroundColor: '#F5F6FA' },
-      accentColor: '#4f46e5',
-    };
-  }
-  // 4. Mua sắm (Konbini, chợ, tính tiền): 鴇色 (Toki-iro) - Tinh tế, hiếu khách
-  if (
-    code.includes('konbini') || code.includes('shop') ||
-    scene.includes('konbini') || scene.includes('shop') ||
-    titleLower.includes('mua') || titleLower.includes('tiện lợi')
-  ) {
-    return {
-      bgStyle: { backgroundColor: '#FDF8F6' },
-      accentColor: '#e11d48',
-    };
-  }
-  // 5. Đời sống / Mặc định: 若葉 (Wakaba) - Mát lành, tự nhiên
-  return {
-    bgStyle: { backgroundColor: '#F6F9F7' },
-    accentColor: '#059669',
-  };
-};
 
 const RoleplayPracticeViewInternal: React.FC = () => {
   const { mobile, room } = usePracticeViewport();
@@ -1002,15 +950,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasPlayedOpeningRef = useRef(false);
 
-
-  // Helper an toàn lấy trạng thái đánh giá (tránh crash khi trường status/quickStatus null/undefined)
-  const getFeedbackStatus = (feedback?: LinguisticFeedbackDto | null) => {
-    if (!feedback) return 'good';
-    const s = feedback.quickStatus || feedback.status || 'good';
-    return s.toLowerCase();
-  };
-
-
   // Dừng thu âm micro ngay lập tức và hủy mọi sự kiện STT nền
   const stopSpeechRecognition = async (
     options?: boolean | { forImmediateSend?: boolean; discardAudio?: boolean }
@@ -1696,188 +1635,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const dynamicStageProps = useMemo(() => {
     if (!session) return [];
     const theme = detectScenarioTheme(session.scenarioTitle, session.aiPersona);
-
-
-    const inferIcon = (jp: string, vi: string): string => {
-      const combined = `${jp} ${vi}`.toLowerCase();
-      if (/カード|現金|支払|会計|円|いくら|thẻ|tiền|thanh toán|giá/.test(combined)) return '金';
-      if (/味玉|玉子|卵|トッピング|チャーシュー|ねぎ|trứng|topping|thêm/.test(combined)) return '具';
-      if (/麺|ラーメン|スープ|硬|濃|うどん|そば|mì|nước dùng|sợi|món/.test(combined)) return '麺';
-      if (/コーヒー|水|お茶|抹茶|ビール|ドリンク|nước|trà|cà phê|uống/.test(combined)) return '飲';
-      if (/切符|駅|電車|新幹線|ホーム|乗|改札|空港|vé|tàu|ga|sân bay|chuyến/.test(combined)) return '切';
-      if (/荷物|宅配便|スーツケース|送|箱|hành lý|bưu phẩm|gửi hàng|gói hàng/.test(combined)) return '荷';
-      if (/時間|時|明日|今日|予約|シフト|午前|午後|giờ|hẹn|lịch|ca làm/.test(combined)) return '時';
-      if (/仕事|面接|経験|志望|御社|会社|バイト|phỏng vấn|công ty|kinh nghiệm|ứng tuyển/.test(combined)) return '職';
-      if (/薬|痛|熱|病院|アレルギー|症状|thuốc|đau|dị ứng|bệnh|khám/.test(combined)) return '薬';
-      if (/コピー|マルチ|チケット|袋|温め|弁当|máy in|túi|hâm nóng|cơm hộp/.test(combined)) return '店';
-      if (/部屋|チェックイン|鍵|温泉|予約|phòng|khách sạn|suối nước nóng/.test(combined)) return '宿';
-      switch (theme) {
-        case 'ramen': return '';
-        case 'cafe': return '珈';
-        case 'konbini': return '';
-        case 'train': return '';
-        case 'office': return '';
-        case 'zen': return '';
-        default: return '';
-      }
-    };
-
-
-    const buildNaturalPhrase = (word: string): string => {
-      const clean = sanitizeDisplayJapanese(word);
-      if (!clean) return 'はい、お願いします。';
-      // Nếu đã là một câu hoàn chỉnh hoặc cụm dài
-      if (clean.length > 9 || /[。！？ますですか]$/.test(clean)) {
-        return clean.endsWith('。') || clean.endsWith('？') || clean.endsWith('！') ? clean : `${clean}。`;
-      }
-      // Kiểm tra xem trong ngữ pháp mục tiêu có câu ví dụ chứa từ này không
-      const matchingGrammar = session.targetGrammars?.find(
-        (g) => g.exampleSentence && g.exampleSentence.includes(clean) && containsJapanese(g.exampleSentence)
-      );
-      if (matchingGrammar?.exampleSentence) {
-        return sanitizeDisplayJapanese(matchingGrammar.exampleSentence);
-      }
-      if (theme === 'office') {
-        return `${clean}についてお話しします。`;
-      }
-      if (theme === 'train') {
-        return `すみません、${clean}はどこですか？`;
-      }
-      return `すみません、${clean}をお願いします。`;
-    };
-
-
-    const propsList: Array<{
-      id: string;
-      icon: string;
-      labelJp: string;
-      reading?: string;
-      meaningVi: string;
-      actionSentenceJp: string;
-      isHighlight?: boolean;
-    }> = [];
-    const seenJp = new Set<string>();
-
-
-    // 1. Nếu nhiệm vụ hiện tại có chứa từ tiếng Nhật (ví dụ trong ngoặc như 味玉), ưu tiên đưa lên đầu làm từ khóa nhiệm vụ!
-    if (activeMission) {
-      const missionJpMatches = (`${activeMission.content} ${activeMission.target || ''}`).match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]{2,}/g);
-      if (missionJpMatches) {
-        for (const kw of missionJpMatches.slice(0, 2)) {
-          if (!seenJp.has(kw)) {
-            seenJp.add(kw);
-            propsList.push({
-              id: `mission-kw-${kw}`,
-              icon: '',
-              labelJp: kw,
-              meaningVi: activeMission.content.length > 28 ? activeMission.content.slice(0, 28) + '…' : activeMission.content,
-              actionSentenceJp: buildNaturalPhrase(kw),
-              isHighlight: true,
-            });
-          }
-        }
-      }
-    }
-
-
-    // 2. Từ vựng mục tiêu của kịch bản (targetVocabularies)
-    if (session.targetVocabularies && session.targetVocabularies.length > 0) {
-      for (const v of session.targetVocabularies) {
-        const cleanWord = sanitizeDisplayJapanese(v.word);
-        if (cleanWord && containsJapanese(cleanWord) && !seenJp.has(cleanWord) && propsList.length < 4) {
-          seenJp.add(cleanWord);
-          propsList.push({
-            id: `vocab-${v.id || cleanWord}`,
-            icon: inferIcon(cleanWord, v.meaning || ''),
-            labelJp: cleanWord,
-            reading: v.reading,
-            meaningVi: v.meaning || 'Từ vựng trọng tâm',
-            actionSentenceJp: buildNaturalPhrase(cleanWord),
-          });
-        }
-      }
-    }
-
-
-    // 3. Mẫu ngữ pháp mục tiêu của kịch bản (targetGrammars)
-    if (session.targetGrammars && session.targetGrammars.length > 0 && propsList.length < 4) {
-      for (const g of session.targetGrammars) {
-        const cleanPattern = sanitizeDisplayJapanese(g.pattern.replace(/[〜~]/g, '').trim());
-        const example = g.exampleSentence && containsJapanese(g.exampleSentence)
-          ? sanitizeDisplayJapanese(g.exampleSentence)
-          : buildNaturalPhrase(cleanPattern);
-        if (cleanPattern && containsJapanese(cleanPattern) && !seenJp.has(cleanPattern) && propsList.length < 4) {
-          seenJp.add(cleanPattern);
-          propsList.push({
-            id: `grammar-${g.id || cleanPattern}`,
-            icon: '',
-            labelJp: g.pattern,
-            meaningVi: g.meaning || 'Mẫu câu mục tiêu',
-            actionSentenceJp: example,
-          });
-        }
-      }
-    }
-
-
-    // 4. Fallback thông minh theo bối cảnh nếu kịch bản chưa có từ vựng trong DB
-    if (propsList.length < 3) {
-      const themeFallbacks: Record<string, Array<{ icon: string; labelJp: string; meaningVi: string; actionSentenceJp: string }>> = {
-        ramen: [
-          { icon: '', labelJp: '麺を硬めで', meaningVi: 'Chọn mì sợi cứng', actionSentenceJp: 'すみません、麺を硬めでお願いします。' },
-          { icon: '', labelJp: '味玉を追加', meaningVi: 'Thêm trứng lòng đào', actionSentenceJp: '味玉をトッピングでお願いします。' },
-          { icon: '', labelJp: 'カードで支払う', meaningVi: 'Hỏi thanh toán thẻ', actionSentenceJp: 'カードで支払うことはできますか？' },
-        ],
-        konbini: [
-          { icon: '', labelJp: '宅配便を送る', meaningVi: 'Gửi bưu phẩm', actionSentenceJp: 'すみません、宅配便をお願いします。' },
-          { icon: '', labelJp: '午前の時間帯', meaningVi: 'Chọn khung giờ sáng', actionSentenceJp: '明日の午前中でお願いします。' },
-          { icon: '', labelJp: 'コピー機の使い方', meaningVi: 'Hỏi cách dùng máy in', actionSentenceJp: 'マルチコピー機の使い方を教えていただけますか？' },
-        ],
-        train: [
-          { icon: '', labelJp: '切符を買う', meaningVi: 'Mua vé tàu', actionSentenceJp: 'すみません、新宿までの切符をお願いします。' },
-          { icon: '', labelJp: '乗り場を確認', meaningVi: 'Hỏi sân ga tàu chạy', actionSentenceJp: 'この電車は何番線から出ますか？' },
-          { icon: '', labelJp: '次の発車時刻', meaningVi: 'Hỏi giờ tàu tiếp theo', actionSentenceJp: '次の電車は何時ですか？' },
-        ],
-        office: [
-          { icon: '', labelJp: '自己紹介・経験', meaningVi: 'Chia sẻ kinh nghiệm', actionSentenceJp: 'これまでの経験についてお話しします。' },
-          { icon: '', labelJp: 'シフトの希望', meaningVi: 'Nêu nguyện vọng ca làm', actionSentenceJp: '週に三日、夕方のシフトを希望しています。' },
-          { icon: '', labelJp: '志望動機', meaningVi: 'Lý do ứng tuyển', actionSentenceJp: '御社のサービスに魅力を感じて応募いたしました。' },
-        ],
-        cafe: [
-          { icon: '', labelJp: 'おすすめを聞く', meaningVi: 'Hỏi món gợi ý', actionSentenceJp: 'おすすめのメニューは何ですか？' },
-          { icon: '', labelJp: 'ホットで注文', meaningVi: 'Gọi đồ uống nóng', actionSentenceJp: 'ホットコーヒーを一つお願いします。' },
-          { icon: '', labelJp: 'お会計', meaningVi: 'Thanh toán hóa đơn', actionSentenceJp: 'すみません、お会計をお願いします。' },
-        ],
-        zen: [
-          { icon: '', labelJp: '挨拶・お礼', meaningVi: 'Chào hỏi & Cảm ơn', actionSentenceJp: '本日はよろしくお願いいたします。' },
-          { icon: '', labelJp: '予約の確認', meaningVi: 'Xác nhận đặt chỗ', actionSentenceJp: '予約したグエンと申します。' },
-          { icon: '', labelJp: '質問する', meaningVi: 'Hỏi thêm thông tin', actionSentenceJp: '少しお伺いしてもよろしいでしょうか？' },
-        ],
-      };
-      const fbList = themeFallbacks[theme] || themeFallbacks.zen;
-      for (const fb of fbList) {
-        if (!seenJp.has(fb.labelJp) && propsList.length < 4) {
-          seenJp.add(fb.labelJp);
-          propsList.push({
-            id: `fb-${fb.labelJp}`,
-            ...fb,
-          });
-        }
-      }
-    }
-
-
-    // 5. Luôn đính kèm 1 mẫu câu Phản xạ Cứu nguy chuẩn Nhật (Nhờ nói lại / Giải thích lại)
-    propsList.push({
-      id: 'coping-repeat',
-      icon: '',
-      labelJp: 'もう一度お願いします',
-      meaningVi: 'Nhờ nhắc lại lịch sự',
-      actionSentenceJp: 'すみません、もう一度ゆっくりお願いできますか？',
-    });
-
-
-    return propsList.slice(0, 5);
+    return buildDynamicStageProps(session, activeMission, theme);
   }, [session, activeMission]);
 
 

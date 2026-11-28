@@ -3,14 +3,26 @@ using JCAP.DTOs.Stt;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace JCAP.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[AllowAnonymous]
+[Authorize]
 public class SttController : ControllerBase
 {
+    internal const long MaxAudioUploadBytes = 15 * 1024 * 1024; // 15 MB
+
+    private static readonly HashSet<string> AllowedAudioExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".webm",
+        ".wav",
+        ".ogg",
+        ".mp3",
+        ".m4a"
+    };
+
     private readonly IWhisperSttService _whisperService;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
@@ -28,7 +40,34 @@ public class SttController : ControllerBase
         _logger = logger;
     }
 
-    private async Task<string?> SaveAudioFileAsync(IFormFile file, CancellationToken cancellationToken)
+    private static bool ValidateAudioFile(IFormFile? file, out string? errorMessage, out string normalizedExtension)
+    {
+        normalizedExtension = ".webm";
+        if (file == null || file.Length == 0)
+        {
+            errorMessage = "File âm thanh không hợp lệ hoặc rỗng.";
+            return false;
+        }
+
+        if (file.Length > MaxAudioUploadBytes)
+        {
+            errorMessage = "File âm thanh vượt quá giới hạn cho phép (tối đa 15 MB).";
+            return false;
+        }
+
+        var rawExt = Path.GetExtension(file.FileName);
+        normalizedExtension = string.IsNullOrWhiteSpace(rawExt) ? ".webm" : rawExt.Trim().ToLowerInvariant();
+        if (!AllowedAudioExtensions.Contains(normalizedExtension))
+        {
+            errorMessage = "Định dạng file âm thanh không được hỗ trợ (chỉ chấp nhận .webm, .wav, .ogg, .mp3, .m4a).";
+            return false;
+        }
+
+        errorMessage = null;
+        return true;
+    }
+
+    private async Task<string?> SaveAudioFileAsync(IFormFile file, string normalizedExtension, CancellationToken cancellationToken)
     {
         try
         {
@@ -39,9 +78,7 @@ public class SttController : ControllerBase
                 Directory.CreateDirectory(folder);
             }
 
-            var ext = Path.GetExtension(file.FileName);
-            if (string.IsNullOrWhiteSpace(ext)) ext = ".webm";
-            var fileName = $"user_{Guid.NewGuid():N}{ext}";
+            var fileName = $"user_{Guid.NewGuid():N}{normalizedExtension}";
             var fullPath = Path.Combine(folder, fileName);
 
             await using var fileStream = new FileStream(fullPath, FileMode.Create);
@@ -60,21 +97,24 @@ public class SttController : ControllerBase
     /// </summary>
     [HttpPost("transcribe")]
     [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaxAudioUploadBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxAudioUploadBytes)]
+    [EnableRateLimiting("roleplay-ai")]
     public async Task<ActionResult<ApiResponse<WhisperTranscribeResponseDto>>> Transcribe(
         [FromForm] IFormFile? file,
         [FromQuery] string language = "ja",
         CancellationToken cancellationToken = default)
     {
-        if (file == null || file.Length == 0)
+        if (!ValidateAudioFile(file, out var validationError, out var normalizedExtension))
         {
-            return BadRequest(ApiResponse<WhisperTranscribeResponseDto>.Fail("File âm thanh không hợp lệ hoặc rỗng."));
+            return BadRequest(ApiResponse<WhisperTranscribeResponseDto>.Fail(validationError!));
         }
 
         try
         {
-            var savedAudioUrl = await SaveAudioFileAsync(file, cancellationToken);
+            var savedAudioUrl = await SaveAudioFileAsync(file!, normalizedExtension, cancellationToken);
 
-            await using var stream = file.OpenReadStream();
+            await using var stream = file!.OpenReadStream();
             var result = await _whisperService.TranscribeAsync(stream, file.FileName, language, cancellationToken);
 
             if (result == null || !result.Success)
@@ -97,16 +137,19 @@ public class SttController : ControllerBase
     /// </summary>
     [HttpPost("save-audio")]
     [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaxAudioUploadBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxAudioUploadBytes)]
+    [EnableRateLimiting("roleplay-ai")]
     public async Task<ActionResult<ApiResponse<object>>> SaveAudio(
         [FromForm] IFormFile? file,
         CancellationToken cancellationToken = default)
     {
-        if (file == null || file.Length == 0)
+        if (!ValidateAudioFile(file, out var validationError, out var normalizedExtension))
         {
-            return BadRequest(ApiResponse<object>.Fail("File âm thanh không hợp lệ hoặc rỗng."));
+            return BadRequest(ApiResponse<object>.Fail(validationError!));
         }
 
-        var savedUrl = await SaveAudioFileAsync(file, cancellationToken);
+        var savedUrl = await SaveAudioFileAsync(file!, normalizedExtension, cancellationToken);
         if (string.IsNullOrWhiteSpace(savedUrl))
         {
             return StatusCode(500, ApiResponse<object>.Fail("Không thể lưu file âm thanh vào máy chủ."));
@@ -119,7 +162,6 @@ public class SttController : ControllerBase
     /// Xóa file âm thanh nháp của học viên trong wwwroot/audio/roleplay khi người học hủy/xóa bản ghi trước khi gửi
     /// </summary>
     [HttpDelete("audio")]
-    [Authorize]
     public ActionResult<ApiResponse<object>> DeleteAudio([FromQuery] string? url)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -189,11 +231,19 @@ public class SttController : ControllerBase
     }
 
     /// <summary>
-    /// Kích hoạt khởi động Whisper Engine ngầm nếu chưa chạy
+    /// Kích hoạt khởi động Whisper Engine ngầm nếu chưa chạy (chỉ cho phép ở Development hoặc Admin)
     /// </summary>
     [HttpPost("start-engine")]
     public async Task<ActionResult<ApiResponse<object>>> StartEngine(CancellationToken cancellationToken)
     {
+        var isAdmin = User?.IsInRole("Admin") ?? false;
+        if (!_environment.IsDevelopment() && !isAdmin)
+        {
+            return StatusCode(
+                StatusCodes.Status403Forbidden,
+                ApiResponse<object>.Fail("Chỉ quản trị viên hoặc môi trường phát triển mới được kích hoạt tiến trình STT."));
+        }
+
         var started = await _whisperService.TryAutoStartEngineAsync(cancellationToken);
         return Ok(ApiResponse<object>.Ok(new { started }, started ? "Đã gửi lệnh kích hoạt Whisper Engine ngầm." : "Tiến trình Whisper đang được khởi động hoặc đã sẵn sàng."));
     }

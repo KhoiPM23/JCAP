@@ -91,6 +91,7 @@ export const ScenarioDetailsView: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const rawReturnUrl = searchParams.get('return');
+  const requestedLevelParam = searchParams.get('level')?.trim().toUpperCase() || null;
   const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
     ? rawReturnUrl
     : ((location.state as any)?.returnUrl ?? null);
@@ -130,8 +131,11 @@ export const ScenarioDetailsView: React.FC = () => {
       if (scenarioRes.success && scenarioRes.data) {
         setScenario(scenarioRes.data);
         const sorted = sortLevelsByRank(scenarioRes.data.levelConfigurations);
-        const lowestLevel = sorted[0]?.jlptLevel;
-        if (lowestLevel) setActiveLevel(lowestLevel);
+        const matchedRequestedLevel = requestedLevelParam
+          ? sorted.find((l) => l.jlptLevel.toUpperCase() === requestedLevelParam)?.jlptLevel
+          : undefined;
+        const defaultLevel = matchedRequestedLevel || sorted[0]?.jlptLevel;
+        if (defaultLevel) setActiveLevel(defaultLevel);
       } else {
         setError(scenarioRes.message || 'Không thể tải dữ liệu kịch bản.');
       }
@@ -140,8 +144,8 @@ export const ScenarioDetailsView: React.FC = () => {
         setActiveSession(sessionRes.data);
         const hasActive = checkHasActiveSession(sessionRes.data);
         const sessionLevel = sessionRes.data.level || sessionRes.data.jlptLevel;
-        // Nếu đang có session dở dang, tự động chọn tab level đó cho tiện
-        if (hasActive && sessionLevel) {
+        // Nếu đang có session dở dang và URL không chỉ định cấp độ riêng, tự động chọn tab level đang dở
+        if (hasActive && sessionLevel && !requestedLevelParam) {
           const matchLevel = sessionLevel as ScenarioLevelConfiguration['jlptLevel'];
           if (['N5', 'N4', 'N3'].includes(matchLevel)) {
             setActiveLevel(matchLevel);
@@ -157,7 +161,7 @@ export const ScenarioDetailsView: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [scenarioId]);
+  }, [scenarioId, requestedLevelParam]);
 
   const hasActiveSession = checkHasActiveSession(activeSession);
   const activeSessionId = activeSession?.activeSessionId || activeSession?.sessionId;

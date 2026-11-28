@@ -480,7 +480,7 @@ export function generateClientFuriganaHtml(
     ['痛', '<ruby>痛<rt>いた</rt></ruby>'],
     ['何', '<ruby>何<rt>なに</rt></ruby>'],
     ['願', '<ruby>願<rt>ねが</rt></ruby>'],
-    ['分', '<ruby>分<rt>わ</rt></ruby>'],
+    ['分かる', '<ruby>分<rt>わ</rt></ruby>かる'],
     ['来', '<ruby>来<rt>き</rt></ruby>'],
     ['行', '<ruby>行<rt>い</rt></ruby>'],
     ['見', '<ruby>見<rt>み</rt></ruby>'],
@@ -514,6 +514,19 @@ export function generateClientFuriganaHtml(
 
   let result = text;
   const placeholders: Record<string, string> = {};
+
+  // Quy tắc tổng quát cho mọi số đếm phút (\d+分): đuôi 0,1,3,4,6,8 -> ぷん; đuôi 2,5,7,9 -> ふん
+  let minuteIdx = 0;
+  result = result.replace(/([0-9０-９]+)分/g, (_match, rawDigits: string) => {
+    const lastChar = rawDigits.slice(-1);
+    const normalizedLast = lastChar.replace(/[０-９]/g, (ch) =>
+      String.fromCharCode(ch.charCodeAt(0) - 0xfee0)
+    );
+    const reading = ['0', '1', '3', '4', '6', '8'].includes(normalizedLast) ? 'ぷん' : 'ふん';
+    const token = `__CLIENT_RUBY_MIN_${minuteIdx++}__`;
+    placeholders[token] = `${rawDigits}<ruby>分<rt>${reading}</rt></ruby>`;
+    return token;
+  });
 
   dict.forEach(([word, ruby], idx) => {
     if (result.includes(word)) {

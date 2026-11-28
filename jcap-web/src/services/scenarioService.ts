@@ -1,5 +1,5 @@
 import type { ApiResponse } from '../types/auth';
-import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent, ScenarioTopic, AiGeneratedScenario } from '../types/scenarioDetails';
+import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent, ScenarioTopic, AiGeneratedScenario, KnowledgeSearchItem } from '../types/scenarioDetails';
 import { resolveApiUrl } from '../utils/apiBase';
 
 const API_BASE_URL = resolveApiUrl('/api/scenarios');
@@ -199,8 +199,8 @@ export const scenarioService = {
     grammarCount: number = 3,
     existing?: {
       missions?: { id?: number; content: string; target?: string; intent?: string; conditions?: string[] }[];
-      vocabularies?: { id?: number; word: string; reading?: string; meaning: string }[];
-      grammars?: { id?: number; pattern: string; meaning: string; exampleSentence?: string }[];
+      vocabularies?: { id?: number; vocabularyId?: number; word: string; reading?: string; meaning: string }[];
+      grammars?: { id?: number; grammarId?: number; pattern: string; meaning: string; exampleSentence?: string }[];
     }
   ): Promise<ApiResponse<GeneratedLevelContent>> {
     const token = localStorage.getItem('jcap_token');
@@ -273,6 +273,58 @@ export const scenarioService = {
       return result || { success: false, message: 'Không thể sinh kịch bản từ AI.' };
     } catch {
       return { success: false, message: 'Lỗi kết nối khi gọi AI Co-pilot Studio.' };
+    }
+  },
+
+  async searchKnowledge(
+    type: 'vocab' | 'grammar',
+    q: string = '',
+    level: string = 'ALL',
+    limit: number = 15
+  ): Promise<ApiResponse<KnowledgeSearchItem[]>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const params = new URLSearchParams({ type, limit: String(limit) });
+      if (q.trim()) params.set('q', q.trim());
+      if (level && level !== 'ALL') params.set('level', level);
+
+      const response = await fetch(resolveApiUrl(`/api/admin/scenarios/knowledge-search?${params.toString()}`), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<KnowledgeSearchItem[]> | null;
+      return result || { success: false, message: 'Không thể tìm kiếm trong Kho học liệu.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối khi tìm kiếm trong Kho học liệu.' };
+    }
+  },
+
+  async suggestKnowledge(payload: {
+    scenarioTitle: string;
+    scenarioDescription?: string;
+    jlptLevel: string;
+    type: 'vocab' | 'grammar';
+    query?: string;
+    limit?: number;
+    excludeIds?: number[];
+  }): Promise<ApiResponse<{ items: KnowledgeSearchItem[]; usedAi: boolean }>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const response = await fetch(resolveApiUrl('/api/admin/scenarios/suggest-knowledge'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<{ items: KnowledgeSearchItem[]; usedAi: boolean }> | null;
+      return result || { success: false, message: 'Không thể gợi ý học liệu từ kho.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối khi gợi ý học liệu từ kho.' };
     }
   },
 

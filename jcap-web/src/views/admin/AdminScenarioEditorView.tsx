@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { scenarioService } from '../../services/scenarioService';
+import type { KnowledgeSearchItem } from '../../types/scenarioDetails';
+import {
+  ScenarioKnowledgePicker,
+  reorderKnowledgeList,
+  mergePickedVocabularies,
+  mergePickedGrammars,
+} from '../../components/admin/ScenarioKnowledgePicker';
 import type {
   MissionItem,
   VocabularyItem,
@@ -35,15 +42,8 @@ const createDefaultLevelsState = (): Record<'N5' | 'N4' | 'N3', LevelConfigState
       { order: 2, content: '', intent: 'CompleteMission', target: '' },
       { order: 3, content: '', intent: 'CompleteMission', target: '' },
     ],
-    targetVocabularies: [
-      { word: '', reading: '', meaning: '' },
-      { word: '', reading: '', meaning: '' },
-      { word: '', reading: '', meaning: '' },
-    ],
-    targetGrammars: [
-      { pattern: '', meaning: '', exampleSentence: '' },
-      { pattern: '', meaning: '', exampleSentence: '' },
-    ],
+    targetVocabularies: [],
+    targetGrammars: [],
     isExpanded: false,
   },
   N4: {
@@ -59,15 +59,8 @@ const createDefaultLevelsState = (): Record<'N5' | 'N4' | 'N3', LevelConfigState
       { order: 2, content: '', intent: 'CompleteMission', target: '' },
       { order: 3, content: '', intent: 'CompleteMission', target: '' },
     ],
-    targetVocabularies: [
-      { word: '', reading: '', meaning: '' },
-      { word: '', reading: '', meaning: '' },
-      { word: '', reading: '', meaning: '' },
-    ],
-    targetGrammars: [
-      { pattern: '', meaning: '', exampleSentence: '' },
-      { pattern: '', meaning: '', exampleSentence: '' },
-    ],
+    targetVocabularies: [],
+    targetGrammars: [],
     isExpanded: false,
   },
   N3: {
@@ -83,15 +76,8 @@ const createDefaultLevelsState = (): Record<'N5' | 'N4' | 'N3', LevelConfigState
       { order: 2, content: '', intent: 'CompleteMission', target: '' },
       { order: 3, content: '', intent: 'CompleteMission', target: '' },
     ],
-    targetVocabularies: [
-      { word: '', reading: '', meaning: '' },
-      { word: '', reading: '', meaning: '' },
-      { word: '', reading: '', meaning: '' },
-    ],
-    targetGrammars: [
-      { pattern: '', meaning: '', exampleSentence: '' },
-      { pattern: '', meaning: '', exampleSentence: '' },
-    ],
+    targetVocabularies: [],
+    targetGrammars: [],
     isExpanded: false,
   },
 });
@@ -241,11 +227,9 @@ export const AdminScenarioEditorView: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Drag & drop state for reordering - chỉ kích hoạt khi người dùng kéo từ biểu tượng handle ⋮⋮
+  // Drag & drop state for mission reordering - chỉ kích hoạt khi người dùng kéo từ biểu tượng handle ⋮⋮
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [draggedMissionIndex, setDraggedMissionIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
-  const [draggedVocabIndex, setDraggedVocabIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
-  const [draggedGrammarIndex, setDraggedGrammarIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
 
   // Lắng nghe mouseup toàn cục để reset trạng thái kéo nếu chuột được nhả ở ngoài vùng
   useEffect(() => {
@@ -331,12 +315,14 @@ export const AdminScenarioEditorView: React.FC = () => {
               }));
               const vocabsList = (lc.targetVocabularies || []).map((v) => ({
                 id: v.id,
+                vocabularyId: v.vocabularyId,
                 word: v.word || '',
                 reading: v.reading || '',
                 meaning: v.meaning || '',
               }));
               const grammarsList = (lc.targetGrammars || []).map((g) => ({
                 id: g.id,
+                grammarId: g.grammarId,
                 pattern: g.pattern || '',
                 meaning: g.meaning || '',
                 exampleSentence: g.exampleSentence || '',
@@ -450,14 +436,8 @@ export const AdminScenarioEditorView: React.FC = () => {
       if (willBeEnabled && nextMissions.length === 0) {
         nextMissions = [{ order: 1, content: '', intent: 'CompleteMission', target: '' }];
       }
-      let nextVocabs = currentLvl.targetVocabularies;
-      if (willBeEnabled && nextVocabs.length === 0) {
-        nextVocabs = [{ word: '', reading: '', meaning: '' }];
-      }
-      let nextGrammars = currentLvl.targetGrammars;
-      if (willBeEnabled && nextGrammars.length === 0) {
-        nextGrammars = [{ pattern: '', meaning: '', exampleSentence: '' }];
-      }
+      const nextVocabs = currentLvl.targetVocabularies;
+      const nextGrammars = currentLvl.targetGrammars;
 
       return {
         ...prev,
@@ -518,12 +498,13 @@ export const AdminScenarioEditorView: React.FC = () => {
         conditions: m.conditions,
       }));
     const existingVocabularies = currentLvl.targetVocabularies
-      .filter((v) => v.word.trim())
-      .map((v) => ({ id: v.id, word: v.word.trim(), reading: v.reading?.trim() || '', meaning: v.meaning.trim() }));
+      .filter((v) => v.word.trim() && v.vocabularyId && v.vocabularyId > 0)
+      .map((v) => ({ id: v.id, vocabularyId: v.vocabularyId, word: v.word.trim(), reading: v.reading?.trim() || '', meaning: v.meaning.trim() }));
     const existingGrammars = currentLvl.targetGrammars
-      .filter((g) => g.pattern.trim())
+      .filter((g) => g.pattern.trim() && g.grammarId && g.grammarId > 0)
       .map((g) => ({
         id: g.id,
+        grammarId: g.grammarId,
         pattern: g.pattern.trim(),
         meaning: g.meaning.trim(),
         exampleSentence: g.exampleSentence?.trim() || '',
@@ -556,29 +537,31 @@ export const AdminScenarioEditorView: React.FC = () => {
             conditions: m.conditions || [],
           }));
         const genVocabs: VocabularyItem[] = (gen.targetVocabularies || [])
-          .filter((v) => v.word?.trim() && v.meaning?.trim())
+          .filter((v) => v.vocabularyId && v.vocabularyId > 0 && v.word?.trim() && v.meaning?.trim())
           .slice(0, vocabCount)
           .map((v) => ({
             id: (v as WithId).id ?? undefined,
+            vocabularyId: v.vocabularyId,
             word: v.word.trim(),
             reading: v.reading?.trim() || '',
             meaning: v.meaning.trim(),
           }));
         const genGrammars: GrammarItem[] = (gen.targetGrammars || [])
-          .filter((g) => g.pattern?.trim() && g.meaning?.trim())
+          .filter((g) => g.grammarId && g.grammarId > 0 && g.pattern?.trim() && g.meaning?.trim())
           .slice(0, grammarCount)
           .map((g) => ({
             id: (g as WithId).id ?? undefined,
+            grammarId: g.grammarId,
             pattern: g.pattern.trim(),
             meaning: g.meaning.trim(),
             exampleSentence: g.exampleSentence?.trim() || '',
           }));
 
-        // Ràng buộc: phải đủ đúng số lượng, nếu thiếu thì không ghi đè dữ liệu admin
+        // Ràng buộc: phải đủ số lượng nhiệm vụ và có dữ liệu kho hợp lệ
         if (
           genMissions.length < missionCount ||
-          genVocabs.length < vocabCount ||
-          genGrammars.length < grammarCount
+          genVocabs.length === 0 ||
+          genGrammars.length === 0
         ) {
           setError(
             `AI chưa sinh đủ nội dung (cần ${missionCount} nhiệm vụ, ${vocabCount} từ vựng, ${grammarCount} ngữ pháp). Vui lòng thử lại.`
@@ -732,20 +715,23 @@ export const AdminScenarioEditorView: React.FC = () => {
   };
 
   // Add / remove / change vocabulary
-  const handleAddVocab = (lvl: 'N5' | 'N4' | 'N3') => {
-    setFormData((prev) => ({
-      ...prev,
-      levels: {
-        ...prev.levels,
-        [lvl]: {
-          ...prev.levels[lvl],
-          targetVocabularies: [
-            ...prev.levels[lvl].targetVocabularies,
-            { word: '', reading: '', meaning: '' },
-          ],
-        },
-      },
-    }));
+  // Repository-backed Vocabularies & Grammars handlers
+  const handlePickKnowledgeItems = (
+    lvl: 'N5' | 'N4' | 'N3',
+    type: 'vocab' | 'grammar',
+    picked: KnowledgeSearchItem[]
+  ) => {
+    setFormData((prev) => {
+      const lvlState = prev.levels[lvl];
+      if (type === 'vocab') {
+        const next = mergePickedVocabularies(lvlState.targetVocabularies, picked);
+        if (next === lvlState.targetVocabularies) return prev;
+        return { ...prev, levels: { ...prev.levels, [lvl]: { ...lvlState, targetVocabularies: next } } };
+      }
+      const next = mergePickedGrammars(lvlState.targetGrammars, picked);
+      if (next === lvlState.targetGrammars) return prev;
+      return { ...prev, levels: { ...prev.levels, [lvl]: { ...lvlState, targetGrammars: next } } };
+    });
   };
 
   const handleRemoveVocab = (lvl: 'N5' | 'N4' | 'N3', index: number) => {
@@ -756,89 +742,6 @@ export const AdminScenarioEditorView: React.FC = () => {
         [lvl]: {
           ...prev.levels[lvl],
           targetVocabularies: prev.levels[lvl].targetVocabularies.filter((_, idx) => idx !== index),
-        },
-      },
-    }));
-  };
-
-  const handleVocabChange = (
-    lvl: 'N5' | 'N4' | 'N3',
-    index: number,
-    field: keyof VocabularyItem,
-    value: string
-  ) => {
-    setFormData((prev) => {
-      const next = [...prev.levels[lvl].targetVocabularies];
-      next[index] = { ...next[index], [field]: value };
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...prev.levels[lvl], targetVocabularies: next },
-        },
-      };
-    });
-  };
-
-  // Di chuyển thứ tự Từ vựng (Up / Down)
-  const handleMoveVocab = (lvl: 'N5' | 'N4' | 'N3', index: number, direction: 'up' | 'down') => {
-    setFormData((prev) => {
-      const list = [...prev.levels[lvl].targetVocabularies];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= list.length) return prev;
-      const temp = list[index];
-      list[index] = list[targetIndex];
-      list[targetIndex] = temp;
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...prev.levels[lvl], targetVocabularies: list },
-        },
-      };
-    });
-  };
-
-  const handleVocabDragStart = (lvl: 'N5' | 'N4' | 'N3', index: number) => {
-    setDraggedVocabIndex({ lvl, index });
-  };
-
-  const handleVocabDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleVocabDrop = (lvl: 'N5' | 'N4' | 'N3', dropIndex: number) => {
-    if (!draggedVocabIndex || draggedVocabIndex.lvl !== lvl) return;
-    const fromIndex = draggedVocabIndex.index;
-    if (fromIndex === dropIndex) return;
-
-    setFormData((prev) => {
-      const list = [...prev.levels[lvl].targetVocabularies];
-      const [moved] = list.splice(fromIndex, 1);
-      list.splice(dropIndex, 0, moved);
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...prev.levels[lvl], targetVocabularies: list },
-        },
-      };
-    });
-    setDraggedVocabIndex(null);
-  };
-
-  // Add / remove / change grammar
-  const handleAddGrammar = (lvl: 'N5' | 'N4' | 'N3') => {
-    setFormData((prev) => ({
-      ...prev,
-      levels: {
-        ...prev.levels,
-        [lvl]: {
-          ...prev.levels[lvl],
-          targetGrammars: [
-            ...prev.levels[lvl].targetGrammars,
-            { pattern: '', meaning: '', exampleSentence: '' },
-          ],
         },
       },
     }));
@@ -857,70 +760,25 @@ export const AdminScenarioEditorView: React.FC = () => {
     }));
   };
 
-  const handleGrammarChange = (
+  const handleReorderKnowledge = (
     lvl: 'N5' | 'N4' | 'N3',
-    index: number,
-    field: keyof GrammarItem,
-    value: string
+    type: 'vocab' | 'grammar',
+    fromIndex: number,
+    toIndex: number
   ) => {
     setFormData((prev) => {
-      const next = [...prev.levels[lvl].targetGrammars];
-      next[index] = { ...next[index], [field]: value };
+      const lvlState = prev.levels[lvl];
       return {
         ...prev,
         levels: {
           ...prev.levels,
-          [lvl]: { ...prev.levels[lvl], targetGrammars: next },
+          [lvl]:
+            type === 'vocab'
+              ? { ...lvlState, targetVocabularies: reorderKnowledgeList(lvlState.targetVocabularies, fromIndex, toIndex) }
+              : { ...lvlState, targetGrammars: reorderKnowledgeList(lvlState.targetGrammars, fromIndex, toIndex) },
         },
       };
     });
-  };
-
-  // Di chuyển thứ tự Ngữ pháp (Up / Down)
-  const handleMoveGrammar = (lvl: 'N5' | 'N4' | 'N3', index: number, direction: 'up' | 'down') => {
-    setFormData((prev) => {
-      const list = [...prev.levels[lvl].targetGrammars];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= list.length) return prev;
-      const temp = list[index];
-      list[index] = list[targetIndex];
-      list[targetIndex] = temp;
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...prev.levels[lvl], targetGrammars: list },
-        },
-      };
-    });
-  };
-
-  const handleGrammarDragStart = (lvl: 'N5' | 'N4' | 'N3', index: number) => {
-    setDraggedGrammarIndex({ lvl, index });
-  };
-
-  const handleGrammarDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleGrammarDrop = (lvl: 'N5' | 'N4' | 'N3', dropIndex: number) => {
-    if (!draggedGrammarIndex || draggedGrammarIndex.lvl !== lvl) return;
-    const fromIndex = draggedGrammarIndex.index;
-    if (fromIndex === dropIndex) return;
-
-    setFormData((prev) => {
-      const list = [...prev.levels[lvl].targetGrammars];
-      const [moved] = list.splice(fromIndex, 1);
-      list.splice(dropIndex, 0, moved);
-      return {
-        ...prev,
-        levels: {
-          ...prev.levels,
-          [lvl]: { ...prev.levels[lvl], targetGrammars: list },
-        },
-      };
-    });
-    setDraggedGrammarIndex(null);
   };
 
   // Submit Handler
@@ -977,48 +835,24 @@ export const AdminScenarioEditorView: React.FC = () => {
         return;
       }
 
-      const validVocabs = lvl.targetVocabularies.filter((v) => v.word.trim() && v.meaning.trim());
+      const validVocabs = lvl.targetVocabularies.filter(
+        (v) => v.vocabularyId && v.vocabularyId > 0 && v.word.trim() && v.meaning.trim()
+      );
       if (validVocabs.length === 0) {
         setError(
-          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa có từ vựng trọng tâm. Vui lòng nhập từ vựng và ý nghĩa hoặc bấm "AI Gợi ý nội dung".`
+          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa chọn từ vựng trọng tâm từ Kho học liệu.`
         );
         setActiveLevelTab(lvl.jlptLevel);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
-      // Kiểm tra hàng từ vựng dở dang (chỉ nhập từ mà quên nghĩa hoặc ngược lại)
-      const halfFilledVocabIdx = lvl.targetVocabularies.findIndex(
-        (v) => (v.word.trim() && !v.meaning.trim()) || (!v.word.trim() && v.meaning.trim())
+      const validGrammars = lvl.targetGrammars.filter(
+        (g) => g.grammarId && g.grammarId > 0 && g.pattern.trim() && g.meaning.trim()
       );
-      if (halfFilledVocabIdx !== -1) {
-        const v = lvl.targetVocabularies[halfFilledVocabIdx];
-        setError(
-          `Từ vựng #${halfFilledVocabIdx + 1} (${v.word.trim() || 'Chưa có từ'}) của trình độ JLPT ${lvl.jlptLevel} chưa điền đầy đủ cả từ và ý nghĩa.`
-        );
-        setActiveLevelTab(lvl.jlptLevel);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
-      const validGrammars = lvl.targetGrammars.filter((g) => g.pattern.trim() && g.meaning.trim());
       if (validGrammars.length === 0) {
         setError(
-          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa có ngữ pháp trọng tâm. Vui lòng nhập mẫu ngữ pháp và ý nghĩa hoặc bấm "AI Gợi ý nội dung".`
-        );
-        setActiveLevelTab(lvl.jlptLevel);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
-      // Kiểm tra hàng ngữ pháp dở dang (chỉ nhập mẫu mà quên nghĩa hoặc ngược lại)
-      const halfFilledGrammarIdx = lvl.targetGrammars.findIndex(
-        (g) => (g.pattern.trim() && !g.meaning.trim()) || (!g.pattern.trim() && g.meaning.trim())
-      );
-      if (halfFilledGrammarIdx !== -1) {
-        const g = lvl.targetGrammars[halfFilledGrammarIdx];
-        setError(
-          `Ngữ pháp #${halfFilledGrammarIdx + 1} (${g.pattern.trim() || 'Chưa có mẫu'}) của trình độ JLPT ${lvl.jlptLevel} chưa điền đầy đủ cả mẫu ngữ pháp và ý nghĩa.`
+          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa chọn mẫu ngữ pháp trọng tâm từ Kho học liệu.`
         );
         setActiveLevelTab(lvl.jlptLevel);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1047,17 +881,19 @@ export const AdminScenarioEditorView: React.FC = () => {
           conditions: m.conditions || [],
         })),
       targetVocabularies: lvl.targetVocabularies
-        .filter((v) => v.word.trim())
+        .filter((v) => v.vocabularyId && v.vocabularyId > 0)
         .map((v) => ({
           id: v.id,
+          vocabularyId: v.vocabularyId,
           word: v.word.trim(),
           reading: v.reading?.trim() || '',
           meaning: v.meaning.trim(),
         })),
       targetGrammars: lvl.targetGrammars
-        .filter((g) => g.pattern.trim())
+        .filter((g) => g.grammarId && g.grammarId > 0)
         .map((g) => ({
           id: g.id,
+          grammarId: g.grammarId,
           pattern: g.pattern.trim(),
           meaning: g.meaning.trim(),
           exampleSentence: g.exampleSentence?.trim() || '',
@@ -1706,159 +1542,41 @@ export const AdminScenarioEditorView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Từ vựng & Ngữ pháp 2 cột */}
+                  {/* Từ vựng & Ngữ pháp 2 cột (Chỉ chọn từ Kho học liệu) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Từ vựng */}
-                    <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
-                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                          <span>📖</span> Từ vựng trọng tâm ({lvlData.targetVocabularies.length})
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => handleAddVocab(lvl)}
-                          className="text-xs font-bold text-[#0878EE] hover:underline cursor-pointer"
-                        >
-                          + Thêm từ
-                        </button>
-                      </div>
-                      <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
-                        {lvlData.targetVocabularies.map((v, vIdx) => (
-                          <div
-                            key={vIdx}
-                            draggable={activeDragId === `vocab-${lvl}-${vIdx}`}
-                            onDragStart={() => handleVocabDragStart(lvl, vIdx)}
-                            onDragEnd={() => {
-                              setDraggedVocabIndex(null);
-                              setActiveDragId(null);
-                            }}
-                            onDragOver={handleVocabDragOver}
-                            onDrop={() => {
-                              handleVocabDrop(lvl, vIdx);
-                              setActiveDragId(null);
-                            }}
-                            className={`flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border transition-all ${
-                              draggedVocabIndex?.lvl === lvl && draggedVocabIndex?.index === vIdx
-                                ? 'opacity-40 border-dashed border-[#0878EE]'
-                                : 'border-slate-100 hover:border-slate-200'
-                            }`}
-                          >
-                            <span
-                              onMouseDown={() => setActiveDragId(`vocab-${lvl}-${vIdx}`)}
-                              onMouseUp={() => setActiveDragId(null)}
-                              className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing text-xs select-none px-0.5 flex-shrink-0"
-                              title="Kéo để sắp xếp lại"
-                            >
-                              ⋮⋮
-                            </span>
-                            <input
-                              type="text"
-                              value={v.word}
-                              onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
-                              onDragStart={(e) => e.stopPropagation()}
-                              placeholder="Từ vựng"
-                              className="w-20 sm:w-24 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                            />
-                            <input
-                              type="text"
-                              value={v.reading || ''}
-                              onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
-                              onDragStart={(e) => e.stopPropagation()}
-                              placeholder="Cách đọc"
-                              className="w-16 sm:w-20 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                            />
-                            <input
-                              type="text"
-                              value={v.meaning}
-                              onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
-                              onDragStart={(e) => e.stopPropagation()}
-                              placeholder="Ý nghĩa"
-                              className="flex-1 min-w-0 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveVocab(lvl, vIdx)}
-                              className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded text-xs transition flex-shrink-0 cursor-pointer"
-                              title="Xóa từ vựng"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <ScenarioKnowledgePicker
+                      type="vocab"
+                      jlptLevel={lvl}
+                      scenarioTitle={formData.title}
+                      scenarioDescription={formData.description}
+                      items={lvlData.targetVocabularies.map((v) => ({
+                        id: v.id,
+                        repoId: v.vocabularyId,
+                        primaryText: v.word,
+                        reading: v.reading,
+                        meaning: v.meaning,
+                      }))}
+                      onAddItems={(picked) => handlePickKnowledgeItems(lvl, 'vocab', picked)}
+                      onRemoveItem={(idx) => handleRemoveVocab(lvl, idx)}
+                      onReorderItem={(fromIdx, toIdx) => handleReorderKnowledge(lvl, 'vocab', fromIdx, toIdx)}
+                    />
 
-                    {/* Ngữ pháp */}
-                    <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
-                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                          <span>📐</span> Ngữ pháp trọng tâm ({lvlData.targetGrammars.length})
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => handleAddGrammar(lvl)}
-                          className="text-xs font-bold text-[#0878EE] hover:underline cursor-pointer"
-                        >
-                          + Thêm ngữ pháp
-                        </button>
-                      </div>
-                      <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
-                        {lvlData.targetGrammars.map((g, gIdx) => (
-                          <div
-                            key={gIdx}
-                            draggable={activeDragId === `grammar-${lvl}-${gIdx}`}
-                            onDragStart={() => handleGrammarDragStart(lvl, gIdx)}
-                            onDragEnd={() => {
-                              setDraggedGrammarIndex(null);
-                              setActiveDragId(null);
-                            }}
-                            onDragOver={handleGrammarDragOver}
-                            onDrop={() => {
-                              handleGrammarDrop(lvl, gIdx);
-                              setActiveDragId(null);
-                            }}
-                            className={`flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border transition-all ${
-                              draggedGrammarIndex?.lvl === lvl && draggedGrammarIndex?.index === gIdx
-                                ? 'opacity-40 border-dashed border-[#0878EE]'
-                                : 'border-slate-100 hover:border-slate-200'
-                            }`}
-                          >
-                            <span
-                              onMouseDown={() => setActiveDragId(`grammar-${lvl}-${gIdx}`)}
-                              onMouseUp={() => setActiveDragId(null)}
-                              className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing text-xs select-none px-0.5 flex-shrink-0"
-                              title="Kéo để sắp xếp lại"
-                            >
-                              ⋮⋮
-                            </span>
-                            <input
-                              type="text"
-                              value={g.pattern}
-                              onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
-                              onDragStart={(e) => e.stopPropagation()}
-                              placeholder="Mẫu ngữ pháp"
-                              className="w-28 sm:w-32 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                            />
-                            <input
-                              type="text"
-                              value={g.meaning}
-                              onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
-                              onDragStart={(e) => e.stopPropagation()}
-                              placeholder="Ý nghĩa"
-                              className="flex-1 min-w-0 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveGrammar(lvl, gIdx)}
-                              className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded text-xs transition flex-shrink-0 cursor-pointer"
-                              title="Xóa ngữ pháp"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <ScenarioKnowledgePicker
+                      type="grammar"
+                      jlptLevel={lvl}
+                      scenarioTitle={formData.title}
+                      scenarioDescription={formData.description}
+                      items={lvlData.targetGrammars.map((g) => ({
+                        id: g.id,
+                        repoId: g.grammarId,
+                        primaryText: g.pattern,
+                        meaning: g.meaning,
+                        exampleSentence: g.exampleSentence,
+                      }))}
+                      onAddItems={(picked) => handlePickKnowledgeItems(lvl, 'grammar', picked)}
+                      onRemoveItem={(idx) => handleRemoveGrammar(lvl, idx)}
+                      onReorderItem={(fromIdx, toIdx) => handleReorderKnowledge(lvl, 'grammar', fromIdx, toIdx)}
+                    />
                   </div>
                 </div>
               </div>

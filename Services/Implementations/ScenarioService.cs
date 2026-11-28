@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using JCAP.Data;
@@ -382,6 +383,7 @@ public class ScenarioService : IScenarioService
                 .Select(v => new TargetVocabularyDto
                 {
                     Id = v.Id,
+                    VocabularyId = v.VocabularyId,
                     Word = v.Word,
                     Reading = v.Reading,
                     Meaning = v.Meaning
@@ -392,6 +394,7 @@ public class ScenarioService : IScenarioService
                 .Select(g => new TargetGrammarDto
                 {
                     Id = g.Id,
+                    GrammarId = g.GrammarId,
                     Pattern = g.Pattern,
                     Meaning = g.Meaning,
                     ExampleSentence = g.ExampleSentence
@@ -582,6 +585,14 @@ public class ScenarioService : IScenarioService
             return ApiResponse<ScenarioDetailsDto>.Fail("Dữ liệu tạo kịch bản không hợp lệ.");
         }
 
+        var (vocabsById, grammarsById, resolveError) = await ResolveRepositoryKnowledgeAsync(
+            dto.LevelConfigurations ?? [],
+            cancellationToken);
+        if (resolveError != null)
+        {
+            return ApiResponse<ScenarioDetailsDto>.Fail(resolveError);
+        }
+
         // Tự động sinh ScenarioCode duy nhất nếu không được truyền vào
         var generatedCode = !string.IsNullOrWhiteSpace(dto.ScenarioCode)
             ? dto.ScenarioCode.Trim().ToUpperInvariant()
@@ -633,32 +644,16 @@ public class ScenarioService : IScenarioService
                     }
                 }
 
-                if (levelDto.TargetVocabularies != null && levelDto.TargetVocabularies.Count > 0)
+                foreach (var vDto in FilterDistinctKnowledgeVocabs(levelDto.TargetVocabularies))
                 {
-                    foreach (var v in levelDto.TargetVocabularies)
-                    {
-                        if (string.IsNullOrWhiteSpace(v.Word)) continue;
-                        levelConfig.TargetVocabularies.Add(new TargetVocabulary
-                        {
-                            Word = v.Word.Trim(),
-                            Reading = v.Reading?.Trim(),
-                            Meaning = v.Meaning.Trim()
-                        });
-                    }
+                    var master = vocabsById[vDto.VocabularyId!.Value];
+                    levelConfig.TargetVocabularies.Add(BuildTargetVocabulary(0, master));
                 }
 
-                if (levelDto.TargetGrammars != null && levelDto.TargetGrammars.Count > 0)
+                foreach (var gDto in FilterDistinctKnowledgeGrammars(levelDto.TargetGrammars))
                 {
-                    foreach (var g in levelDto.TargetGrammars)
-                    {
-                        if (string.IsNullOrWhiteSpace(g.Pattern)) continue;
-                        levelConfig.TargetGrammars.Add(new TargetGrammar
-                        {
-                            Pattern = g.Pattern.Trim(),
-                            Meaning = g.Meaning.Trim(),
-                            ExampleSentence = g.ExampleSentence?.Trim()
-                        });
-                    }
+                    var master = grammarsById[gDto.GrammarId!.Value];
+                    levelConfig.TargetGrammars.Add(BuildTargetGrammar(0, master));
                 }
 
                 scenario.LevelConfigurations.Add(levelConfig);
@@ -683,6 +678,14 @@ public class ScenarioService : IScenarioService
         if (id <= 0 || dto == null)
         {
             return ApiResponse<ScenarioDetailsDto>.Fail("Thông tin cập nhật không hợp lệ.");
+        }
+
+        var (vocabsById, grammarsById, resolveError) = await ResolveRepositoryKnowledgeAsync(
+            dto.LevelConfigurations ?? [],
+            cancellationToken);
+        if (resolveError != null)
+        {
+            return ApiResponse<ScenarioDetailsDto>.Fail(resolveError);
         }
 
         var scenario = await _dbContext.Scenarios
@@ -802,38 +805,30 @@ public class ScenarioService : IScenarioService
                         missionToDeactivate.IsActive = false;
                     }
 
-                    // Update TargetVocabularies in-place
+                    // Update TargetVocabularies in-place (strictly hydrated from central Vocabularies repository)
                     var existingVocabs = existingConfig.TargetVocabularies.ToList();
-                    var incomingVocabs = (levelDto.TargetVocabularies ?? [])
-                        .Where(v => !string.IsNullOrWhiteSpace(v.Word))
-                        .ToList();
+                    var incomingVocabs = FilterDistinctKnowledgeVocabs(levelDto.TargetVocabularies);
 
                     var handledVocabIds = new HashSet<int>();
                     foreach (var vDto in incomingVocabs)
                     {
+                        var masterVocab = vocabsById[vDto.VocabularyId!.Value];
                         TargetVocabulary? vocab = null;
                         if (vDto.Id.HasValue && vDto.Id.Value > 0)
                         {
-                            vocab = existingVocabs.FirstOrDefault(v => v.Id == vDto.Id.Value);
+                            vocab = existingVocabs.FirstOrDefault(v => v.Id == vDto.Id.Value && !handledVocabIds.Contains(v.Id));
                         }
+                        vocab ??= existingVocabs.FirstOrDefault(v => v.VocabularyId == masterVocab.Id && !handledVocabIds.Contains(v.Id));
                         vocab ??= existingVocabs.FirstOrDefault(v => !handledVocabIds.Contains(v.Id));
 
                         if (vocab != null)
                         {
                             handledVocabIds.Add(vocab.Id);
-                            vocab.Word = vDto.Word.Trim();
-                            vocab.Reading = vDto.Reading?.Trim();
-                            vocab.Meaning = vDto.Meaning.Trim();
+                            ApplyMasterVocabulary(vocab, masterVocab);
                         }
                         else
                         {
-                            existingConfig.TargetVocabularies.Add(new TargetVocabulary
-                            {
-                                ScenarioLevelConfigurationId = existingConfig.Id,
-                                Word = vDto.Word.Trim(),
-                                Reading = vDto.Reading?.Trim(),
-                                Meaning = vDto.Meaning.Trim()
-                            });
+                            existingConfig.TargetVocabularies.Add(BuildTargetVocabulary(existingConfig.Id, masterVocab));
                         }
                     }
 
@@ -844,38 +839,30 @@ public class ScenarioService : IScenarioService
                         existingConfig.TargetVocabularies.Remove(vocabToRemove);
                     }
 
-                    // Update TargetGrammars in-place
+                    // Update TargetGrammars in-place (strictly hydrated from central Grammars repository)
                     var existingGrammars = existingConfig.TargetGrammars.ToList();
-                    var incomingGrammars = (levelDto.TargetGrammars ?? [])
-                        .Where(g => !string.IsNullOrWhiteSpace(g.Pattern))
-                        .ToList();
+                    var incomingGrammars = FilterDistinctKnowledgeGrammars(levelDto.TargetGrammars);
 
                     var handledGrammarIds = new HashSet<int>();
                     foreach (var gDto in incomingGrammars)
                     {
+                        var masterGrammar = grammarsById[gDto.GrammarId!.Value];
                         TargetGrammar? grammar = null;
                         if (gDto.Id.HasValue && gDto.Id.Value > 0)
                         {
-                            grammar = existingGrammars.FirstOrDefault(g => g.Id == gDto.Id.Value);
+                            grammar = existingGrammars.FirstOrDefault(g => g.Id == gDto.Id.Value && !handledGrammarIds.Contains(g.Id));
                         }
+                        grammar ??= existingGrammars.FirstOrDefault(g => g.GrammarId == masterGrammar.Id && !handledGrammarIds.Contains(g.Id));
                         grammar ??= existingGrammars.FirstOrDefault(g => !handledGrammarIds.Contains(g.Id));
 
                         if (grammar != null)
                         {
                             handledGrammarIds.Add(grammar.Id);
-                            grammar.Pattern = gDto.Pattern.Trim();
-                            grammar.Meaning = gDto.Meaning.Trim();
-                            grammar.ExampleSentence = gDto.ExampleSentence?.Trim();
+                            ApplyMasterGrammar(grammar, masterGrammar);
                         }
                         else
                         {
-                            existingConfig.TargetGrammars.Add(new TargetGrammar
-                            {
-                                ScenarioLevelConfigurationId = existingConfig.Id,
-                                Pattern = gDto.Pattern.Trim(),
-                                Meaning = gDto.Meaning.Trim(),
-                                ExampleSentence = gDto.ExampleSentence?.Trim()
-                            });
+                            existingConfig.TargetGrammars.Add(BuildTargetGrammar(existingConfig.Id, masterGrammar));
                         }
                     }
 
@@ -921,32 +908,16 @@ public class ScenarioService : IScenarioService
                         }
                     }
 
-                    if (levelDto.TargetVocabularies != null)
+                    foreach (var vDto in FilterDistinctKnowledgeVocabs(levelDto.TargetVocabularies))
                     {
-                        foreach (var v in levelDto.TargetVocabularies)
-                        {
-                            if (string.IsNullOrWhiteSpace(v.Word)) continue;
-                            newConfig.TargetVocabularies.Add(new TargetVocabulary
-                            {
-                                Word = v.Word.Trim(),
-                                Reading = v.Reading?.Trim(),
-                                Meaning = v.Meaning.Trim()
-                            });
-                        }
+                        var master = vocabsById[vDto.VocabularyId!.Value];
+                        newConfig.TargetVocabularies.Add(BuildTargetVocabulary(0, master));
                     }
 
-                    if (levelDto.TargetGrammars != null)
+                    foreach (var gDto in FilterDistinctKnowledgeGrammars(levelDto.TargetGrammars))
                     {
-                        foreach (var g in levelDto.TargetGrammars)
-                        {
-                            if (string.IsNullOrWhiteSpace(g.Pattern)) continue;
-                            newConfig.TargetGrammars.Add(new TargetGrammar
-                            {
-                                Pattern = g.Pattern.Trim(),
-                                Meaning = g.Meaning.Trim(),
-                                ExampleSentence = g.ExampleSentence?.Trim()
-                            });
-                        }
+                        var master = grammarsById[gDto.GrammarId!.Value];
+                        newConfig.TargetGrammars.Add(BuildTargetGrammar(0, master));
                     }
 
                     scenario.LevelConfigurations.Add(newConfig);
@@ -1049,13 +1020,29 @@ public class ScenarioService : IScenarioService
         {
             try
             {
+                var (vocabPool, grammarPool) = await LoadLevelKnowledgePoolsAsync(
+                    level,
+                    $"{title} {desc}",
+                    cancellationToken);
+
                 var aiResult = await TryGenerateWithAiClientAsync(
                     title, desc, level, missionCount, vocabCount, grammarCount,
-                    existingMissions, existingVocabs, existingGrammars, cancellationToken);
+                    existingMissions, existingVocabs, existingGrammars,
+                    vocabPool, grammarPool, cancellationToken);
                 if (aiResult != null &&
                     TryFinalizeGeneratedContent(aiResult, missionCount, vocabCount, grammarCount,
                         existingMissions, existingVocabs, existingGrammars))
                 {
+                    await HydrateAndPadGeneratedKnowledgeFromDbAsync(
+                        aiResult,
+                        level,
+                        $"{title} {desc}",
+                        vocabCount,
+                        grammarCount,
+                        existingVocabs,
+                        existingGrammars,
+                        cancellationToken);
+
                     return ApiResponse<GeneratedLevelContentDto>.Ok(aiResult, $"Tạo gợi ý nội dung AI cho trình độ {level} thành công.");
                 }
             }
@@ -1399,11 +1386,14 @@ public class ScenarioService : IScenarioService
             .DistinctBy(g => NormalizeGenKey(g.Pattern))
             .ToList();
 
-        // Pad if requested count exceeds candidate pool
-        while (mergedMissions.Count < missionCount)
+        // Pad remaining missions if needed (missions stay domain-authored, while vocab/grammar come strictly from DB)
+        var paddedMissions = mergedMissions
+            .Take(missionCount)
+            .ToList();
+        while (paddedMissions.Count < missionCount)
         {
-            int nextOrder = mergedMissions.Count + 1;
-            mergedMissions.Add(new CreateMissionDto
+            int nextOrder = paddedMissions.Count + 1;
+            paddedMissions.Add(new CreateMissionDto
             {
                 Order = nextOrder,
                 Content = $"Mở rộng trao đổi chi tiết bước {nextOrder} trong tình huống '{title}' ({level})",
@@ -1411,31 +1401,7 @@ public class ScenarioService : IScenarioService
             });
         }
 
-        while (mergedVocabs.Count < vocabCount)
-        {
-            int nextIdx = mergedVocabs.Count + 1;
-            mergedVocabs.Add(new CreateVocabularyDto
-            {
-                Word = $"表現 {nextIdx}",
-                Reading = $"ひょうげん {nextIdx}",
-                Meaning = $"Từ vựng mở rộng số {nextIdx} cho '{title}'"
-            });
-        }
-
-        while (mergedGrammars.Count < grammarCount)
-        {
-            int nextIdx = mergedGrammars.Count + 1;
-            mergedGrammars.Add(new CreateGrammarDto
-            {
-                Pattern = $"～表現パターン({nextIdx})",
-                Meaning = $"Mẫu câu giao tiếp mở rộng số {nextIdx} ({level})",
-                ExampleSentence = $"この場面でよく使われる表現（{nextIdx}）です。"
-            });
-        }
-
-        // Lấy đủ số lượng (mục admin đứng trước nên luôn được giữ), rồi sắp xếp mạch hội thoại hợp lý
-        result.Missions = mergedMissions
-            .Take(missionCount)
+        result.Missions = paddedMissions
             .OrderBy(m => GetMissionPhase(m.Content))
             .Select((m, idx) => new CreateMissionDto
             {
@@ -1448,8 +1414,18 @@ public class ScenarioService : IScenarioService
             })
             .ToList();
 
-        result.TargetVocabularies = mergedVocabs.Take(vocabCount).ToList();
-        result.TargetGrammars = mergedGrammars.Take(grammarCount).ToList();
+        result.TargetVocabularies = mergedVocabs.ToList();
+        result.TargetGrammars = mergedGrammars.ToList();
+
+        await HydrateAndPadGeneratedKnowledgeFromDbAsync(
+            result,
+            level,
+            $"{title} {desc}",
+            vocabCount,
+            grammarCount,
+            existingVocabs,
+            existingGrammars,
+            cancellationToken);
 
         return ApiResponse<GeneratedLevelContentDto>.Ok(result, $"Tạo gợi ý nội dung AI cho trình độ {level} thành công.");
     }
@@ -1464,6 +1440,8 @@ public class ScenarioService : IScenarioService
         List<CreateMissionDto> existingMissions,
         List<CreateVocabularyDto> existingVocabs,
         List<CreateGrammarDto> existingGrammars,
+        List<Vocabulary> vocabPool,
+        List<Grammar> grammarPool,
         CancellationToken cancellationToken)
     {
         if (_aiClient == null) return null;
@@ -1471,53 +1449,57 @@ public class ScenarioService : IScenarioService
         var existingMissionsJson = JsonSerializer.Serialize(
             existingMissions.Select(m => new { id = m.Id, content = m.Content, target = m.Target }), CriteriaJsonOptions);
         var existingVocabsJson = JsonSerializer.Serialize(
-            existingVocabs.Select(v => new { id = v.Id, word = v.Word, reading = v.Reading, meaning = v.Meaning }), CriteriaJsonOptions);
+            existingVocabs.Select(v => new { id = v.Id, vocabularyId = v.VocabularyId, word = v.Word, reading = v.Reading, meaning = v.Meaning }), CriteriaJsonOptions);
         var existingGrammarsJson = JsonSerializer.Serialize(
-            existingGrammars.Select(g => new { id = g.Id, pattern = g.Pattern, meaning = g.Meaning, exampleSentence = g.ExampleSentence }), CriteriaJsonOptions);
+            existingGrammars.Select(g => new { id = g.Id, grammarId = g.GrammarId, pattern = g.Pattern, meaning = g.Meaning, exampleSentence = g.ExampleSentence }), CriteriaJsonOptions);
+
+        var vocabCatalogJson = JsonSerializer.Serialize(
+            vocabPool.Select(v => new { vocabularyId = v.Id, word = v.Word, reading = v.Reading, meaning = ClampText(v.Meaning, 80), level = v.JLPTLevel }),
+            CriteriaJsonOptions);
+        var grammarCatalogJson = JsonSerializer.Serialize(
+            grammarPool.Select(g => new { grammarId = g.Id, pattern = g.Pattern, meaning = ClampText(g.Meaning, 80), level = g.JLPTLevel }),
+            CriteriaJsonOptions);
 
         var prompt = $@"Bạn là chuyên gia thiết kế bài học hội thoại tiếng Nhật JLPT {level}.
 Chủ đề kịch bản: ""{title}""
 Mô tả kịch bản: ""{desc}""
 Trình độ JLPT: {level}
 
-DỮ LIỆU ADMIN ĐÃ NHẬP SẴN (có thể rỗng):
+DỮ LIỆU ADMIN ĐÃ CHỌN SẴN (có thể rỗng):
 - Nhiệm vụ đã có ({existingMissions.Count}): {existingMissionsJson}
 - Từ vựng đã có ({existingVocabs.Count}): {existingVocabsJson}
 - Ngữ pháp đã có ({existingGrammars.Count}): {existingGrammarsJson}
 
+DANH MỤC KHO HỌC LIỆU HỢP LỆ TỪ DATABASE (BẮT BUỘC CHỈ CHỌN TỪ ĐÂY):
+- Kho Từ vựng ({vocabPool.Count}): {vocabCatalogJson}
+- Kho Ngữ pháp ({grammarPool.Count}): {grammarCatalogJson}
+
 YÊU CẦU BẮT BUỘC:
 1. Số lượng CHÍNH XÁC (không hơn, không kém):
    - missions: đúng {missionCount} nhiệm vụ.
-   - targetVocabularies: đúng {vocabCount} từ vựng.
-   - targetGrammars: đúng {grammarCount} mẫu ngữ pháp.
-2. GIỮ LẠI toàn bộ ý của các mục đã có: được phép chỉnh câu chữ cho mạch lạc, tự nhiên, nhưng không bỏ mục nào.
-   Với mục giữ lại, trả về đúng ""id"" cũ của nó (nếu id là null thì để null). Mục mới thêm có ""id"": null.
-3. Điền thêm các mục mới cho đủ số lượng, liên quan trực tiếp đến chủ đề ""{title}"" và đúng trình độ {level}.
-4. KHÔNG trùng lặp: không có 2 nhiệm vụ cùng ý, không lặp từ vựng (word) hay mẫu ngữ pháp (pattern).
-5. SẮP XẾP nhiệm vụ theo đúng mạch một cuộc hội thoại thực tế:
-   chào hỏi / mở đầu → các yêu cầu, trao đổi chính (theo trình tự logic) → xác nhận → cảm ơn / chào tạm biệt.
-   Mục chào hỏi phải ở đầu, mục kết thúc phải ở cuối; ""order"" đánh số liên tục từ 1.
-6. Mọi trường đều KHÔNG được để trống:
-   - missions: content (tiếng Việt, cụ thể), target (mục tiêu ngắn gọn tiếng Việt).
-   - targetVocabularies: word (tiếng Nhật), reading (Hiragana), meaning (tiếng Việt).
-   - targetGrammars: pattern, meaning (tiếng Việt), exampleSentence (câu ví dụ tiếng Nhật đúng ngữ cảnh).
-   Nếu mục đã có bị thiếu trường nào thì tự bổ sung cho đúng.
-7. ""aiPersona"" phải NGẮN GỌN, TỐI ĐA 60 ký tự, theo dạng ""Vai trò tiếng Việt - 日本語"" (có thể thêm 1 ghi chú rất ngắn trong ngoặc).
-   Ví dụ: ""Nhân viên quán mì - 店員"", ""Quản lý cửa hàng - 店長 (nói chậm)"". Không viết thành câu mô tả dài.
+   - targetVocabularies: đúng {vocabCount} từ vựng (hoặc tối đa bằng số lượng trong Kho Từ vựng nếu kho ít hơn).
+   - targetGrammars: đúng {grammarCount} mẫu ngữ pháp (hoặc tối đa bằng số lượng trong Kho Ngữ pháp nếu kho ít hơn).
+2. TUYỆT ĐỐI KHÔNG TỰ BỊA từ vựng hay ngữ pháp ngoài DANH MỤC KHO HỌC LIỆU phía trên:
+   - Mỗi phần tử trong targetVocabularies PHẢI lấy đúng ""vocabularyId"" từ Kho Từ vựng (hoặc giữ nguyên từ vựng admin đã chọn sẵn).
+   - Mỗi phần tử trong targetGrammars PHẢI lấy đúng ""grammarId"" từ Kho Ngữ pháp (hoặc giữ nguyên ngữ pháp admin đã chọn sẵn).
+3. GIỮ LẠI toàn bộ ý của các mục đã có: với mission giữ lại, trả đúng ""id"" cũ; mục mới để ""id"": null.
+4. KHÔNG trùng lặp từ vựng (vocabularyId) hay ngữ pháp (grammarId).
+5. SẮP XẾP nhiệm vụ theo đúng mạch hội thoại: mở đầu → trao đổi chính → xác nhận → cảm ơn / chào tạm biệt; ""order"" liên tục từ 1.
+6. ""aiPersona"" NGẮN GỌN, TỐI ĐA 60 ký tự (dạng ""Vai trò tiếng Việt - 日本語"").
 
 Trả về JSON thuần túy theo cấu trúc:
 {{
   ""title"": ""{title} ({level})"",
   ""description"": ""Mô tả bối cảnh cụ thể cho trình độ {level}"",
-  ""aiPersona"": ""Vai trò ngắn gọn - 日本語 (tối đa 60 ký tự)"",
+  ""aiPersona"": ""Vai trò ngắn gọn - 日本語"",
   ""missions"": [
     {{ ""id"": null, ""order"": 1, ""content"": ""Nội dung nhiệm vụ 1"", ""target"": ""Mục tiêu ngắn gọn"" }}
   ],
   ""targetVocabularies"": [
-    {{ ""id"": null, ""word"": ""Từ tiếng Nhật"", ""reading"": ""Cách đọc Hiragana"", ""meaning"": ""Nghĩa tiếng Việt"" }}
+    {{ ""id"": null, ""vocabularyId"": 123, ""word"": ""Từ tiếng Nhật"", ""reading"": ""Cách đọc"", ""meaning"": ""Nghĩa tiếng Việt"" }}
   ],
   ""targetGrammars"": [
-    {{ ""id"": null, ""pattern"": ""Mẫu ngữ pháp"", ""meaning"": ""Ý nghĩa tiếng Việt"", ""exampleSentence"": ""Câu ví dụ tiếng Nhật"" }}
+    {{ ""id"": null, ""grammarId"": 45, ""pattern"": ""Mẫu ngữ pháp"", ""meaning"": ""Ý nghĩa"", ""exampleSentence"": ""Ví dụ"" }}
   ]
 }}";
 
@@ -1542,9 +1524,7 @@ Trả về JSON thuần túy theo cấu trúc:
     }
 
     /// <summary>
-    /// Ràng buộc kết quả AI: bỏ mục trống/trùng, chỉ giữ Id thuộc mục admin đã có,
-    /// bắt buộc đủ số lượng (thiếu → trả false để dùng bộ sinh dự phòng), cắt đúng số lượng
-    /// và sắp xếp nhiệm vụ theo mạch hội thoại.
+    /// Ràng buộc kết quả AI: giữ mission/vocab/grammar hợp lệ và chuẩn hóa cấu trúc trước khi hydrate từ DB.
     /// </summary>
     private static bool TryFinalizeGeneratedContent(
         GeneratedLevelContentDto gen,
@@ -1556,29 +1536,21 @@ Trả về JSON thuần túy theo cấu trúc:
         List<CreateGrammarDto> existingGrammars)
     {
         var allowedMissionIds = existingMissions.Where(m => m.Id.HasValue).Select(m => m.Id!.Value).ToHashSet();
-        var allowedVocabIds = existingVocabs.Where(v => v.Id.HasValue).Select(v => v.Id!.Value).ToHashSet();
-        var allowedGrammarIds = existingGrammars.Where(g => g.Id.HasValue).Select(g => g.Id!.Value).ToHashSet();
+        var allowedVocabRowIds = existingVocabs.Where(v => v.Id.HasValue).Select(v => v.Id!.Value).ToHashSet();
+        var allowedGrammarRowIds = existingGrammars.Where(g => g.Id.HasValue).Select(g => g.Id!.Value).ToHashSet();
 
         var missions = (gen.Missions ?? [])
             .Where(m => m != null && !string.IsNullOrWhiteSpace(m.Content))
             .DistinctBy(m => NormalizeGenKey(m.Content))
             .ToList();
         var vocabs = (gen.TargetVocabularies ?? [])
-            .Where(v => v != null &&
-                        !string.IsNullOrWhiteSpace(v.Word) &&
-                        !string.IsNullOrWhiteSpace(v.Reading) &&
-                        !string.IsNullOrWhiteSpace(v.Meaning))
-            .DistinctBy(v => NormalizeGenKey(v.Word))
+            .Where(v => v != null && (v.VocabularyId is > 0 || !string.IsNullOrWhiteSpace(v.Word)))
             .ToList();
         var grammars = (gen.TargetGrammars ?? [])
-            .Where(g => g != null &&
-                        !string.IsNullOrWhiteSpace(g.Pattern) &&
-                        !string.IsNullOrWhiteSpace(g.Meaning) &&
-                        !string.IsNullOrWhiteSpace(g.ExampleSentence))
-            .DistinctBy(g => NormalizeGenKey(g.Pattern))
+            .Where(g => g != null && (g.GrammarId is > 0 || !string.IsNullOrWhiteSpace(g.Pattern)))
             .ToList();
 
-        if (missions.Count < missionCount || vocabs.Count < vocabCount || grammars.Count < grammarCount)
+        if (missions.Count < missionCount)
         {
             return false;
         }
@@ -1599,31 +1571,781 @@ Trả về JSON thuần túy theo cấu trúc:
             })
             .ToList();
 
-        var usedVocabIds = new HashSet<int>();
+        var usedVocabRowIds = new HashSet<int>();
         gen.TargetVocabularies = vocabs
-            .Take(vocabCount)
+            .Take(vocabCount * 2) // giữ dư chút để bộ lọc DB loại bỏ ID ảo mà vẫn đủ ứng viên
             .Select(v => new CreateVocabularyDto
             {
-                Id = v.Id.HasValue && allowedVocabIds.Contains(v.Id.Value) && usedVocabIds.Add(v.Id.Value) ? v.Id : null,
-                Word = v.Word.Trim(),
-                Reading = v.Reading!.Trim(),
-                Meaning = v.Meaning.Trim()
+                Id = v.Id.HasValue && allowedVocabRowIds.Contains(v.Id.Value) && usedVocabRowIds.Add(v.Id.Value) ? v.Id : null,
+                VocabularyId = v.VocabularyId,
+                Word = v.Word?.Trim() ?? string.Empty,
+                Reading = v.Reading?.Trim(),
+                Meaning = v.Meaning?.Trim() ?? string.Empty
             })
             .ToList();
 
-        var usedGrammarIds = new HashSet<int>();
+        var usedGrammarRowIds = new HashSet<int>();
         gen.TargetGrammars = grammars
-            .Take(grammarCount)
+            .Take(grammarCount * 2)
             .Select(g => new CreateGrammarDto
             {
-                Id = g.Id.HasValue && allowedGrammarIds.Contains(g.Id.Value) && usedGrammarIds.Add(g.Id.Value) ? g.Id : null,
-                Pattern = g.Pattern.Trim(),
-                Meaning = g.Meaning.Trim(),
-                ExampleSentence = g.ExampleSentence!.Trim()
+                Id = g.Id.HasValue && allowedGrammarRowIds.Contains(g.Id.Value) && usedGrammarRowIds.Add(g.Id.Value) ? g.Id : null,
+                GrammarId = g.GrammarId,
+                Pattern = g.Pattern?.Trim() ?? string.Empty,
+                Meaning = g.Meaning?.Trim() ?? string.Empty,
+                ExampleSentence = g.ExampleSentence?.Trim()
             })
             .ToList();
 
         return true;
+    }
+
+    public async Task<ApiResponse<List<KnowledgeSearchItemDto>>> SearchKnowledgeAsync(
+        string type,
+        string? query = null,
+        string? level = null,
+        int limit = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedType = (type ?? "vocab").Trim().ToLowerInvariant();
+        if (normalizedType != "vocab" && normalizedType != "grammar")
+        {
+            return ApiResponse<List<KnowledgeSearchItemDto>>.Fail("Loại học liệu phải là 'vocab' hoặc 'grammar'.");
+        }
+
+        int cappedLimit = Math.Clamp(limit, 1, 50);
+        string? levelFilter = string.IsNullOrWhiteSpace(level) || level.Equals("ALL", StringComparison.OrdinalIgnoreCase)
+            ? null
+            : level.Trim().ToUpperInvariant();
+        string rawQuery = (query ?? string.Empty).Trim();
+        string foldedQuery = FoldVietnamese(rawQuery);
+        string[] queryTokens = foldedQuery.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        string normalizedPatternQuery = NormalizeGrammarKey(rawQuery);
+
+        if (normalizedType == "vocab")
+        {
+            var rows = await _dbContext.Vocabularies
+                .AsNoTracking()
+                .Where(v => v.IsActive)
+                .Select(v => new
+                {
+                    v.Id,
+                    v.Word,
+                    v.Reading,
+                    v.Meaning,
+                    v.Explanation,
+                    v.JLPTLevel,
+                    v.PartOfSpeech
+                })
+                .ToListAsync(cancellationToken);
+
+            var filtered = rows.Where(v =>
+                levelFilter == null || string.Equals(v.JLPTLevel?.Trim(), levelFilter, StringComparison.OrdinalIgnoreCase));
+
+            var scored = filtered
+                .Select(v =>
+                {
+                    int score = ComputeSearchScore(
+                        rawQuery,
+                        foldedQuery,
+                        queryTokens,
+                        normalizedPatternQuery,
+                        v.Word,
+                        v.Reading,
+                        v.Meaning,
+                        v.Explanation,
+                        v.JLPTLevel,
+                        levelFilter,
+                        isGrammar: false);
+                    return new { Item = v, Score = score };
+                })
+                .Where(x => string.IsNullOrEmpty(foldedQuery) || x.Score > 0)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Item.Word.Length)
+                .ThenBy(x => x.Item.Id)
+                .Take(cappedLimit)
+                .Select(x => ToKnowledgeDto(
+                    x.Item.Id,
+                    "vocab",
+                    x.Item.Word,
+                    x.Item.Reading,
+                    x.Item.Meaning,
+                    null,
+                    x.Item.JLPTLevel,
+                    x.Item.PartOfSpeech))
+                .ToList();
+
+            return ApiResponse<List<KnowledgeSearchItemDto>>.Ok(scored, "Tìm kiếm từ vựng trong kho thành công.");
+        }
+        else
+        {
+            var rows = await _dbContext.Grammars
+                .AsNoTracking()
+                .Where(g => g.IsActive)
+                .Select(g => new
+                {
+                    g.Id,
+                    g.Pattern,
+                    g.Reading,
+                    g.Meaning,
+                    g.Explanation,
+                    g.ExampleSentence,
+                    g.JLPTLevel
+                })
+                .ToListAsync(cancellationToken);
+
+            var filtered = rows.Where(g =>
+                levelFilter == null || string.Equals(g.JLPTLevel?.Trim(), levelFilter, StringComparison.OrdinalIgnoreCase));
+
+            var scored = filtered
+                .Select(g =>
+                {
+                    int score = ComputeSearchScore(
+                        rawQuery,
+                        foldedQuery,
+                        queryTokens,
+                        normalizedPatternQuery,
+                        g.Pattern,
+                        g.Reading,
+                        g.Meaning,
+                        g.Explanation,
+                        g.JLPTLevel,
+                        levelFilter,
+                        isGrammar: true);
+                    return new { Item = g, Score = score };
+                })
+                .Where(x => string.IsNullOrEmpty(foldedQuery) || x.Score > 0)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Item.Pattern.Length)
+                .ThenBy(x => x.Item.Id)
+                .Take(cappedLimit)
+                .Select(x => ToKnowledgeDto(
+                    x.Item.Id,
+                    "grammar",
+                    x.Item.Pattern,
+                    x.Item.Reading,
+                    x.Item.Meaning,
+                    x.Item.ExampleSentence,
+                    x.Item.JLPTLevel,
+                    null))
+                .ToList();
+
+            return ApiResponse<List<KnowledgeSearchItemDto>>.Ok(scored, "Tìm kiếm ngữ pháp trong kho thành công.");
+        }
+    }
+
+    public async Task<ApiResponse<SuggestScenarioKnowledgeResponse>> SuggestKnowledgeAsync(
+        SuggestScenarioKnowledgeRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+        {
+            return ApiResponse<SuggestScenarioKnowledgeResponse>.Fail("Yêu cầu gợi ý không hợp lệ.");
+        }
+
+        var normalizedType = (request.Type ?? "vocab").Trim().ToLowerInvariant();
+        if (normalizedType != "vocab" && normalizedType != "grammar")
+        {
+            return ApiResponse<SuggestScenarioKnowledgeResponse>.Fail("Loại học liệu phải là 'vocab' hoặc 'grammar'.");
+        }
+
+        int cappedLimit = Math.Clamp(request.Limit <= 0 ? 8 : request.Limit, 1, 20);
+        var excludeSet = (request.ExcludeIds ?? []).ToHashSet();
+        var targetLevel = string.IsNullOrWhiteSpace(request.JlptLevel) ? "N5" : request.JlptLevel.Trim().ToUpperInvariant();
+        var contextText = $"{request.ScenarioTitle} {request.ScenarioDescription} {request.Query}".Trim();
+
+        List<KnowledgeSearchItemDto> candidates;
+        if (normalizedType == "vocab")
+        {
+            var pool = await LoadVocabularyCandidatesAsync(targetLevel, contextText, 50, excludeSet, cancellationToken);
+            candidates = pool
+                .Select(v => ToKnowledgeDto(v.Id, "vocab", v.Word, v.Reading, v.Meaning, null, v.JLPTLevel, v.PartOfSpeech))
+                .ToList();
+        }
+        else
+        {
+            var pool = await LoadGrammarCandidatesAsync(targetLevel, contextText, 45, excludeSet, cancellationToken);
+            candidates = pool
+                .Select(g => ToKnowledgeDto(g.Id, "grammar", g.Pattern, g.Reading, g.Meaning, g.ExampleSentence, g.JLPTLevel, null))
+                .ToList();
+        }
+
+        if (candidates.Count == 0)
+        {
+            return ApiResponse<SuggestScenarioKnowledgeResponse>.Ok(new SuggestScenarioKnowledgeResponse(), "Không còn mục mới phù hợp trong kho.");
+        }
+
+        bool usedAi = false;
+        List<KnowledgeSearchItemDto> selected = [];
+
+        if (_aiClient != null)
+        {
+            try
+            {
+                var candidateById = candidates.ToDictionary(c => c.Id);
+                var compactPoolJson = JsonSerializer.Serialize(
+                    candidates.Select(c => new
+                    {
+                        id = c.Id,
+                        text = c.PrimaryText,
+                        reading = c.Reading,
+                        meaning = ClampText(c.Meaning, 70),
+                        level = c.JlptLevel
+                    }),
+                    CriteriaJsonOptions);
+
+                var prompt = $@"Chọn tối đa {cappedLimit} mục phù hợp nhất cho tình huống hội thoại tiếng Nhật sau.
+Kịch bản: ""{request.ScenarioTitle}""
+Mô tả: ""{request.ScenarioDescription}""
+Cấp độ mục tiêu: {targetLevel}
+Từ khóa tìm thêm: ""{request.Query}""
+
+DANH SÁCH ỨNG VIÊN TỪ DATABASE (CHỈ ĐƯỢC CHỌN ID TRONG DANH SÁCH NÀY):
+{compactPoolJson}
+
+Trả về JSON thuần túy:
+{{ ""selectedIds"": [1, 2, 3] }}";
+
+                var aiResponse = await _aiClient.GenerateAsync(AiRequest.CreateJson(null, prompt), cancellationToken);
+                if (aiResponse.IsSuccess && !string.IsNullOrWhiteSpace(aiResponse.Content))
+                {
+                    using var doc = JsonDocument.Parse(aiResponse.Content);
+                    if (doc.RootElement.TryGetProperty("selectedIds", out var idsEl) && idsEl.ValueKind == JsonValueKind.Array)
+                    {
+                        var seen = new HashSet<int>();
+                        foreach (var el in idsEl.EnumerateArray())
+                        {
+                            if (el.TryGetInt32(out int cid) && candidateById.TryGetValue(cid, out var item) && seen.Add(cid))
+                            {
+                                selected.Add(item);
+                                if (selected.Count >= cappedLimit) break;
+                            }
+                        }
+                        if (selected.Count > 0) usedAi = true;
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback deterministically to ranked DB candidates below
+            }
+        }
+
+        if (selected.Count < cappedLimit)
+        {
+            var pickedIds = selected.Select(s => s.Id).ToHashSet();
+            foreach (var fallbackItem in candidates)
+            {
+                if (pickedIds.Add(fallbackItem.Id))
+                {
+                    selected.Add(fallbackItem);
+                    if (selected.Count >= cappedLimit) break;
+                }
+            }
+        }
+
+        return ApiResponse<SuggestScenarioKnowledgeResponse>.Ok(
+            new SuggestScenarioKnowledgeResponse { Items = selected, UsedAi = usedAi },
+            usedAi ? "Đã gợi ý thông minh từ Kho bằng AI." : "Đã gợi ý từ Kho học liệu.");
+    }
+
+    private async Task<(Dictionary<int, Vocabulary> Vocabs, Dictionary<int, Grammar> Grammars, string? Error)> ResolveRepositoryKnowledgeAsync(
+        IEnumerable<CreateScenarioLevelConfigDto> levels,
+        CancellationToken cancellationToken)
+    {
+        var levelList = levels.ToList();
+        var requestedVocabIds = new HashSet<int>();
+        var requestedGrammarIds = new HashSet<int>();
+
+        foreach (var lvl in levelList)
+        {
+            foreach (var v in lvl.TargetVocabularies ?? [])
+            {
+                if (v == null) continue;
+                bool hasAnyContent = v.VocabularyId.HasValue
+                    || !string.IsNullOrWhiteSpace(v.Word)
+                    || !string.IsNullOrWhiteSpace(v.Reading)
+                    || !string.IsNullOrWhiteSpace(v.Meaning);
+                if (!hasAnyContent) continue;
+
+                if (!v.VocabularyId.HasValue || v.VocabularyId.Value <= 0)
+                {
+                    return (new(), new(), $"Mọi từ vựng trọng tâm (cấp {lvl.JLPTLevel}) bắt buộc phải chọn từ Kho học liệu, không được nhập tự do.");
+                }
+                requestedVocabIds.Add(v.VocabularyId.Value);
+            }
+
+            foreach (var g in lvl.TargetGrammars ?? [])
+            {
+                if (g == null) continue;
+                bool hasAnyContent = g.GrammarId.HasValue
+                    || !string.IsNullOrWhiteSpace(g.Pattern)
+                    || !string.IsNullOrWhiteSpace(g.Meaning)
+                    || !string.IsNullOrWhiteSpace(g.ExampleSentence);
+                if (!hasAnyContent) continue;
+
+                if (!g.GrammarId.HasValue || g.GrammarId.Value <= 0)
+                {
+                    return (new(), new(), $"Mọi mẫu ngữ pháp trọng tâm (cấp {lvl.JLPTLevel}) bắt buộc phải chọn từ Kho học liệu, không được nhập tự do.");
+                }
+                requestedGrammarIds.Add(g.GrammarId.Value);
+            }
+        }
+
+        var vocabsById = requestedVocabIds.Count > 0
+            ? await _dbContext.Vocabularies
+                .AsNoTracking()
+                .Where(v => requestedVocabIds.Contains(v.Id) && v.IsActive)
+                .ToDictionaryAsync(v => v.Id, cancellationToken)
+            : new Dictionary<int, Vocabulary>();
+
+        var missingVocabIds = requestedVocabIds.Where(id => !vocabsById.ContainsKey(id)).ToList();
+        if (missingVocabIds.Count > 0)
+        {
+            return (new(), new(), $"Từ vựng được chọn không tồn tại hoặc đã bị vô hiệu hóa trong Kho học liệu (ID: {string.Join(", ", missingVocabIds)}).");
+        }
+
+        var grammarsById = requestedGrammarIds.Count > 0
+            ? await _dbContext.Grammars
+                .AsNoTracking()
+                .Where(g => requestedGrammarIds.Contains(g.Id) && g.IsActive)
+                .ToDictionaryAsync(g => g.Id, cancellationToken)
+            : new Dictionary<int, Grammar>();
+
+        var missingGrammarIds = requestedGrammarIds.Where(id => !grammarsById.ContainsKey(id)).ToList();
+        if (missingGrammarIds.Count > 0)
+        {
+            return (new(), new(), $"Mẫu ngữ pháp được chọn không tồn tại hoặc đã bị vô hiệu hóa trong Kho học liệu (ID: {string.Join(", ", missingGrammarIds)}).");
+        }
+
+        return (vocabsById, grammarsById, null);
+    }
+
+    private static List<CreateVocabularyDto> FilterDistinctKnowledgeVocabs(IEnumerable<CreateVocabularyDto>? items)
+    {
+        if (items == null) return [];
+        var seen = new HashSet<int>();
+        var list = new List<CreateVocabularyDto>();
+        foreach (var v in items)
+        {
+            if (v?.VocabularyId is > 0 && seen.Add(v.VocabularyId.Value))
+            {
+                list.Add(v);
+            }
+        }
+        return list;
+    }
+
+    private static List<CreateGrammarDto> FilterDistinctKnowledgeGrammars(IEnumerable<CreateGrammarDto>? items)
+    {
+        if (items == null) return [];
+        var seen = new HashSet<int>();
+        var list = new List<CreateGrammarDto>();
+        foreach (var g in items)
+        {
+            if (g?.GrammarId is > 0 && seen.Add(g.GrammarId.Value))
+            {
+                list.Add(g);
+            }
+        }
+        return list;
+    }
+
+    private static TargetVocabulary BuildTargetVocabulary(int levelConfigId, Vocabulary master) => new()
+    {
+        ScenarioLevelConfigurationId = levelConfigId,
+        VocabularyId = master.Id,
+        Word = ClampText(master.Word, 100),
+        Reading = ClampNullableText(master.Reading, 100),
+        Meaning = ClampText(string.IsNullOrWhiteSpace(master.Meaning) ? master.Word : master.Meaning, 200)
+    };
+
+    private static void ApplyMasterVocabulary(TargetVocabulary target, Vocabulary master)
+    {
+        target.VocabularyId = master.Id;
+        target.Word = ClampText(master.Word, 100);
+        target.Reading = ClampNullableText(master.Reading, 100);
+        target.Meaning = ClampText(string.IsNullOrWhiteSpace(master.Meaning) ? master.Word : master.Meaning, 200);
+    }
+
+    private static TargetGrammar BuildTargetGrammar(int levelConfigId, Grammar master) => new()
+    {
+        ScenarioLevelConfigurationId = levelConfigId,
+        GrammarId = master.Id,
+        Pattern = ClampText(master.Pattern, 100),
+        Meaning = ClampText(string.IsNullOrWhiteSpace(master.Meaning) ? master.Pattern : master.Meaning, 200),
+        ExampleSentence = ClampNullableText(master.ExampleSentence, 500)
+    };
+
+    private static void ApplyMasterGrammar(TargetGrammar target, Grammar master)
+    {
+        target.GrammarId = master.Id;
+        target.Pattern = ClampText(master.Pattern, 100);
+        target.Meaning = ClampText(string.IsNullOrWhiteSpace(master.Meaning) ? master.Pattern : master.Meaning, 200);
+        target.ExampleSentence = ClampNullableText(master.ExampleSentence, 500);
+    }
+
+    private async Task<(List<Vocabulary> Vocabs, List<Grammar> Grammars)> LoadLevelKnowledgePoolsAsync(
+        string level,
+        string contextText,
+        CancellationToken cancellationToken)
+    {
+        var vocabs = await LoadVocabularyCandidatesAsync(level, contextText, 55, null, cancellationToken);
+        var grammars = await LoadGrammarCandidatesAsync(level, contextText, 40, null, cancellationToken);
+        return (vocabs, grammars);
+    }
+
+    private async Task<List<Vocabulary>> LoadVocabularyCandidatesAsync(
+        string level,
+        string contextText,
+        int take,
+        HashSet<int>? excludeIds,
+        CancellationToken cancellationToken)
+    {
+        var all = await _dbContext.Vocabularies
+            .AsNoTracking()
+            .Where(v => v.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var tokens = ExtractContextTokens(contextText);
+        return all
+            .Where(v => excludeIds == null || !excludeIds.Contains(v.Id))
+            .OrderByDescending(v => ScoreContextRelevance(v.Word, v.Reading, v.Meaning, v.JLPTLevel, level, tokens))
+            .ThenBy(v => v.Id)
+            .Take(take)
+            .ToList();
+    }
+
+    private async Task<List<Grammar>> LoadGrammarCandidatesAsync(
+        string level,
+        string contextText,
+        int take,
+        HashSet<int>? excludeIds,
+        CancellationToken cancellationToken)
+    {
+        var all = await _dbContext.Grammars
+            .AsNoTracking()
+            .Where(g => g.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var tokens = ExtractContextTokens(contextText);
+        return all
+            .Where(g => excludeIds == null || !excludeIds.Contains(g.Id))
+            .OrderByDescending(g => ScoreContextRelevance(g.Pattern, g.Reading, g.Meaning, g.JLPTLevel, level, tokens))
+            .ThenBy(g => g.Id)
+            .Take(take)
+            .ToList();
+    }
+
+    private async Task HydrateAndPadGeneratedKnowledgeFromDbAsync(
+        GeneratedLevelContentDto gen,
+        string level,
+        string contextText,
+        int vocabCount,
+        int grammarCount,
+        List<CreateVocabularyDto> existingVocabs,
+        List<CreateGrammarDto> existingGrammars,
+        CancellationToken cancellationToken)
+    {
+        var allVocabs = await _dbContext.Vocabularies.AsNoTracking().Where(v => v.IsActive).ToListAsync(cancellationToken);
+        var vocabById = allVocabs.ToDictionary(v => v.Id);
+        var vocabByWord = allVocabs
+            .GroupBy(v => NormalizeGenKey(v.Word))
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => string.Equals(x.JLPTLevel, level, StringComparison.OrdinalIgnoreCase)).First());
+
+        var usedVocabIds = new HashSet<int>();
+        var hydratedVocabs = new List<CreateVocabularyDto>();
+
+        void TryAddVocab(CreateVocabularyDto item)
+        {
+            Vocabulary? master = null;
+            if (item.VocabularyId.HasValue && vocabById.TryGetValue(item.VocabularyId.Value, out var byId))
+            {
+                master = byId;
+            }
+            else if (!string.IsNullOrWhiteSpace(item.Word) && vocabByWord.TryGetValue(NormalizeGenKey(item.Word), out var byWord))
+            {
+                master = byWord;
+            }
+
+            if (master != null && usedVocabIds.Add(master.Id))
+            {
+                hydratedVocabs.Add(new CreateVocabularyDto
+                {
+                    Id = item.Id,
+                    VocabularyId = master.Id,
+                    Word = ClampText(master.Word, 100),
+                    Reading = ClampNullableText(master.Reading, 100),
+                    Meaning = ClampText(string.IsNullOrWhiteSpace(master.Meaning) ? master.Word : master.Meaning, 200)
+                });
+            }
+        }
+
+        foreach (var ev in existingVocabs) TryAddVocab(ev);
+        foreach (var gv in gen.TargetVocabularies ?? []) TryAddVocab(gv);
+
+        if (hydratedVocabs.Count < vocabCount)
+        {
+            var tokens = ExtractContextTokens(contextText);
+            var padPool = allVocabs
+                .Where(v => !usedVocabIds.Contains(v.Id))
+                .OrderByDescending(v => ScoreContextRelevance(v.Word, v.Reading, v.Meaning, v.JLPTLevel, level, tokens))
+                .ThenBy(v => v.Id);
+
+            foreach (var v in padPool)
+            {
+                if (hydratedVocabs.Count >= vocabCount) break;
+                usedVocabIds.Add(v.Id);
+                hydratedVocabs.Add(new CreateVocabularyDto
+                {
+                    VocabularyId = v.Id,
+                    Word = ClampText(v.Word, 100),
+                    Reading = ClampNullableText(v.Reading, 100),
+                    Meaning = ClampText(string.IsNullOrWhiteSpace(v.Meaning) ? v.Word : v.Meaning, 200)
+                });
+            }
+        }
+
+        gen.TargetVocabularies = hydratedVocabs.Take(vocabCount).ToList();
+
+        var allGrammars = await _dbContext.Grammars.AsNoTracking().Where(g => g.IsActive).ToListAsync(cancellationToken);
+        var grammarById = allGrammars.ToDictionary(g => g.Id);
+        var grammarByNorm = allGrammars
+            .GroupBy(g => NormalizeGrammarKey(g.Pattern))
+            .Where(g => g.Key.Length > 0)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => string.Equals(x.JLPTLevel, level, StringComparison.OrdinalIgnoreCase)).First());
+
+        var usedGrammarIds = new HashSet<int>();
+        var hydratedGrammars = new List<CreateGrammarDto>();
+
+        void TryAddGrammar(CreateGrammarDto item)
+        {
+            Grammar? master = null;
+            if (item.GrammarId.HasValue && grammarById.TryGetValue(item.GrammarId.Value, out var byId))
+            {
+                master = byId;
+            }
+            else if (!string.IsNullOrWhiteSpace(item.Pattern) && grammarByNorm.TryGetValue(NormalizeGrammarKey(item.Pattern), out var byPat))
+            {
+                master = byPat;
+            }
+
+            if (master != null && usedGrammarIds.Add(master.Id))
+            {
+                hydratedGrammars.Add(new CreateGrammarDto
+                {
+                    Id = item.Id,
+                    GrammarId = master.Id,
+                    Pattern = ClampText(master.Pattern, 100),
+                    Meaning = ClampText(string.IsNullOrWhiteSpace(master.Meaning) ? master.Pattern : master.Meaning, 200),
+                    ExampleSentence = ClampNullableText(master.ExampleSentence, 500)
+                });
+            }
+        }
+
+        foreach (var eg in existingGrammars) TryAddGrammar(eg);
+        foreach (var gg in gen.TargetGrammars ?? []) TryAddGrammar(gg);
+
+        if (hydratedGrammars.Count < grammarCount)
+        {
+            var tokens = ExtractContextTokens(contextText);
+            var padPool = allGrammars
+                .Where(g => !usedGrammarIds.Contains(g.Id))
+                .OrderByDescending(g => ScoreContextRelevance(g.Pattern, g.Reading, g.Meaning, g.JLPTLevel, level, tokens))
+                .ThenBy(g => g.Id);
+
+            foreach (var g in padPool)
+            {
+                if (hydratedGrammars.Count >= grammarCount) break;
+                usedGrammarIds.Add(g.Id);
+                hydratedGrammars.Add(new CreateGrammarDto
+                {
+                    GrammarId = g.Id,
+                    Pattern = ClampText(g.Pattern, 100),
+                    Meaning = ClampText(string.IsNullOrWhiteSpace(g.Meaning) ? g.Pattern : g.Meaning, 200),
+                    ExampleSentence = ClampNullableText(g.ExampleSentence, 500)
+                });
+            }
+        }
+
+        gen.TargetGrammars = hydratedGrammars.Take(grammarCount).ToList();
+    }
+
+    private static KnowledgeSearchItemDto ToKnowledgeDto(
+        int id,
+        string type,
+        string primaryText,
+        string? reading,
+        string meaning,
+        string? exampleSentence,
+        string? jlptLevel,
+        string? partOfSpeech) => new()
+        {
+            Id = id,
+            Type = type,
+            PrimaryText = primaryText,
+            Reading = reading,
+            Meaning = meaning,
+            ExampleSentence = exampleSentence,
+            JlptLevel = string.IsNullOrWhiteSpace(jlptLevel) ? "N5" : jlptLevel.Trim().ToUpperInvariant(),
+            PartOfSpeech = partOfSpeech
+        };
+
+    private static int ComputeSearchScore(
+        string rawQuery,
+        string foldedQuery,
+        string[] queryTokens,
+        string normalizedPatternQuery,
+        string primaryText,
+        string? reading,
+        string? meaning,
+        string? explanation,
+        string? itemLevel,
+        string? requestedLevel,
+        bool isGrammar)
+    {
+        bool levelMatch = !string.IsNullOrEmpty(requestedLevel)
+            && string.Equals(itemLevel?.Trim(), requestedLevel, StringComparison.OrdinalIgnoreCase);
+
+        if (string.IsNullOrEmpty(foldedQuery))
+        {
+            return levelMatch ? 20 : 10;
+        }
+
+        string primaryLower = primaryText.Trim().ToLowerInvariant();
+        string primaryNorm = isGrammar ? NormalizeGrammarKey(primaryText) : primaryLower;
+        string readingLower = (reading ?? string.Empty).Trim().ToLowerInvariant();
+        string foldedMeaning = FoldVietnamese(meaning);
+        string foldedExplanation = FoldVietnamese(explanation);
+
+        int score = 0;
+        if (string.Equals(primaryLower, rawQuery.ToLowerInvariant(), StringComparison.Ordinal)
+            || (isGrammar && normalizedPatternQuery.Length > 0 && primaryNorm == normalizedPatternQuery)
+            || (readingLower.Length > 0 && readingLower == rawQuery.ToLowerInvariant())
+            || foldedMeaning == foldedQuery)
+        {
+            score += 120;
+        }
+        else if (primaryLower.StartsWith(rawQuery, StringComparison.OrdinalIgnoreCase)
+            || (isGrammar && normalizedPatternQuery.Length > 0 && primaryNorm.StartsWith(normalizedPatternQuery, StringComparison.Ordinal))
+            || readingLower.StartsWith(rawQuery, StringComparison.OrdinalIgnoreCase)
+            || foldedMeaning.StartsWith(foldedQuery, StringComparison.Ordinal))
+        {
+            score += 75;
+        }
+        else if (primaryLower.Contains(rawQuery, StringComparison.OrdinalIgnoreCase)
+            || (isGrammar && normalizedPatternQuery.Length > 0 && primaryNorm.Contains(normalizedPatternQuery, StringComparison.Ordinal))
+            || readingLower.Contains(rawQuery, StringComparison.OrdinalIgnoreCase))
+        {
+            score += 50;
+        }
+        else if (foldedMeaning.Contains(foldedQuery, StringComparison.Ordinal))
+        {
+            score += 35;
+        }
+        else if (queryTokens.Length > 1 && queryTokens.All(t =>
+            foldedMeaning.Contains(t, StringComparison.Ordinal)
+            || foldedExplanation.Contains(t, StringComparison.Ordinal)
+            || primaryLower.Contains(t, StringComparison.OrdinalIgnoreCase)
+            || readingLower.Contains(t, StringComparison.OrdinalIgnoreCase)))
+        {
+            score += 25;
+        }
+        else if (foldedExplanation.Contains(foldedQuery, StringComparison.Ordinal))
+        {
+            score += 12;
+        }
+
+        if (score > 0 && levelMatch)
+        {
+            score += 15;
+        }
+
+        return score;
+    }
+
+    private static int ScoreContextRelevance(
+        string primaryText,
+        string? reading,
+        string? meaning,
+        string? itemLevel,
+        string targetLevel,
+        string[] contextTokens)
+    {
+        int score = string.Equals(itemLevel?.Trim(), targetLevel, StringComparison.OrdinalIgnoreCase) ? 30 : 0;
+        if (contextTokens.Length == 0) return score;
+
+        var combined = $"{primaryText} {reading} {FoldVietnamese(meaning)}".ToLowerInvariant();
+        foreach (var tok in contextTokens)
+        {
+            if (combined.Contains(tok, StringComparison.OrdinalIgnoreCase))
+            {
+                score += 18;
+            }
+        }
+        return score;
+    }
+
+    private static string[] ExtractContextTokens(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return [];
+        var folded = FoldVietnamese(text);
+        var stopWords = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "va", "cua", "cho", "tai", "khi", "voi", "trong", "nhu", "the", "cac", "mot", "bai", "tinh", "huong", "hoi", "thoai", "giao", "tiep"
+        };
+        return folded
+            .Split([' ', ',', '.', ':', ';', '(', ')', '/', '-', '&'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .Where(t => t.Length >= 2 && !stopWords.Contains(t))
+            .Distinct()
+            .Take(12)
+            .ToArray();
+    }
+
+    private static string FoldVietnamese(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var formD = input.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(formD.Length);
+        foreach (var ch in formD)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.NonSpacingMark) continue;
+            sb.Append(ch switch
+            {
+                'đ' => 'd',
+                'Đ' => 'd',
+                _ => char.ToLowerInvariant(ch)
+            });
+        }
+        return string.Join(' ', sb.ToString().Normalize(NormalizationForm.FormC).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static string NormalizeGrammarKey(string? pattern)
+    {
+        if (string.IsNullOrWhiteSpace(pattern)) return string.Empty;
+        return pattern
+            .Normalize(NormalizationForm.FormC)
+            .Replace("～", string.Empty)
+            .Replace("〜", string.Empty)
+            .Replace("~", string.Empty)
+            .Replace(" ", string.Empty)
+            .Replace("\u3000", string.Empty)
+            .Trim()
+            .ToLowerInvariant();
+    }
+
+    private static string ClampText(string? value, int maxLen)
+    {
+        var trimmed = (value ?? string.Empty).Trim();
+        return trimmed.Length <= maxLen ? trimmed : trimmed[..maxLen];
+    }
+
+    private static string? ClampNullableText(string? value, int maxLen)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLen ? trimmed : trimmed[..maxLen];
     }
 
     /// <summary>Giới hạn độ dài vai AI theo cột DB (ScenarioLevelConfiguration.AiPersona tối đa 100 ký tự).</summary>

@@ -152,6 +152,41 @@ public class AdminScenarioController : ControllerBase
     }
 
     /// <summary>
+    /// GET /api/admin/scenarios/knowledge-search - Tìm kiếm thông minh từ vựng / ngữ pháp trong Kho học liệu.
+    /// </summary>
+    [HttpGet("knowledge-search")]
+    public async Task<IActionResult> SearchKnowledge(
+        [FromQuery] string type = "vocab",
+        [FromQuery] string? q = null,
+        [FromQuery] string? level = null,
+        [FromQuery] int limit = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _scenarioService.SearchKnowledgeAsync(type, q, level, limit, cancellationToken);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// POST /api/admin/scenarios/suggest-knowledge - Gợi ý thông minh (AI lọc từ Kho học liệu) cho ngữ cảnh kịch bản.
+    /// </summary>
+    [HttpPost("suggest-knowledge")]
+    public async Task<IActionResult> SuggestKnowledge(
+        [FromBody] SuggestScenarioKnowledgeRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _scenarioService.SuggestKnowledgeAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+        return Ok(result);
+    }
+
+    /// <summary>
     /// POST /api/admin/scenarios/generate-level-content - AI gợi ý nội dung (Vai AI, Nhiệm vụ, Từ vựng, Ngữ pháp) theo level.
     /// </summary>
     [HttpPost("generate-level-content")]
@@ -210,7 +245,11 @@ public class AdminScenarioController : ControllerBase
         var result = await _scenarioService.UpdateScenarioAsync(id, dto, cancellationToken);
         if (!result.Success)
         {
-            return NotFound(result);
+            if (result.Message != null && result.Message.Contains("Không tìm thấy", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(result);
+            }
+            return BadRequest(result);
         }
 
         return Ok(result);
