@@ -5,6 +5,7 @@ using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace JCAP.Controllers;
 
@@ -114,6 +115,7 @@ public class RoleplaySessionController : ControllerBase
     /// Gửi tin nhắn học viên, kích hoạt AI phản hồi, cập nhật mission tự động và kiểm tra kết thúc tự nhiên.
     /// </summary>
     [HttpPost("sessions/{sessionId:int}/messages")]
+    [EnableRateLimiting("roleplay-ai")]
     public async Task<IActionResult> SendMessage(
         int sessionId,
         [FromBody] SendRoleplayMessageRequestDto request,
@@ -149,6 +151,7 @@ public class RoleplaySessionController : ControllerBase
     /// Yêu cầu AI gợi ý câu nói tiếp theo (On-demand Hint, không trừ credit).
     /// </summary>
     [HttpPost("sessions/{sessionId:int}/hint")]
+    [EnableRateLimiting("roleplay-ai")]
     public async Task<IActionResult> GetHint(int sessionId, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

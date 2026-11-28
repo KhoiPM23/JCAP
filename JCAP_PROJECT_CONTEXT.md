@@ -2,7 +2,7 @@
 
 **Project Name:** Japanese Conversation AI Platform (JCAP)  
 **Project Code:** SEP490-SE\_54 (FPT University Da Nang)  
-**Tech Stack:** ASP.NET Core 8 Web API, React \+ TypeScript, SQL Server, OpenAI API (STT/LLM/TTS), Azure AI Speech (Pronunciation Assessment / Pitch Accent)  
+**Tech Stack:** ASP.NET Core 8 Web API, React 19 + TypeScript 6 + Vite 8 + Tailwind CSS 3, SQL Server 2022, Google Gemini API (với fallback OpenAI-Compatible), Local Faster-Whisper STT, Local VOICEVOX TTS, ONNX Runtime Phoneme Recognizer, PayOS, Cloudinary  
 **Target Audience:** Vietnamese learners of Japanese at JLPT N5–N3 levels
 
 ## **1\. Project Overview & Objectives**
@@ -25,34 +25,42 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 | **Nguyen Dinh Manh** | Member | Backend API Development (ASP.NET Core), Token/Credit & Payment Gateway Integration |
 | **Nguyen Xuan Truong** | Member | Database Design (SQL Server ERD), Quality Assurance, Quality Management Strategy |
 
-## **3\. High-Level Architecture & Tech Stack**
+## **3\. High-Level Architecture & Tech Stack (Verified Implementation)**
 
-┌────────────────────────────────────────────────────────────────────────┐  
-│                        React \+ TypeScript Frontend                      │  
-└───────────────────────────────────┬────────────────────────────────────┘  
-                                    │ HTTP / REST / WebSockets  
-                                    ▼  
-┌────────────────────────────────────────────────────────────────────────┐  
-│                       ASP.NET Core 8 Web API Backend                   │  
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐  │  
-│  │ Auth & Credit    │  │ AI Roleplay Engine│  │ Adaptive Learning    │  │  
-│  └──────────────────┘  └──────────────────┘  └──────────────────────┘  │  
-└──────────┬────────────────────────┬────────────────────────┬───────────┘  
-           │                        │                        │  
-           ▼                        ▼                        ▼  
-┌────────────────────┐   ┌────────────────────┐   ┌────────────────────┐  
-│ SQL Server Database│   │ OpenAI API         │   │ Azure AI Speech    │  
-│ (ERD Core Schema)  │   │ (Whisper/LLM/TTS)  │   │ (Pronunciation/    │  
-│                    │   │                    │   │  Pitch Accent)     │  
-└────────────────────┘   └────────────────────┘   └────────────────────┘
+```text
+┌────────────────────────────────────────────────────────────────────────────┐
+│          React 19 + TypeScript 6 + Vite 8 + Tailwind CSS 3 SPA            │
+│      (98 Views, 26 Services, 81 Components, Web Speech + IndexedDB)       │
+└────────────────────────────────────┬───────────────────────────────────────┘
+                                     │ HTTPS / REST + Bearer JWT
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│             ASP.NET Core 8 Web API Backend (30 Controllers / 191 APIs)     │
+│  ┌──────────────────┐  ┌────────────────────┐  ┌────────────────────────┐  │
+│  │ Auth, Credit &   │  │ AI Roleplay &      │  │ Shadowing Acoustic &   │  │
+│  │ PayOS Billing    │  │ Adaptive Engine    │  │ ONNX Phoneme Engine    │  │
+│  └──────────────────┘  └────────────────────┘  └────────────────────────┘  │
+└──────────┬─────────────────────────┬───────────────────────────┬───────────┘
+           │                         │                           │
+           ▼                         ▼                           ▼
+┌─────────────────────┐   ┌───────────────────────┐   ┌──────────────────────┐
+│ SQL Server 2022     │   │ Google Gemini API     │   │ Local Self-Host AI:  │
+│ (JCAP_DB: 57 DbSets │   │ (Multi-model fallback │   │ - Faster-Whisper STT │
+│  & 43 Migrations)   │   │  + OpenAI-compatible) │   │   (:50022 / :50023)  │
+└─────────────────────┘   └───────────────────────┘   │ - VOICEVOX TTS:50021 │
+                                                      │ - ONNX Runtime (C#)  │
+                                                      └──────────────────────┘
+```
 
-> * **Frontend:** React, TypeScript, Tailwind CSS / Ant Design, Vite.  
-> * **Backend:** ASP.NET Core 8 Web API, Entity Framework Core (Code First), Clean Architecture.  
-> * **Database:** SQL Server 2022\.  
-> * **AI & External Services:**  
-  * **OpenAI API:** Whisper (Speech-to-Text), GPT-4o / GPT-3.5-Turbo (Roleplay Chat & Feedback), OpenAI TTS (Voice Generation).  
-  * **Azure AI Speech:** Pronunciation Assessment API (Accuracy, Fluency, Prosody/Pitch Accent, Completeness).  
-  * **Payment Gateway:** Domestic Payment Gateway Webhook/IPN for Credit top-up.
+> * **Frontend (`jcap-web`):** React 19.3, TypeScript 6, Tailwind CSS 3 (Custom Wabi-Sabi Design System `tokens.css`), Vite 8, React Router 7 (route-level `React.lazy` code-splitting).
+> * **Backend:** ASP.NET Core 8 Web API, Entity Framework Core 8 (`QuerySplittingBehavior.SplitQuery`), ASP.NET Core Identity + JWT Bearer + Google OAuth 2.0, Rate Limiting (`shadowing-evaluate`, `community-write`, `feedback-write`, `attachment-upload`).
+> * **Database:** SQL Server 2022 (`JCAP_DB` — 57 DbSets, 43 EF Core Migrations).
+> * **AI, Speech & Acoustic Services (Free-First, Self-Host-First):**
+>   * **LLM:** Google Gemini API (`GeminiAiClient` với chuỗi 6 fallback model + `GeminiModelCooldownTracker`) và `OpenAiCompatibleAiClient` qua `IAiClient`.
+>   * **STT:** Dual-Engine — Web Speech API (interim live captions) + Local **Faster-Whisper** Python HTTP services (`tools/whisper_engine` cổng `50022` cho Roleplay, `tools/shadowing-asr` cổng `50023` cho Shadowing).
+>   * **TTS:** Local **VOICEVOX Engine** (cổng `50021`) kèm cache 3 tầng (RAM, `wwwroot/audio-cache/voicevox`, IndexedDB) và fallback Web Speech Synthesis.
+>   * **Pronunciation & Fluency Assessment:** Tự xây dựng tại Backend bằng `Microsoft.ML.OnnxRuntime` (`OnnxPhonemeRecognizer`) kết hợp phân tích tất định (`KanaMoraComparer`, `FluencyAnalyzer`, `MoraDurationAnalyzer`, `PausePositionLocator`, `PronunciationAligner`, `CtcScorer`, `Dtw`).
+> * **External Integrations:** **PayOS** (`payOS 2.1.0` Webhook/IPN cho Credit & Subscription), **Cloudinary** (lưu trữ ảnh/tệp đính kèm), **MailKit SMTP** (xác thực email & đặt lại mật khẩu), **ClosedXML** (import/export Excel `.xlsx`).
 
 ## **4\. Core Feature Breakdown (WBS Scope)**
 
@@ -244,16 +252,14 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
                                                 │  Vocabulary   │                  │    Grammar    │  
                                                 └───────────────┘                  └───────────────┘
 
-> 1. **User / Learner:** Identity, auth, JLPT level, preferences, Credit balance.  
-> 2. **CreditTransaction:** Logs credit purchases, top-ups, voucher usage, session deductions.  
-> 3. **RoleplayScenario:** Scenario context, AI role, difficulty, Keigo level, target vocab/grammar.  
-> 4. **RoleplayTask:** Mission objectives for a scenario.  
-> 5. **RoleplaySession:** Learner's roleplay practice session.  
-> 6. **RoleplayRecording:** Audio recording files per turn.  
-> 7. **RoleplayResult:** Multi-dimensional scores, feedback, Pass/Fail status.  
-> 8. **Shadowing entities:** ShadowingDialogue, ShadowingSentence, ShadowingSession, ShadowingResult.  
-> 9. **Learning materials:** Vocabulary, Grammar, GrammarExample.  
-> 10. **Flashcard:** Personalized study cards from bookmarks/adaptive recommendations.
+> 1. **Identity & Billing (`ApplicationUser`, `CreditPackage`, `CreditTransaction`):** Identity, Google OAuth, JLPT level, Placement Test snapshot, Credit balance, Subscription rolling quota, PayOS order logs.
+> 2. **Scenario & Roleplay (`Scenario`, `ScenarioLevelConfiguration`, `Mission`, `TargetVocabulary`, `TargetGrammar`, `RoleplaySession`, `RoleplayMessage`, `RoleplaySessionMission`, `RoleplayResult`):** Cấu hình đa cấp N5/N4/N3, khóa ngoại `VocabularyId?`/`GrammarId?` nối kho Master, hội thoại đa lượt, chấm điểm đa chiều.
+> 3. **Implicit Learner Intelligence & Memory (`LearnerIntelligenceProfile`, `LearnerSkillMastery`, `LearnerBehaviorSignal`, `UserNpcRelationship`, `LearnerMemory`, `CharacterMemory`):** Hồ sơ 6 trục, IRT + ZPD + FSRS, ký ức liên phiên, AI coaching snapshot trong `InferredTraitsJson`.
+> 4. **Shadowing (`ShadowingDialogue`, `ShadowingSentence`, `ShadowingDialogueVocabulary`, `ShadowingDialogueGrammar`, `ShadowingSentenceAsset`, `ShadowingPracticeProgress`, `ShadowingPracticeSession`, `ShadowingSentenceEvaluation`):** Hội thoại mẫu, tài sản mora tiền tính toán, lưu tiến độ dở dang, chấm điểm âm học & nội dung.
+> 5. **Master Learning Content (`Vocabulary`, `Grammar`, `LearningTopic`, `TopicVocabulary`, `TopicGrammar`, `VocabularyExample`, `GrammarExample`, `LearningContentSource`, `VocabularySource`, `GrammarSource`, `LearningContentSeedState`):** Kho học liệu chuẩn hóa theo chủ đề, hỗ trợ import Excel và truy vết nguồn.
+> 6. **Flashcards & Quiz (`LearnerBookmark`, `LearnerFlashcardProgress`, `FlashcardStudySession`, `FlashcardReviewLog`, `LearnerDailyFlashcardQuota`, `FlashcardQuizAttempt`, `FlashcardQuizAttemptItem`):** Ôn tập SRS, hạn mức thẻ mới hàng ngày, bài kiểm tra Quizlet độc lập.
+> 7. **Explore Journey Map (`ExplorePrefecture`, `ExploreChapter`, `ExploreChapterPrefecture`, `ExploreSpot`, `ExploreSpotLesson`, `ExploreSpotLessonVocabulary`, `ExploreSpotLessonGrammar`, `ExploreSpotActivity`, `ExploreProvinceWord`, `ExploreProgress`):** Bản đồ 47 tỉnh Nhật Bản, bài học địa điểm và con dấu Eki-stamp.
+> 8. **Community & Support (`CommunityPost`, `CommunityComment`, `CommunityAttachment`, `CommunityPostUpvote`, `FeedbackTicket`, `FeedbackMessage`, `FeedbackAttachment`):** Diễn đàn thảo luận cộng đồng và hộp thư hỗ trợ 2 chiều.
 
 ## **6\. Development Rules & Antigravity Instructions**
 
@@ -329,7 +335,7 @@ Example: feature/authentication-login
    - **Constraint:** Once the shadowing session starts, role switching is locked (to switch roles, the learner must restart/retry the session).
 4. **Session Resumption:**
    - Similar to Scenarios, unfinished shadowing sessions can be resumed.
-5. **AI Assessment Scope:**
-   - Pronunciation assessment (Azure AI Speech) evaluating acoustic accuracy, fluency, completeness, and prosody/pitch accent against native reference audio.
+5. **AI & Acoustic Assessment Scope:**
+   - Local multi-dimensional assessment combining **Faster-Whisper ASR** (content accuracy via `KanaMoraComparer`), **ONNX Runtime Phoneme Recognizer** (phoneme alignment/CTC), and **C# Fluency Engine** (`FluencyAnalyzer`, `MoraDurationAnalyzer`, `PausePositionLocator`, DTW) against precomputed `ShadowingSentenceAsset` native references.
 6. **Media Storage:**
-   - Native audio files (.mp3/.wav) and user recordings are stored via a cloud storage provider offering a free tier (e.g., Cloudinary / Supabase Storage / Azure Blob Storage).
+   - Native audio references and learner roleplay recordings are stored locally in `wwwroot/audio` & `wwwroot/audio-cache/voicevox` (persisted via Docker volumes in self-host mode), while image/file attachments use **Cloudinary** (`ICloudStorageService`).

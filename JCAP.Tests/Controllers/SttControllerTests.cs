@@ -1,10 +1,16 @@
+using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using JCAP.Controllers;
 using JCAP.DTOs.Common;
 using JCAP.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -130,5 +136,160 @@ public class SttControllerTests
         {
             if (Directory.Exists(tempRoot)) Directory.Delete(tempRoot, true);
         }
+    }
+
+    private static IFormFile CreateFakeFormFile(string fileName, long lengthBytes = 128)
+    {
+        var bytes = new byte[Math.Min(lengthBytes, 256)];
+        var stream = new MemoryStream(bytes);
+        var mock = new Mock<IFormFile>();
+        mock.SetupGet(f => f.FileName).Returns(fileName);
+        mock.SetupGet(f => f.Length).Returns(lengthBytes);
+        mock.Setup(f => f.OpenReadStream()).Returns(() => new MemoryStream(bytes));
+        mock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+            .Returns((Stream target, CancellationToken ct) => target.WriteAsync(bytes, 0, bytes.Length, ct));
+        return mock.Object;
+    }
+
+    [Theory]
+    [InlineData("evil.html")]
+    [InlineData("payload.svg")]
+    [InlineData("script.js")]
+    [InlineData("binary.exe")]
+    public async Task Transcribe_RejectsDisallowedExtensions_WithoutCallingWhisper(string fileName)
+    {
+        var whisperMock = new Mock<IWhisperSttService>();
+        var envMock = new Mock<IWebHostEnvironment>();
+        envMock.SetupGet(e => e.ContentRootPath).Returns(Path.GetTempPath());
+        envMock.SetupGet(e => e.WebRootPath).Returns(Path.GetTempPath());
+        var controller = new SttController(whisperMock.Object, envMock.Object, new ConfigurationBuilder().Build(), NullLogger<SttController>.Instance);
+
+        var file = CreateFakeFormFile(fileName);
+        var result = await controller.Transcribe(file, "ja", CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+        whisperMock.Verify(w => w.TranscribeAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData("evil.html")]
+    [InlineData("payload.svg")]
+    [InlineData("shell.ps1")]
+    public async Task SaveAudio_RejectsDisallowedExtensions(string fileName)
+    {
+        var controller = CreateController(null, false);
+        var file = CreateFakeFormFile(fileName);
+
+        var result = await controller.SaveAudio(file, CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task Transcribe_RejectsOversizedAudioFile()
+    {
+        var whisperMock = new Mock<IWhisperSttService>();
+        var envMock = new Mock<IWebHostEnvironment>();
+        envMock.SetupGet(e => e.ContentRootPath).Returns(Path.GetTempPath());
+        envMock.SetupGet(e => e.WebRootPath).Returns(Path.GetTempPath());
+        var controller = new SttController(whisperMock.Object, envMock.Object, new ConfigurationBuilder().Build(), NullLogger<SttController>.Instance);
+
+        var oversizedFile = CreateFakeFormFile("long.webm", SttController.MaxAudioUploadBytes + 1);
+        var result = await controller.Transcribe(oversizedFile, "ja", CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+        whisperMock.Verify(w => w.TranscribeAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData("voice.webm", ".webm")]
+    [InlineData("voice.WAV", ".wav")]
+    [InlineData("voice.m4a", ".m4a")]
+    public async Task SaveAudio_AcceptsAllowedExtensions_AndSavesNormalizedFile(string fileName, string expectedExt)
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), $"jcap_stt_save_{Guid.NewGuid():N}");
+        try
+        {
+            var whisperMock = new Mock<IWhisperSttService>();
+            var envMock = new Mock<IWebHostEnvironment>();
+            envMock.SetupGet(e => e.ContentRootPath).Returns(tempRoot);
+            envMock.SetupGet(e => e.WebRootPath).Returns(tempRoot);
+            var controller = new SttController(whisperMock.Object, envMock.Object, new ConfigurationBuilder().Build(), NullLogger<SttController>.Instance);
+
+            var result = await controller.SaveAudio(CreateFakeFormFile(fileName), CancellationToken.None);
+            var payload = ExtractStatus(result);
+            var audioUrl = payload.GetProperty("audioUrl").GetString();
+
+            Assert.NotNull(audioUrl);
+            Assert.StartsWith("/audio/roleplay/user_", audioUrl);
+            Assert.EndsWith(expectedExt, audioUrl);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot)) Directory.Delete(tempRoot, true);
+        }
+    }
+
+    [Fact]
+    public async Task StartEngine_InProductionAsLearner_Returns403Forbidden()
+    {
+        var whisperMock = new Mock<IWhisperSttService>();
+        var envMock = new Mock<IWebHostEnvironment>();
+        envMock.SetupGet(e => e.EnvironmentName).Returns(Environments.Production);
+        var controller = new SttController(whisperMock.Object, envMock.Object, new ConfigurationBuilder().Build(), NullLogger<SttController>.Instance)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, "learner-1"),
+                        new Claim(ClaimTypes.Role, "Learner")
+                    }, "Bearer"))
+                }
+            }
+        };
+
+        var result = await controller.StartEngine(CancellationToken.None);
+
+        var obj = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status403Forbidden, obj.StatusCode);
+        whisperMock.Verify(w => w.TryAutoStartEngineAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task StartEngine_InDevelopment_AllowsStartEngine()
+    {
+        var whisperMock = new Mock<IWhisperSttService>();
+        whisperMock.Setup(w => w.TryAutoStartEngineAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var envMock = new Mock<IWebHostEnvironment>();
+        envMock.SetupGet(e => e.EnvironmentName).Returns(Environments.Development);
+        var controller = new SttController(whisperMock.Object, envMock.Object, new ConfigurationBuilder().Build(), NullLogger<SttController>.Instance);
+
+        var result = await controller.StartEngine(CancellationToken.None);
+        var payload = ExtractStatus(result);
+
+        Assert.True(payload.GetProperty("started").GetBoolean());
+        whisperMock.Verify(w => w.TryAutoStartEngineAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void SttAndRoleplayControllers_EnforceAuthorizeAndRoleplayAiRateLimiting()
+    {
+        var sttType = typeof(SttController);
+        Assert.NotNull(sttType.GetCustomAttribute<AuthorizeAttribute>());
+        Assert.Null(sttType.GetCustomAttribute<AllowAnonymousAttribute>());
+
+        var transcribeRate = sttType.GetMethod(nameof(SttController.Transcribe))?.GetCustomAttribute<EnableRateLimitingAttribute>();
+        var saveAudioRate = sttType.GetMethod(nameof(SttController.SaveAudio))?.GetCustomAttribute<EnableRateLimitingAttribute>();
+        Assert.Equal("roleplay-ai", transcribeRate?.PolicyName);
+        Assert.Equal("roleplay-ai", saveAudioRate?.PolicyName);
+
+        var roleplayType = typeof(RoleplaySessionController);
+        var sendMsgRate = roleplayType.GetMethod(nameof(RoleplaySessionController.SendMessage))?.GetCustomAttribute<EnableRateLimitingAttribute>();
+        var hintRate = roleplayType.GetMethod(nameof(RoleplaySessionController.GetHint))?.GetCustomAttribute<EnableRateLimitingAttribute>();
+        Assert.Equal("roleplay-ai", sendMsgRate?.PolicyName);
+        Assert.Equal("roleplay-ai", hintRate?.PolicyName);
     }
 }
